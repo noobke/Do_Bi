@@ -72,6 +72,61 @@ window.api = (function () {
     listBudgetSplit: function () { return delay(M.budgetSplit); },
     listUsage: function () { return delay(M.usage); },
 
+    /* ---------- 批次二：章纲与依赖图 ---------- */
+    getCompass: function () { return delay(M.outlineGraph.compass); },
+
+    getOutlineGraph: function () {
+      return delay({ compass: M.outlineGraph.compass, volumes: M.outlineGraph.volumes,
+                     nodes: M.outlineGraph.nodes, edges: M.outlineGraph.edges });
+    },
+
+    /* 刷新罗盘（模拟建筑师更新终局方向） */
+    refreshCompass: function () {
+      M.outlineGraph.compass.refreshAt = '第 1 卷末刷新（刚刚）';
+      return delay(M.outlineGraph.compass, 900);
+    },
+
+    /* ---------- 批次二：审计报告 ---------- */
+    getAuditReport: function () { return delay(M.auditReport); },
+
+    runFullAudit: function () {
+      M.auditReport.stats.passRate = 88;
+      return delay(M.auditReport, 1000);
+    },
+
+    /* 对某条发现做出决策：accept（接受修订）/ ignore（忽略）/ null（撤回） */
+    decideFinding: function (dim, action) {
+      var hit = M.auditReport.findings.filter(function (x) { return x.dim === dim; })[0];
+      if (hit) {
+        hit.decision = action;
+        hit.fixed = action === 'accept';
+      }
+      M.auditReport.stats.open = M.auditReport.findings.filter(function (x) { return !x.fixed; }).length;
+      M.auditReport.stats.fixed = M.auditReport.findings.filter(function (x) { return x.fixed; }).length;
+      return delay({ ok: true, dim: dim, action: action,
+                     open: M.auditReport.stats.open, fixed: M.auditReport.stats.fixed }, 260);
+    },
+
+    /* ---------- 批次二：文风档案 ---------- */
+    getStyleProfile: function () { return delay(M.styleProfile); },
+
+    /* 重新分析样本（模拟） */
+    analyzeStyle: function () {
+      M.styleProfile.analyzedAt = '刚刚';
+      return delay(M.styleProfile, 1100);
+    },
+
+    addBanned: function (expr) {
+      var t = String(expr || '').trim();
+      if (t && M.styleProfile.banned.indexOf(t) < 0) M.styleProfile.banned.push(t);
+      return delay(M.styleProfile.banned, 200);
+    },
+
+    removeBanned: function (expr) {
+      M.styleProfile.banned = M.styleProfile.banned.filter(function (x) { return x !== expr; });
+      return delay(M.styleProfile.banned, 200);
+    },
+
     /* ---------- 派生统计 ---------- */
     hookStats: function () {
       var planted = M.hooks.filter(function (x) { return x.status === 'planted'; }).length;

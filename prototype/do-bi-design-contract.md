@@ -1,6 +1,8 @@
 # Design Contract · Do_Bi 小说创作台原型
 
-> 单一真相源。所有页面必须逐字引用本契约，不得自创颜色 / 字号 / 圆角。
+> 版本 **v1.1（批次二）** · 单一真相源。所有页面必须逐字引用本契约，不得自创颜色 / 字号 / 圆角。
+> 批次一（已完成）：工作台 · 共创 · 角色 · 伏笔 · 设置
+> 批次二（本次）：章纲与依赖图 · 审计报告 · 文风档案
 
 ## Tech stack & delivery
 stack: plain HTML + CSS + vanilla JS
@@ -99,25 +101,41 @@ bg-texture: 极淡纸纹 = 暖色 radial 光晕 + 极低不透明度纤维纹（
 - **progress**：细条（高 4px），底 `--paper-3`，填充 `--accent`
 - **kbd / code**：`--font-mono`，底 `--paper-3`，13px
 
+### 批次二新增组件类（已写入 styles.css §26–32）
+
+- **依赖图**：`.graph-wrap`（显式高度的 SVG 容器）· `.legend-item` / `.legend-swatch` · SVG 内 `.gnode` / `.gnode.is-active` / `.gnode.is-skeleton` / `.gedge` / `.gedge.is-skeleton` / `.gedge.is-active` / `.gedge-halo`
+- **弧 / 卷卡**：`.arc-card` · `.arc-head` · `.arc-meta`
+- **diff 预览**：`.diff` · `.diff-head` · `.diff-line` · `.diff-gutter` · `.diff-text`（配已有 `.diff-del` / `.diff-add`）
+- **评分行**：`.score-row` · `.score-name` · `.score-bar` · `.score-val`
+- **堆叠占比条**：`.stackbar`（子元素 `<i style="width:..">`，配 `.stackbar-legend`）
+- **区间条**：`.rangebar` · `.rangebar > i`（用 inline `left/width` 表达 p50–p90 区间）
+- **可删除 chip**：`.chip-removable`（内含 `<button class="chip-x">×</button>`）
+- **规则行**：`.rule-row` · `.rule-row.is-hit` · `.rule-count`
+- **章节小卡**：`.ch-card` · `.ch-card.is-selected`
+- **引用块**：复用 `.audit-evidence`（等宽衬线小字 + 浅底）
+
 ## App Shell + Canonical Nav（多页必须逐字一致）
 
 **权威来源：`do-bi/index.html`。其余页面必须从该文件复制 `<aside class="sidebar">…</aside>` 整块，一字不改。**
 
 ```html
-<body data-page="<workbench|chat|characters|hooks|settings>">
+<body data-page="<workbench|chat|characters|hooks|outline|audit|style|settings>">
   <aside class="sidebar"> … brand + nav + side-foot … </aside>
   <main class="main" id="main"> … 本页内容（含 .topbar） … </main>
 </body>
 ```
 
-nav items（顺序冻结，禁止增删改序）：
-| label | lucide | href | data-nav |
-|---|---|---|---|
-| 工作台 | pen-line | index.html | workbench |
-| 共创 | messages-square | chat.html | chat |
-| 角色 | users | characters.html | characters |
-| 伏笔 | bookmark | hooks.html | hooks |
-| 设置 | settings-2 | settings.html | settings |
+nav items（**批次二扩为 8 项**，顺序冻结，禁止增删改序）：
+| 顺序 | label | lucide | href | data-nav |
+|---|---|---|---|---|
+| 1 | 工作台 | pen-line | index.html | workbench |
+| 2 | 共创 | messages-square | chat.html | chat |
+| 3 | 角色 | users | characters.html | characters |
+| 4 | 伏笔 | bookmark | hooks.html | hooks |
+| 5 | **章纲** | **git-branch** | **outline.html** | **outline** |
+| 6 | **审计** | **clipboard-check** | **audit.html** | **audit** |
+| 7 | **文风** | **type** | **style.html** | **style** |
+| 8 | 设置 | settings-2 | settings.html | settings |
 
 nav positioning: `.sidebar` 固定左侧 `width:var(--sidebar-w)`；`.main` `margin-left:var(--sidebar-w)` —— 每页一致
 active rule（唯一机制）: `app.js` 为 `[data-nav]` 中 `data-nav === document.body.dataset.page` 的项加 `.active`
@@ -130,29 +148,37 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
 
 ## Page List
 
-| # | 文件 | 页面 | 职责 | 关键组件 |
-|---|---|---|---|---|
-| 1 | index.html | 写作工作台 | 写作 + 确认 + 干预（核心页） | 三栏布局、章节目录、手稿编辑区、助手面板、干预开关、审计内联卡 |
-| 2 | chat.html | 共创对话 | Chat-first 立项，多轮追问沉淀设定 | 对话流、消息气泡、选项卡、右侧「设定沉淀」实时预览 |
-| 3 | characters.html | 角色与关系 | 管理角色卡与关系 | 角色列表、角色详情、关系列表、不可变特征标记 |
-| 4 | hooks.html | 伏笔看板 | 追踪伏笔，未回收告警 | 统计条、伏笔时间线、状态泳道、告警行 |
-| 5 | settings.html | 设置 | Provider / 模型映射 / 预算 | Provider 列表、模型角色映射表、预算熔断、成本统计 |
+| # | 文件 | 页面 | 批次 | 职责 | 关键组件 |
+|---|---|---|---|---|---|
+| 1 | index.html | 写作工作台 | 一 | 写作 + 确认 + 干预 | 三栏、手稿页边、助手面板、干预开关 |
+| 2 | chat.html | 共创对话 | 一 | Chat-first 立项 | 对话流、选项卡、设定沉淀 |
+| 3 | characters.html | 角色与关系 | 一 | 角色卡与关系 | 角色列表、详情、不可变特征 |
+| 4 | hooks.html | 伏笔看板 | 一 | 伏笔追踪与回收率 | 统计条、状态泳道、时间线 |
+| 5 | **outline.html** | **章纲与依赖图** | **二** | 分卷/分章结构 + 依赖边 + 思维链 | 罗盘卡、依赖图 SVG、边清单表、节点详情 |
+| 6 | **audit.html** | **审计报告** | **二** | L1 规则 + L2 维度 + 可举证评审 + diff | 统计条、规则行、发现卡、评分行、diff 预览 |
+| 7 | **style.html** | **文风档案** | **二** | 仿写分析结果、可编辑、注入预览 | 句式/视角/比例卡、可删 chip、区间条、注入对比 |
+| 8 | settings.html | 设置 | 一 | Provider / 模型 / 预算 | Provider 列表、映射表、预算、成本 |
 
 ## Mock Schema（统一假数据，禁止 lorem ipsum）
 
 统一世界观：**北境 · 文脉**（古风悬疑），主角「沈砚」。
 
-- `project`：`{ id, title:"雁回关", genre:"古风悬疑", mode:"semi-auto", chaptersTotal:60, chaptersDone:17, words:86420, budgetUsed:12.6, budgetTotal:80, costUnit:"¥" }`
-- `chapter`：`{ n, title, status:"done|draft|audit|todo", words, updated, summary }`
-- `character`：`{ id, name, role, immutableTraits[], personality, speechStyle, state{location,status}, relations[{target,type,note}] }`
-- `hook`：`{ id, content, plantedChapter, status:"planted|resolved|overdue", resolvedChapter, importance:"major|minor", suggestedResolveBy }`
-- `audit`：`{ chapter, items[{ dim, severity:"blocker|major|minor", evidence, suggestion, fixed }], rulesViolated }`
-- `provider`：`{ name, baseUrl, models[], configured:true, priority }`
-- `modelRole`：`{ step, model, temperature, format }`
-- `usage`：`{ chapter, promptTokens, completionTokens, cost }`
+批次一已有：
+- `project`：`{ id, title:"雁回关", genre, mode, chaptersTotal:60, chaptersDone:17, words, budgetUsed, budgetTotal, costUnit }`
+- `chapters[]`：`{ n, title, status:"done|draft|audit|todo", words, updated, summary }`
+- `manuscript`、`modes[]`、`characters[]`、`hooks[]`、`audit`、`chatSeed`、`chatScript[]`、`providers[]`、`modelRoles[]`、`budgetSplit[]`、`usage[]`、`rules[]`
+
+批次二新增：
+- **`outlineGraph`**：
+  - `compass`：`{ endgame, activeThreads[], scaleEstimate, refreshAt }`
+  - `volumes[]`：`{ name, from, to, status:"expanded|skeleton", chapters }`
+  - `nodes[]`：`{ chapter, title, arc, status:"written|planned|skeleton", goal, beats[], rationale }`
+  - `edges[]`：`{ from, to, type:"motivation|setup|payoff|causality|parallel", note, confirmed:boolean }`
+- **`auditReport`**：`{ chapter, title, stats:{l1,l2,fixed,open,passRate}, l1[{rule,hit,count,threshold,isHit}], findings[{dim,severity,evidence,suggestion,ref,fixed,decision}], review[{dim,score,evidence,note}], diffs[{dim,before[],after[]}] }`
+- **`styleProfile`**：`{ source, analyzedAt, tokens, sentence:{mean,p50,p90,min,max}, narrative:{person,tense,povSwitch}, ratio:[{label,pct}], patterns[], banned[], lexicon[], injection:{text,tokens}, sample:{plain,styled} }`
 
 ## 交互约定（stub，不调真模型）
 
-- 所有「生成 / 审计 / 修订」按钮：显示 loading → `setTimeout` 模拟 → 写入 mock 结果并刷新视图
+- 所有「生成 / 审计 / 分析 / 刷新」按钮：显示 loading → `setTimeout` 模拟 → 写回 mock 并重渲染
 - `api.js` 暴露 `api.*` 全部返回 `Promise`，内部只读 `mock.js`，**不发起任何网络请求**
-- 主要交互：干预模式切换、章节目录切换、助手面板 Tab 切换、伏笔筛选、接受/拒绝修订、modal 开关、Provider 切换
+- 批次二新增交互：依赖图节点点击选中并高亮其边 + 联动节点详情；边清单表行点击高亮对应 SVG 边；审计发现「接受 / 忽略」切换决策并刷新统计；diff 折叠展开；文风档案禁用词增删；注入对比切换

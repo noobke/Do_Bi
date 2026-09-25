@@ -300,6 +300,9 @@ svg { display:block; }
 .mono { font-family:var(--font-mono); }
 .fs-12 { font-size:var(--fs-12); }
 .fs-13 { font-size:var(--fs-13); }
+.fs-14 { font-size:var(--fs-14); }
+.fs-16 { font-size:var(--fs-16); }
+.fs-20 { font-size:var(--fs-20); }
 .stack   { display:flex; flex-direction:column; gap:var(--sp-16); }
 .stack-8 { display:flex; flex-direction:column; gap:var(--sp-8); }
 .stack-24{ display:flex; flex-direction:column; gap:var(--sp-24); }
@@ -330,6 +333,7 @@ svg { display:block; }
 
 /* ---------- 18. Workbench: 手稿 ---------- */
 .workbench { display:grid; grid-template-columns:var(--col-left) minmax(0,1fr) var(--col-right); gap:var(--sp-20); align-items:start; }
+.col-left { min-width:0; }
 .manuscript {
   background:var(--paper); border:1px solid var(--line); border-radius:var(--r-md);
   box-shadow:var(--sh-md);
@@ -507,4 +511,138 @@ svg { display:block; }
   .topbar { flex-direction:column; align-items:flex-start; }
   .grid-3, .grid-4 { grid-template-columns:minmax(0,1fr); }
   .ms-text { font-size:17px; }
+}
+
+/* ==========================================================================
+   批次二（v1.1 新增）· 章纲与依赖图 / 审计报告 / 文风档案
+   ========================================================================== */
+
+/* ---------- 26. 依赖图 ---------- */
+.graph-wrap {
+  position:relative; width:100%;
+  background:var(--paper); border:1px solid var(--line);
+  border-radius:var(--r-sm); overflow:hidden;
+}
+.graph-wrap svg { display:block; width:100%; height:auto; }
+.gnode rect { fill:var(--paper-2); stroke:var(--line-strong); stroke-width:1; }
+.gnode.is-selected rect { fill:var(--accent-soft); stroke:var(--accent); stroke-width:1.5; }
+.gnode.is-skeleton rect { fill:var(--paper-3); stroke:var(--line-strong); stroke-dasharray:4 3; }
+.gnode { cursor:pointer; }
+.gnode .gt { font-family:var(--font-body); font-size:13px; font-weight:500; fill:var(--ink); }
+.gnode .gs { font-family:var(--font-mono); font-size:11px; fill:var(--ink-3); }
+.gnode.is-selected .gt { fill:var(--accent-ink); }
+.gnode.is-selected .gs { fill:var(--accent-ink); }
+
+.gedge { stroke:var(--ink-4); stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.gedge.is-skeleton { stroke:var(--line-strong); stroke-dasharray:5 4; }
+.gedge.is-active { stroke:var(--accent); stroke-width:2.5; }
+.gedge-halo { stroke:var(--accent); stroke-width:8; opacity:.15; fill:none; stroke-linecap:round; }
+
+.legend {
+  display:flex; flex-wrap:wrap; gap:var(--sp-16);
+  padding:var(--sp-12) var(--sp-16); border-top:1px solid var(--line);
+}
+.legend-item { display:flex; align-items:center; gap:var(--sp-8); font-size:var(--fs-12); color:var(--ink-3); }
+.legend-swatch { width:22px; height:0; border-top:2px solid var(--ink-4); }
+.legend-swatch.is-dashed { border-top-style:dashed; border-top-color:var(--line-strong); }
+.legend-swatch.is-active { border-top-color:var(--accent); }
+.legend-swatch.is-node { width:12px; height:12px; border:1px solid var(--line-strong); background:var(--paper-2); border-radius:3px; }
+.legend-swatch.is-node-skeleton { width:12px; height:12px; border:1px dashed var(--line-strong); background:var(--paper-3); border-radius:3px; }
+
+/* ---------- 27. 弧 / 卷卡 ---------- */
+.arc-card { border:1px solid var(--line); border-radius:var(--r-sm); background:var(--paper); }
+.arc-card + .arc-card { margin-top:var(--sp-8); }
+.arc-head {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:var(--sp-12); padding:var(--sp-8) var(--sp-12); border-bottom:1px solid var(--line);
+}
+.arc-meta { font-size:var(--fs-12); color:var(--ink-3); }
+
+/* ---------- 28. diff 预览 ---------- */
+.diff { border:1px solid var(--line); border-radius:var(--r-sm); overflow:hidden; background:var(--paper); }
+.diff-head {
+  display:flex; align-items:center; justify-content:space-between; gap:var(--sp-12);
+  padding:var(--sp-8) var(--sp-12); background:var(--paper-3);
+  border-bottom:1px solid var(--line); font-size:var(--fs-12); color:var(--ink-2);
+}
+.diff-line {
+  display:grid; grid-template-columns:34px minmax(0,1fr); gap:var(--sp-12);
+  padding:var(--sp-4) var(--sp-12); border-bottom:1px solid var(--line);
+  font-family:var(--font-read); font-size:var(--fs-14); line-height:1.75;
+}
+.diff-line:last-child { border-bottom:none; }
+.diff-gutter { font-family:var(--font-mono); font-size:var(--fs-11); color:var(--ink-4); text-align:right; padding-top:4px; }
+.diff-line.is-del { background:var(--crimson-soft); }
+.diff-line.is-add { background:var(--moss-soft); }
+.diff-text { color:var(--ink-2); }
+
+/* ---------- 29. 评分行 ---------- */
+.score-row { display:grid; grid-template-columns:72px minmax(0,1fr) 34px; gap:var(--sp-12); align-items:center; }
+.score-name { font-size:var(--fs-13); color:var(--ink-2); }
+.score-bar { height:4px; border-radius:var(--r-full); background:var(--paper-3); overflow:hidden; }
+.score-bar > i { display:block; height:100%; background:var(--accent); border-radius:var(--r-full); }
+.score-val { font-family:var(--font-mono); font-size:var(--fs-12); color:var(--ink-2); text-align:right; }
+
+/* ---------- 30. 堆叠占比条 / 区间条 ---------- */
+.stackbar {
+  display:flex; height:10px; border-radius:var(--r-full); overflow:hidden;
+  background:var(--paper-3); border:1px solid var(--line);
+}
+.stackbar > i { display:block; height:100%; }
+.stackbar-legend { display:flex; flex-wrap:wrap; gap:var(--sp-16); margin-top:var(--sp-8); }
+
+.rangebar {
+  position:relative; height:10px; border-radius:var(--r-full);
+  background:var(--paper-3); border:1px solid var(--line);
+}
+.rangebar > i {
+  position:absolute; top:0; bottom:0;
+  background:var(--accent-soft);
+  border-left:1px solid var(--accent); border-right:1px solid var(--accent);
+}
+.rangebar > b { position:absolute; top:-4px; width:2px; height:16px; background:var(--accent); }
+
+/* ---------- 31. 可删除 chip / 规则行 / 章节小卡 ---------- */
+.chip-removable {
+  display:inline-flex; align-items:center; gap:var(--sp-4);
+  height:26px; padding:0 var(--sp-4) 0 var(--sp-8);
+  border-radius:var(--r-sm); background:var(--paper-3);
+  border:1px solid var(--line); font-size:var(--fs-12); color:var(--ink-2);
+}
+.chip-x {
+  width:20px; height:20px; border:none; background:transparent;
+  color:var(--ink-4); cursor:pointer; border-radius:4px; line-height:1; font-size:var(--fs-12);
+}
+.chip-x:hover { background:var(--crimson-soft); color:var(--crimson); }
+
+.rule-row {
+  display:flex; align-items:center; justify-content:space-between; gap:var(--sp-12);
+  min-height:38px; padding:var(--sp-4) var(--sp-12);
+  border-bottom:1px solid var(--line); font-size:var(--fs-13);
+}
+.rule-row:last-child { border-bottom:none; }
+.rule-row .rule-name { color:var(--ink-2); }
+.rule-row.is-hit { background:var(--amber-soft); }
+.rule-row.is-hit .rule-name { color:var(--ink); font-weight:500; }
+.rule-count { font-family:var(--font-mono); font-size:var(--fs-12); color:var(--ink-3); }
+.rule-row.is-hit .rule-count { color:var(--amber); }
+
+.ch-grid { display:flex; flex-wrap:wrap; gap:var(--sp-8); }
+.ch-card {
+  width:114px; padding:var(--sp-8) var(--sp-12);
+  border:1px solid var(--line); border-radius:var(--r-sm); background:var(--paper);
+  cursor:pointer; transition:background 120ms var(--ease), border-color 120ms var(--ease);
+}
+.ch-card:hover { background:var(--paper-3); }
+.ch-card.is-selected { border-color:var(--accent); background:var(--accent-soft); }
+.ch-card.is-skeleton { border-style:dashed; }
+.ch-no { font-family:var(--font-mono); font-size:var(--fs-11); color:var(--ink-3); }
+.ch-name { font-size:var(--fs-13); color:var(--ink); margin-top:2px; }
+
+/* ---------- 32. 代码/注入块 ---------- */
+.mono-block {
+  font-family:var(--font-mono); font-size:var(--fs-12); line-height:1.8;
+  color:var(--ink-2); background:var(--paper);
+  border:1px solid var(--line); border-radius:var(--r-sm);
+  padding:var(--sp-12); white-space:pre-wrap; word-break:break-word;
 }

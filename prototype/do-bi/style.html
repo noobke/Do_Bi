@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>文风档案 · Do_Bi 小说创作台</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="style">
+
+<!-- =====================================================================
+     App Shell（冻结）· 逐字复制自 index.html
+     ===================================================================== -->
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-seal" aria-hidden="true"></span>
+    <span class="brand-name">Do_Bi</span>
+    <span class="brand-sub">小说创作台</span>
+  </div>
+
+  <nav class="nav" aria-label="主导航">
+    <a class="nav-item" data-nav="workbench" href="index.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
+      工作台
+    </a>
+    <a class="nav-item" data-nav="chat" href="chat.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+      共创
+    </a>
+    <a class="nav-item" data-nav="characters" href="characters.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      角色
+    </a>
+    <a class="nav-item" data-nav="hooks" href="hooks.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+      伏笔
+    </a>
+    <a class="nav-item" data-nav="outline" href="outline.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+      章纲
+    </a>
+    <a class="nav-item" data-nav="audit" href="audit.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+      审计
+    </a>
+    <a class="nav-item" data-nav="style" href="style.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>
+      文风
+    </a>
+    <a class="nav-item" data-nav="settings" href="settings.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+      设置
+    </a>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="foot-label">当前项目</div>
+    <div class="foot-title" id="foot-title">雁回关</div>
+    <div class="foot-meta"><span id="foot-progress">第 17 / 60 章</span><span id="foot-words">86,420 字</span></div>
+    <div class="progress" style="margin-top:10px"><i id="foot-bar" style="width:28%"></i></div>
+    <div class="foot-meta"><span>预算已用</span><span id="foot-budget">¥12.60 / ¥80.00</span></div>
+  </div>
+</aside>
+
+<main class="main" id="main">
+  <div class="wrap">
+
+    <!-- topbar -->
+    <header class="topbar" data-reveal>
+      <div>
+        <h1>文风档案</h1>
+        <div class="topbar-sub">来源：参考样本《寒江独钓》前 8 章 · 已作为必选上下文注入全部生成</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" id="btn-analyze">重新分析</button>
+        <button class="btn btn-primary btn-sm" id="btn-export">导出 JSON</button>
+      </div>
+    </header>
+
+    <div class="stack-24">
+
+      <!-- 1 · 三张特征卡 -->
+      <div class="grid-3">
+
+        <div class="card" data-reveal>
+          <div class="card-head"><h3>句式特征</h3></div>
+          <div class="card-body">
+            <div class="stack">
+              <div class="stack-8">
+                <div class="row-between fs-13"><span class="muted">分析来源</span><span class="mono fs-12" id="sp-source">—</span></div>
+                <div class="row-between fs-13"><span class="muted">分析时间</span><span class="mono fs-12" id="sp-at">—</span></div>
+                <div class="row-between fs-13"><span class="muted">消耗 Token</span><span class="mono fs-12" id="sp-tokens">—</span></div>
+              </div>
+              <div class="fs-12 muted">句长区间（80 字为满格）</div>
+              <div class="rangebar">
+                <i id="sp-range" style="left:22.5%;width:35%"></i>
+                <b id="sp-mean" style="left:26.75%"></b>
+              </div>
+              <div class="fs-12 muted" id="sp-sentence-line">—</div>
+              <div class="divider"></div>
+              <div class="fs-13">优先句式</div>
+              <div class="trait-list" id="sp-patterns"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" data-reveal>
+          <div class="card-head"><h3>叙述视角与词法</h3></div>
+          <div class="card-body">
+            <div class="stack">
+              <div class="wrap-row">
+                <span class="chip" id="sp-person">—</span>
+                <span class="chip" id="sp-tense">—</span>
+                <span class="chip">视角切换：<span id="sp-pov">—</span></span>
+              </div>
+              <div class="fs-12 muted" id="sp-anchor">—</div>
+              <div class="divider"></div>
+              <div class="list" id="sp-lexicon"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" data-reveal>
+          <div class="card-head"><h3>描写 · 对话 · 动作 比例</h3></div>
+          <div class="card-body">
+            <div class="stack">
+              <div class="stackbar" id="sp-ratio"></div>
+              <div class="stackbar-legend" id="sp-ratio-legend"></div>
+              <div class="fs-12 muted">比例偏离档案区间时，触发 L1 第 13 条规则</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 2 · 禁用表达 -->
+      <div class="card" data-reveal>
+        <div class="card-head">
+          <h3>禁用表达</h3>
+          <span class="tag tag-danger" id="banned-tag">0 条</span>
+        </div>
+        <div class="card-body">
+          <div class="stack">
+            <div class="fs-12 muted">命中即触发 L1 第 4 条「禁用句式命中」，并进入 spot-fix 定点修复</div>
+            <div class="wrap-row" id="banned-list"></div>
+            <div class="row">
+              <input class="input" id="banned-input" placeholder="新增一条禁用表达，回车确认" style="max-width:320px">
+              <button class="btn btn-ghost btn-sm" id="btn-add-banned">添加</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 · 注入预览 -->
+      <div class="card" data-reveal>
+        <div class="card-head">
+          <h3>注入预览</h3>
+          <span class="tag tag-info" id="inject-tag">确定性必选 · 0 tokens</span>
+        </div>
+        <div class="card-body">
+          <div class="stack">
+            <div class="fs-13 muted">每次 Writer 调用都会带上这段上下文；因体量小，不占用检索配额，也不参与相关性竞争</div>
+            <div class="mono-block" id="inject-text"></div>
+            <div class="divider"></div>
+            <div class="fs-13">试写对比</div>
+            <div class="grid-2">
+              <div class="stack-8">
+                <div class="fs-12 muted">通用文风（未注入）</div>
+                <div class="ms-text" id="sample-plain"></div>
+              </div>
+              <div class="stack-8">
+                <div class="fs-12 muted">注入档案后</div>
+                <div class="ms-text" id="sample-styled"></div>
+              </div>
+            </div>
+            <div class="fs-12 muted">同时作为 L2「文风偏移」审计与 L1 第 13 条的对照基准</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script src="assets/mock.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = App.$, h = App.h;
+
+  /* ---------- 句式特征 ---------- */
+  function renderSentence(p) {
+    var s = p.sentence;
+    var scale = s.scale || 80;
+    var p50 = s.p50 / scale * 100;
+    var p90 = s.p90 / scale * 100;
+    var mean = s.mean / scale * 100;
+
+    $('#sp-source').textContent = p.source;
+    $('#sp-at').textContent = p.analyzedAt;
+    $('#sp-tokens').textContent = App.fmtInt(p.tokens);
+
+    var range = $('#sp-range');
+    range.style.left = p50 + '%';
+    range.style.width = (p90 - p50) + '%';
+    $('#sp-mean').style.left = mean + '%';
+
+    $('#sp-sentence-line').textContent =
+      'p50 ' + s.p50 + ' 字 · p90 ' + s.p90 + ' 字 · 均值 ' + s.mean + ' 字';
+
+    var box = $('#sp-patterns');
+    box.innerHTML = '';
+    p.patterns.forEach(function (t) {
+      var el = h('div', { class: 'trait' });
+      el.innerHTML = '<i></i><span>' + t + '</span>';
+      box.appendChild(el);
+    });
+  }
+
+  /* ---------- 叙述视角与词法 ---------- */
+  function renderNarrative(p) {
+    var n = p.narrative;
+    $('#sp-person').textContent = n.person;
+    $('#sp-tense').textContent = n.tense;
+    $('#sp-pov').textContent = n.povSwitch;
+    $('#sp-anchor').textContent = n.anchor;
+
+    var box = $('#sp-lexicon');
+    box.innerHTML = '';
+    p.lexicon.forEach(function (row) {
+      var el = h('div', { class: 'list-row' });
+      el.innerHTML = '<div class="row-main"><div class="row-title">' + row.key +
+        '</div><div class="row-sub">' + row.value + '</div></div>';
+      box.appendChild(el);
+    });
+  }
+
+  /* ---------- 比例 ---------- */
+  function renderRatio(p) {
+    var bar = $('#sp-ratio');
+    var legend = $('#sp-ratio-legend');
+    bar.innerHTML = '';
+    legend.innerHTML = '';
+    p.ratio.forEach(function (it) {
+      var seg = h('i');
+      seg.style.width = it.pct + '%';
+      seg.style.background = it.color;
+      bar.appendChild(seg);
+
+      var item = h('span', { class: 'legend-item' });
+      var swatch = h('span', { class: 'legend-swatch is-node' });
+      swatch.style.background = it.color;
+      swatch.style.border = 'none';
+      item.appendChild(swatch);
+      item.appendChild(h('span', { text: it.label + ' ' + it.pct + '%' }));
+      legend.appendChild(item);
+    });
+  }
+
+  /* ---------- 禁用表达 ---------- */
+  function renderBanned(list) {
+    var box = $('#banned-list');
+    box.innerHTML = '';
+    list.forEach(function (expr) {
+      var chip = h('span', { class: 'chip-removable' });
+      chip.appendChild(h('span', { text: expr }));
+      var x = h('button', { class: 'chip-x', 'aria-label': '移除', text: '×' });
+      x.addEventListener('click', function () {
+        api.removeBanned(expr).then(function (next) {
+          App.toast('已移除：' + expr);
+          renderBanned(next);
+        });
+      });
+      chip.appendChild(x);
+      box.appendChild(chip);
+    });
+    $('#banned-tag').textContent = list.length + ' 条';
+  }
+
+  function addBanned() {
+    var input = $('#banned-input');
+    var v = input.value.trim();
+    if (!v) return;
+    api.addBanned(v).then(function (list) {
+      input.value = '';
+      renderBanned(list);
+      App.toast('已新增禁用表达：' + v);
+    });
+  }
+
+  /* ---------- 注入预览 ---------- */
+  function renderInjection(p) {
+    $('#inject-tag').textContent = '确定性必选 · ' + p.injection.tokens + ' tokens';
+    $('#inject-text').textContent = p.injection.text;
+    $('#sample-plain').textContent = p.sample.plain;
+    $('#sample-styled').textContent = p.sample.styled;
+  }
+
+  /* ---------- 加载 / 重渲染整页 ---------- */
+  function load() {
+    return api.getStyleProfile().then(function (p) {
+      renderSentence(p);
+      renderNarrative(p);
+      renderRatio(p);
+      renderBanned(p.banned);
+      renderInjection(p);
+    });
+  }
+
+  $('#btn-analyze').addEventListener('click', function () {
+    var btn = this;
+    App.loading(btn, true, '分析中…');
+    api.analyzeStyle().then(function () {
+      App.loading(btn, false);
+      return load();
+    }).then(function () {
+      App.toast('已重新分析样本，档案已更新');
+    });
+  });
+
+  $('#btn-export').addEventListener('click', function () {
+    App.toast('已导出 style_profile.json（演示）');
+  });
+
+  $('#btn-add-banned').addEventListener('click', addBanned);
+  $('#banned-input').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') addBanned();
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>

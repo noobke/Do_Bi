@@ -190,8 +190,157 @@ window.MOCK = (function () {
     { name: '伏笔超期未回收', hit: 1 }, { name: '数值设定矛盾', hit: 0 }
   ];
 
+  /* ====================== 批次二新增数据 ====================== */
+
+  /* 章纲与依赖图 —— 支撑「滚动规划」与「章纲依赖图 / 思维链」 */
+  const outlineGraph = {
+    compass: {
+      endgame: '沈砚以「文脉」为引，揭开王朝以活人为薪的真相，最终亲手熄灭铜灯——代价是失去关于父亲的记忆。',
+      activeThreads: ['青铜灯与文脉同源', '沈定山之死被掩盖', '崔十九的来历与断指', '文脉司为何三年未收人'],
+      scaleEstimate: '预计 4 卷 · 约 60 章 · 30 万字',
+      refreshAt: '第 2 卷末刷新'
+    },
+    volumes: [
+      { name: '第一卷 · 雁回关篇', from: 1,  to: 18, status: 'expanded', chapters: 18 },
+      { name: '第二卷 · 风起文脉', from: 19, to: 36, status: 'expanded', chapters: 18 },
+      { name: '第三卷 · 铜灯不熄', from: 37, to: 60, status: 'skeleton', chapters: 24 }
+    ],
+    nodes: [
+      { chapter: 4,  title: '灰烬里的名字', arc: '雁回关篇', status: 'written',  goal: '引入铜灯的来历',
+        beats: ['驿馆火场', '半枚铜牌', '铜灯首次出现'],
+        rationale: '把铜灯第一次露面放在第 4 章，是为了让第 17 章的显性呼应不显突兀——读者需要先见过它。' },
+      { chapter: 14, title: '半枚铜牌',     arc: '雁回关篇', status: 'written',  goal: '让铜牌与铜灯建立关联',
+        beats: ['灰烬搜索', '纹样对照'],
+        rationale: '本章只给纹样线索、不给结论，把推断留给第 17 章，维持悬疑节奏。' },
+      { chapter: 16, title: '副将的靴印',   arc: '雁回关篇', status: 'written',  goal: '锁定周崇，制造压迫感',
+        beats: ['雪地靴印', '量鞋尖弧度'],
+        rationale: '先立「周崇有问题」的直觉，第 17 章的识破才有落点。' },
+      { chapter: 17, title: '雪落雁回',     arc: '雁回关篇', status: 'audit',    goal: '识破周崇通敌，放走旧友，铜灯初亮',
+        beats: ['雪夜巡查', '当面对质', '放走旧友', '铜灯初亮'],
+        rationale: '此处放走旧友，是为第 24 章其反水做动机铺垫；若改成杀掉旧友，第 24 章必须整体重写。' },
+      { chapter: 18, title: '铜灯不熄',     arc: '雁回关篇', status: 'draft',    goal: '把铜灯带回关内，指向文脉司',
+        beats: ['夜路', '灯自亮', '接文脉司传令'],
+        rationale: '卷末钩子，把线头交给第二卷。' },
+      { chapter: 24, title: '旧友刀锋',     arc: '风起文脉', status: 'planned',  goal: '旧友反水',
+        beats: ['重逢', '反水', '崔十九出手'],
+        rationale: '依赖第 17 章的放走行为，动机闭环在此收束。' },
+      { chapter: 31, title: '文脉司来人',   arc: '风起文脉', status: 'planned',  goal: '文脉司正式登场',
+        beats: ['入境', '验灯', '传召'],
+        rationale: '第 17 章埋下的「莫叫文脉司瞧见」在此兑现。' },
+      { chapter: 40, title: '以血引灯',     arc: '铜灯不熄', status: 'skeleton', goal: '（骨架）揭示铜灯与活人祭祀的关系',
+        beats: [], rationale: '骨架弧，待第二卷结束后由建筑师展开为详细章纲。' }
+    ],
+    edges: [
+      { from: 4,  to: 17, type: 'setup',      note: '铜灯来源追溯到第 4 章，第 17 章的呼应才合法', confirmed: true },
+      { from: 14, to: 17, type: 'causality',  note: '半枚铜牌的纹样与铜灯同源，是识破的关键', confirmed: true },
+      { from: 16, to: 17, type: 'causality',  note: '靴印指向周崇，构成当面对质的前提', confirmed: true },
+      { from: 17, to: 24, type: 'motivation', note: '第 17 章放走旧友 → 第 24 章旧友反水', confirmed: true },
+      { from: 17, to: 31, type: 'setup',      note: '「莫叫文脉司瞧见」→ 第 31 章文脉司登门', confirmed: true },
+      { from: 24, to: 31, type: 'causality',  note: '旧友反水供出文脉司，触发第 31 章入境', confirmed: false }
+    ]
+  };
+
+  /* 审计报告 —— 支撑「审计深度 / 可举证评审 / 反 AIGC」 */
+  const auditReport = {
+    chapter: 17,
+    title: '雪落雁回',
+    stats: { l1: 3, l2: 5, fixed: 1, open: 4, passRate: 88 },
+    l1: [
+      { rule: '称呼／姓名不一致',   hit: '',            count: 0, threshold: 1, isHit: false },
+      { rule: '角色已死亡仍出场',   hit: '',            count: 0, threshold: 1, isHit: false },
+      { rule: '不可变特征被违背',   hit: '',            count: 0, threshold: 1, isHit: false },
+      { rule: '禁用句式命中',       hit: '心中一凛',    count: 1, threshold: 1, isHit: true  },
+      { rule: '套话密度超阈值',     hit: '',            count: 0, threshold: 3, isHit: false },
+      { rule: '连续「了／的」字句', hit: '了…的…了',    count: 2, threshold: 2, isHit: true  },
+      { rule: '词汇疲劳',           hit: '仿佛',        count: 6, threshold: 3, isHit: true  },
+      { rule: '段落长度异常',       hit: '',            count: 0, threshold: 1, isHit: false },
+      { rule: '视角切换未标注',     hit: '',            count: 0, threshold: 1, isHit: false },
+      { rule: '时间线倒错',         hit: '',            count: 0, threshold: 1, isHit: false },
+      { rule: '伏笔超期未回收',     hit: '',            count: 0, threshold: 1, isHit: false },
+      { rule: '数值／等级矛盾',     hit: '',            count: 0, threshold: 1, isHit: false },
+      { rule: '描写／对话比例偏离', hit: '',            count: 0, threshold: 1, isHit: false }
+    ],
+    findings: [
+      { dim: '设定冲突', severity: 'major', fixed: false, decision: null,
+        evidence: '「灯没有点，可灯芯那一小截，是亮的」',
+        suggestion: '与 world.md「铜灯须以血引方燃」冲突。建议改为：沈砚割破指尖，灯芯才自行亮起。',
+        ref: 'ch_0017.md · 第 17.5 段' },
+      { dim: 'OOC', severity: 'major', fixed: false, decision: null,
+        evidence: '「沈砚没有回头。他知道那是崔十九」',
+        suggestion: '第 15 章明确写过沈砚未见过崔十九，此处不应瞬间辨声。建议补一句辨认依据（缺指的脚步声）。',
+        ref: 'ch_0017.md · 第 17.4 段' },
+      { dim: '视角跳跃', severity: 'minor', fixed: true, decision: 'accept',
+        evidence: '17.4 段内由沈砚限知短暂滑向全知',
+        suggestion: '已改：删去「他知道这人右手一直按在刀柄上」的旁白式陈述。',
+        ref: 'ch_0017.md · 第 17.4 段' },
+      { dim: '伏笔遗漏', severity: 'minor', fixed: false, decision: null,
+        evidence: 'hook_005「不该有的车辙」已超过建议回收章（第 16 章）',
+        suggestion: '可在本章雪夜场景补一笔车辙的呼应，避免悬置过久。',
+        ref: 'pending_hooks.jsonl · hook_005' },
+      { dim: '文风偏移', severity: 'minor', fixed: false, decision: null,
+        evidence: '「尤其是别让文脉司的人看见」',
+        suggestion: '口语化偏高。对照 style_profile.json，建议改为「莫叫文脉司瞧见」。',
+        ref: 'ch_0017.md · 第 17.6 段' }
+    ],
+    review: [
+      { dim: '设定一致性', score: 72, evidence: '「铜灯须以血引方燃」vs 正文「灯没有点，可灯芯是亮的」', note: '1 处 major 冲突待裁定' },
+      { dim: '角色行为',   score: 66, evidence: '「沈砚没有回头。他知道那是崔十九」',                     note: '辨认依据缺失，削弱了可信度' },
+      { dim: '节奏',       score: 84, evidence: '17.1 → 17.5 五段内完成勘察到初亮，推进紧凑',              note: '雪夜段可再压两句' },
+      { dim: '叙事连贯',   score: 88, evidence: '靴印 → 对质 → 放走，因果链完整',                        note: '' },
+      { dim: '伏笔',       score: 79, evidence: 'hook_007 在此第一次显性呼应',                           note: 'hook_005 仍悬置' },
+      { dim: '钩子',       score: 91, evidence: '「灯芯那一小截，是亮的」收束本章',                        note: '卷末指向明确' },
+      { dim: '审美品质',   score: 81, evidence: '「雪是后半夜落下来的……像有人试图把什么痕迹重新抹平」',   note: '描写质感佳；对话区分度偏弱，崔十九与沈砚语气接近' }
+    ],
+    diffs: [
+      { dim: '设定冲突', before: ['崔十九从怀里取出一只青铜小灯，放在雪地上。', '灯没有点，可沈砚分明看见，灯芯那一小截，是亮的。'],
+        after: ['崔十九从怀里取出一只青铜小灯，放在雪地上。', '沈砚割破指尖，血珠落上灯芯。灯芯那一小截，亮了。'] },
+      { dim: 'OOC', before: ['「你也在看这个。」身后传来声音。沈砚没有回头。', '他知道那是崔十九，也知道这人右手一直按在刀柄上。'],
+        after: ['「你也在看这个。」身后传来声音。沈砚没有回头。', '脚步声很轻，右足落地时少了两分力——是缺了两指的人。他不必回头。'] }
+    ]
+  };
+
+  /* 文风档案 —— 支撑「文风仿写」 */
+  const styleProfile = {
+    source: '参考样本《寒江独钓》前 8 章（约 2.4 万字）',
+    analyzedAt: '2026-09-24 21:40',
+    tokens: 41200,
+    sentence: { mean: 21.4, p50: 18, p90: 46, min: 8, max: 78, scale: 80 },
+    narrative: { person: '第三人称限知', tense: '过去时', povSwitch: 'rare', anchor: '始终锚定沈砚' },
+    ratio: [
+      { label: '描写', pct: 46, color: '#2C4A63' },
+      { label: '对话', pct: 31, color: '#4F6B4A' },
+      { label: '动作', pct: 23, color: '#B0791F' }
+    ],
+    patterns: [
+      '短句收尾成段，制造停顿感',
+      '环境描写承托情绪，不直写心理',
+      '用器物细节替代形容词',
+      '对话不作提示语修饰，靠动作承接'
+    ],
+    banned: ['不由自主地', '心中一凛', '空气仿佛凝固', '不由自主', '眼中闪过一丝'],
+    lexicon: [
+      { key: '语气词', value: '极少，全章不超过 2 处' },
+      { key: '四字格', value: '克制，回避成语堆叠' },
+      { key: '颜色词', value: '低饱和，偏冷（灰、青、白）' }
+    ],
+    injection: {
+      tokens: 740,
+      text: '# style_profile.json（确定性必选上下文）\n'
+        + 'sentence_length.mean = 21.4   p90 = 46\n'
+        + 'narrative = 第三人称限知 / 过去时 / 视角切换罕见\n'
+        + 'ratio = 描写 46% · 对话 31% · 动作 23%\n'
+        + 'preferred = 短句收尾成段；环境承托情绪；器物替代形容词\n'
+        + 'banned = 不由自主地 / 心中一凛 / 空气仿佛凝固 / 眼中闪过一丝'
+    },
+    sample: {
+      plain: '他心中不由自主地一凛，感到空气仿佛凝固了。那盏灯的样子让他想起了很多往事，他的情绪变得非常复杂，几乎无法控制自己的表情。',
+      styled: '灯是旧的。柄上有一道缺口，缺口里积着黑垢。他盯着那道缺口，许久没有动。'
+    }
+  };
+
   return {
     project, chapters, manuscript, modes, characters, hooks, audit,
-    chatSeed, chatScript, providers, modelRoles, budgetSplit, usage, rules
+    chatSeed, chatScript, providers, modelRoles, budgetSplit, usage, rules,
+    outlineGraph, auditReport, styleProfile
   };
 })();
