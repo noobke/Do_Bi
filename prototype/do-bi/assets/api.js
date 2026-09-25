@@ -72,6 +72,63 @@ window.api = (function () {
     listBudgetSplit: function () { return delay(M.budgetSplit); },
     listUsage: function () { return delay(M.usage); },
 
+    /* ---------- 批次三：项目列表 ---------- */
+    listProjects: function () { return delay(M.projects); },
+
+    createProject: function (title) {
+      M.projects.unshift({
+        id: 'proj_new_' + Date.now(), title: title || '未命名作品', genre: '待定', spine: 4, isCurrent: false,
+        logline: '（尚未确立）', chaptersDone: 0, chaptersTotal: 40, words: 0, mode: 'semi-auto',
+        budgetUsed: 0, budgetTotal: 60.00, updatedAt: '刚刚',
+        hooksResolved: 0, hooksTotal: 0, auditPass: 0
+      });
+      return delay(M.projects, 500);
+    },
+
+    /* ---------- 批次三：拆书 ---------- */
+    getDisassemble: function () { return delay(M.disassemble); },
+
+    /* 执行拆书（模拟：推进流水线阶段） */
+    runDisassemble: function () {
+      var order = ['split', 'roles', 'world', 'hooks', 'style', 'merge'];
+      var cur = M.disassemble.stages.filter(function (s) { return s.status !== 'done'; })[0];
+      if (cur) {
+        M.disassemble.stages.forEach(function (s) {
+          if (s.key === cur.key) s.status = 'done';
+        });
+        var idx = order.indexOf(cur.key);
+        if (idx >= 0 && idx + 1 < order.length) {
+          M.disassemble.stages.forEach(function (s) {
+            if (s.key === order[idx + 1]) s.status = 'active';
+          });
+        }
+      }
+      return delay(M.disassemble, 1000);
+    },
+
+    /* 对拆书提案做决策：accept / reject / null */
+    decideProposal: function (id, action) {
+      var hit = M.disassemble.proposals.filter(function (x) { return x.id === id; })[0];
+      if (hit) hit.decision = action;
+      return delay({ ok: true, id: id, action: action }, 240);
+    },
+
+    /* ---------- 批次三：MCP 扩展 ---------- */
+    listMcpServers: function () { return delay(M.mcpServers); },
+
+    toggleMcp: function (name) {
+      var hit = M.mcpServers.filter(function (x) { return x.name.indexOf(name) === 0 || x.name === name; })[0];
+      if (hit) {
+        hit.enabled = !hit.enabled;
+        hit.status = hit.enabled ? (hit.status === 'failed' ? 'ok' : hit.status) : 'idle';
+      }
+      return delay({ ok: true, servers: M.mcpServers }, 220);
+    },
+
+    testMcp: function (name) {
+      return delay({ ok: true, name: name, latency: 60 + Math.floor(Math.random() * 180) }, 800);
+    },
+
     /* ---------- 批次二：章纲与依赖图 ---------- */
     getCompass: function () { return delay(M.outlineGraph.compass); },
 

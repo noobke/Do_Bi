@@ -19,7 +19,11 @@
   </div>
 
   <nav class="nav" aria-label="主导航">
-    <a class="nav-item" data-nav="workbench" href="index.html">
+    <a class="nav-item" data-nav="projects" href="index.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>
+      项目
+    </a>
+    <a class="nav-item" data-nav="workbench" href="workbench.html">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
       工作台
     </a>
@@ -146,9 +150,60 @@
         </div>
       </section>
 
+      <!-- 5. MCP 扩展 -->
+      <section class="card" id="mcp-card" data-reveal>
+        <div class="card-head">
+          <h3>MCP 扩展</h3>
+          <div class="row">
+            <span class="tag tag-info">可关闭 · 不影响主流程</span>
+            <button class="btn btn-ghost btn-sm" data-open-modal="modal-mcp">添加服务器</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div id="mcp-list"></div>
+        </div>
+        <div class="card-foot">
+          <span class="fs-12 muted">MCP 为增强能力：未配置或连接失败时，全部工具调用自动回落到内置检索，不阻塞主流程。</span>
+        </div>
+      </section>
+
     </div>
   </div>
 </main>
+
+<!-- 添加 MCP 服务器 -->
+<div class="modal" id="modal-mcp" hidden>
+  <div class="modal-veil"></div>
+  <div class="modal-card">
+    <div class="card-head">
+      <h3>添加 MCP 服务器</h3>
+      <button class="btn btn-quiet btn-sm" data-close-modal>关闭</button>
+    </div>
+    <div class="card-body stack">
+      <p class="fs-13 muted">MCP 服务器用于给 Agent 提供外部工具（如设定库、资料检索、历史存档）。连接失败不影响主流程。</p>
+      <div class="field">
+        <label class="field-label" for="mcp-name">名称</label>
+        <input class="input" id="mcp-name" type="text" placeholder="例如：设定库 setting-vault">
+      </div>
+      <div class="field">
+        <label class="field-label" for="mcp-transport">传输方式</label>
+        <select class="select" id="mcp-transport">
+          <option value="stdio">stdio（本地命令）</option>
+          <option value="http">http（远程端点）</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label" for="mcp-target">命令或 URL</label>
+        <input class="input" id="mcp-target" type="text" placeholder="npx -y @dobi/mcp-setting-vault">
+        <span class="field-hint">stdio 填可执行命令；http 填 MCP 端点 URL。</span>
+      </div>
+    </div>
+    <div class="card-foot row" style="justify-content:flex-end">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="btn-add-mcp">添加</button>
+    </div>
+  </div>
+</div>
 
 <!-- 添加 Provider -->
 <div class="modal" id="modal-provider" hidden>
@@ -285,6 +340,84 @@
       App.loading(btn, false);
       $('#modal-provider').hidden = true;
       App.toast('已添加 Provider（演示）');
+    }, 500);
+  });
+
+  /* ---------- 5. MCP 扩展列表 ---------- */
+  function renderMcp() {
+    api.listMcpServers().then(function (list) {
+      var box = $('#mcp-list');
+      box.innerHTML = '';
+      list.forEach(function (s) {
+        var rowEl = h('div', { class: 'provider-card' });
+
+        var left = h('div');
+        var leftHtml =
+          '<div class="provider-name">' + s.name + '</div>' +
+          '<div class="provider-url mono">' + (s.transport === 'stdio' ? s.command : s.url) + '</div>';
+        if (s.tools && s.tools.length) {
+          leftHtml += '<div class="wrap-row" style="margin-top:8px">' +
+            s.tools.map(function (t) { return '<span class="chip">' + t + '</span>'; }).join('') +
+            '</div>';
+        }
+        if (s.error) {
+          leftHtml += '<div class="fs-12" style="color:var(--crimson);margin-top:6px">' + s.error + '</div>';
+        }
+        left.innerHTML = leftHtml;
+
+        var right = h('div', { class: 'row' });
+
+        var sw = h('button', { class: 'switch' + (s.enabled ? ' is-on' : ''), 'aria-label': '启用/停用' });
+        sw.addEventListener('click', function () {
+          api.toggleMcp(s.name).then(function () {
+            renderMcp();
+            App.toast((s.enabled ? '已停用：' : '已启用：') + s.name);
+          });
+        });
+        right.appendChild(sw);
+
+        if (s.status === 'ok') {
+          right.insertAdjacentHTML('beforeend', '<span class="tag tag-ok">已连接 · ' + s.latency + 'ms</span>');
+        } else if (s.status === 'idle') {
+          right.insertAdjacentHTML('beforeend', '<span class="tag tag-quiet">已停用</span>');
+        } else if (s.status === 'failed') {
+          right.insertAdjacentHTML('beforeend', '<span class="tag tag-danger">连接失败</span>');
+        }
+
+        var test = h('button', { class: 'btn btn-quiet btn-sm', text: '测试' });
+        test.addEventListener('click', function () {
+          App.loading(test, true, '测试中…');
+          api.testMcp(s.name).then(function (r) {
+            App.loading(test, false);
+            App.toast('连接正常：' + s.name + '（' + r.latency + 'ms，演示）');
+          });
+        });
+        right.appendChild(test);
+
+        rowEl.appendChild(left);
+        rowEl.appendChild(right);
+        box.appendChild(rowEl);
+      });
+    });
+  }
+  renderMcp();
+
+  /* ---------- 模态：添加 MCP 服务器 ---------- */
+  $('#btn-add-mcp').addEventListener('click', function () {
+    var btn = this;
+    var name = $('#mcp-name').value.trim();
+    var target = $('#mcp-target').value.trim();
+    if (!name || !target) {
+      App.toast('先填写名称与命令/URL');
+      return;
+    }
+    App.loading(btn, true, '添加中…');
+    setTimeout(function () {
+      $('#modal-mcp').hidden = true;
+      $('#mcp-name').value = '';
+      $('#mcp-target').value = '';
+      App.toast('已添加 MCP 服务器（演示）');
+      App.loading(btn, false);
     }, 500);
   });
 })();

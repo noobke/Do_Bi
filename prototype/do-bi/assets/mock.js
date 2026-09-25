@@ -338,9 +338,90 @@ window.MOCK = (function () {
     }
   };
 
+  /* ====================== 批次三新增数据 ====================== */
+
+  /* 项目列表 —— 支撑首页 */
+  const projects = [
+    { id: 'proj_shenyan', title: '雁回关', genre: '古风悬疑', spine: 1, isCurrent: true,
+      logline: '一个北境小吏追查失踪案，却发现王朝正在被「文脉」的力量吞噬。',
+      chaptersDone: 17, chaptersTotal: 60, words: 86420, mode: 'semi-auto',
+      budgetUsed: 12.60, budgetTotal: 80.00, updatedAt: '2026-09-24 22:10',
+      hooksResolved: 2, hooksTotal: 8, auditPass: 88 },
+    { id: 'proj_tongdeng', title: '铜灯不熄', genre: '玄幻', spine: 2, isCurrent: false,
+      logline: '灯燃一次，便有一人从世上被抹去名字。少年守着灯，也守着所有人的记忆。',
+      chaptersDone: 42, chaptersTotal: 120, words: 214600, mode: 'auto',
+      budgetUsed: 47.30, budgetTotal: 200.00, updatedAt: '2026-09-19 03:41',
+      hooksResolved: 11, hooksTotal: 26, auditPass: 94 },
+    { id: 'proj_hanjiang', title: '寒江独钓', genre: '武侠', spine: 3, isCurrent: false,
+      logline: '退隐的刀客在江边钓了十年鱼，直到那把他丢掉的刀顺流而下，自己漂了回来。',
+      chaptersDone: 9, chaptersTotal: 40, words: 43100, mode: 'manual',
+      budgetUsed: 6.10, budgetTotal: 60.00, updatedAt: '2026-09-12 19:02',
+      hooksResolved: 1, hooksTotal: 7, auditPass: 79 },
+    { id: 'proj_wenmai', title: '文脉司残卷', genre: '古风悬疑', spine: 4, isCurrent: false,
+      logline: '一部被查禁的残卷，记录着所有被官方删去的名字。抄书人把它抄进了自己的骨头里。',
+      chaptersDone: 0, chaptersTotal: 30, words: 0, mode: 'semi-auto',
+      budgetUsed: 0, budgetTotal: 60.00, updatedAt: '2026-09-25 08:15',
+      hooksResolved: 0, hooksTotal: 0, auditPass: 0 }
+  ];
+
+  /* 拆书 —— 支撑导入已有作品反推结构 */
+  const disassemble = {
+    source: { name: '《寒江独钓》全本.txt', chapters: 40, words: 186400, format: 'txt', size: '742 KB' },
+    stages: [
+      { key: 'split',  title: '切分章节',       desc: '按标题与空行推断章节边界，识别 40 章', status: 'done' },
+      { key: 'roles',  title: '抽取角色与关系', desc: '识别 23 个具名实体，归并同人异名 4 组', status: 'done' },
+      { key: 'world',  title: '抽取世界观规则', desc: '提取门派、地理、武力体系与硬约束 17 条', status: 'done' },
+      { key: 'hooks',  title: '抽取伏笔与回收', desc: '识别 31 处埋设点，匹配到 24 处回收点', status: 'done' },
+      { key: 'style',  title: '生成文风档案',   desc: '句长、视角、描写比例与禁用表达', status: 'active' },
+      { key: 'merge',  title: '生成写入提案',   desc: '待你确认后才写入真相文件', status: 'todo' }
+    ],
+    stats: { chapters: 40, characters: 23, worldRules: 17, hooks: 31, hooksMatched: 24, tokens: 268400 },
+    extracted: {
+      characters: [
+        { name: '江砚舟', role: '主角', traits: ['左手使刀', '不杀无名之辈', '常年戴斗笠'], relations: 6 },
+        { name: '秦九娘', role: '女主', traits: ['善用毒', '怕水'], relations: 4 },
+        { name: '老渔翁', role: '关键配角', traits: ['哑巴', '识水性'], relations: 3 },
+        { name: '白面判官', role: '反派', traits: ['左脸有烙印'], relations: 5 }
+      ],
+      hooks: [
+        { content: '江砚舟丢刀那年的江汛异常提前', plantedChapter: 2, matched: 27, importance: 'major' },
+        { content: '秦九娘的毒囊上有官制火漆',     plantedChapter: 8, matched: 33, importance: 'major' },
+        { content: '老渔翁的哑，是被割舌而非天生', plantedChapter: 5, matched: null, importance: 'minor' }
+      ],
+      worldRules: [
+        '刀法分「沉、滞、断」三境，断境需以命换',
+        '寒江渡口之外，江湖人不许动兵刃',
+        '毒分「明毒」「暗毒」，暗毒无色无味但三日必发'
+      ],
+      style: { sentence: '偏短，均值 19.2 字', pov: '第三人称限知', ratio: '描写 41% · 对话 34% · 动作 25%' }
+    },
+    proposals: [
+      { id: 'p1', kind: '角色', content: '新增角色「江砚舟」，含 3 条不可变特征与 6 条关系', confidence: 'high',   decision: null },
+      { id: 'p2', kind: '角色', content: '新增角色「秦九娘」「老渔翁」「白面判官」等 22 个实体', confidence: 'high',   decision: null },
+      { id: 'p3', kind: '世界观', content: '写入 17 条硬设定（含武力体系与地理约束）',           confidence: 'medium', decision: null },
+      { id: 'p4', kind: '伏笔', content: '写入 31 条伏笔，其中 24 条已匹配到回收章',             confidence: 'high',   decision: null },
+      { id: 'p5', kind: '伏笔', content: '「老渔翁的哑」未匹配到回收点，建议标记为 abandoned',   confidence: 'low',    decision: null },
+      { id: 'p6', kind: '文风', content: '生成 style_profile.json 并设为必选上下文',              confidence: 'high',   decision: null }
+    ]
+  };
+
+  /* MCP 扩展 —— 支撑设置页 MCP 面板 */
+  const mcpServers = [
+    { name: '设定库 setting-vault', transport: 'stdio', command: 'npx -y @dobi/mcp-setting-vault',
+      tools: ['lookup_setting', 'list_settings'], enabled: true,  status: 'ok',     latency: 42,  calls: 128 },
+    { name: '资料检索 reference-search', transport: 'http', url: 'https://mcp.local/reference/mcp',
+      tools: ['search_reference'], enabled: true,  status: 'ok',     latency: 186, calls: 47 },
+    { name: '历史存档 archive-local', transport: 'stdio', command: 'node ./mcp/archive.js',
+      tools: ['fetch_history'], enabled: false, status: 'idle',   latency: null, calls: 0 },
+    { name: '百科拓展 wiki-bridge', transport: 'http', url: 'https://mcp.local/wiki/mcp',
+      tools: ['search_reference'], enabled: false, status: 'failed', latency: null, calls: 0,
+      error: 'connection refused（上次尝试 2026-09-24 21:02）' }
+  ];
+
   return {
     project, chapters, manuscript, modes, characters, hooks, audit,
     chatSeed, chatScript, providers, modelRoles, budgetSplit, usage, rules,
-    outlineGraph, auditReport, styleProfile
+    outlineGraph, auditReport, styleProfile,
+    projects, disassemble, mcpServers
   };
 })();

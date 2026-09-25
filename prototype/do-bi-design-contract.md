@@ -1,8 +1,10 @@
 # Design Contract · Do_Bi 小说创作台原型
 
-> 版本 **v1.1（批次二）** · 单一真相源。所有页面必须逐字引用本契约，不得自创颜色 / 字号 / 圆角。
-> 批次一（已完成）：工作台 · 共创 · 角色 · 伏笔 · 设置
-> 批次二（本次）：章纲与依赖图 · 审计报告 · 文风档案
+> 版本 **v1.2（批次三 · 原型完成）** · 单一真相源。所有页面必须逐字引用本契约，不得自创颜色 / 字号 / 圆角。
+> 批次一：工作台 · 共创 · 角色 · 伏笔 · 设置
+> 批次二：章纲与依赖图 · 审计报告 · 文风档案
+> 批次三（本次）：项目列表（首页）· 拆书 · 设置页 MCP 面板
+> **入口页：`index.html`（我的作品）** · 共 10 页
 
 ## Tech stack & delivery
 stack: plain HTML + CSS + vanilla JS
@@ -114,28 +116,37 @@ bg-texture: 极淡纸纹 = 暖色 radial 光晕 + 极低不透明度纤维纹（
 - **章节小卡**：`.ch-card` · `.ch-card.is-selected`
 - **引用块**：复用 `.audit-evidence`（等宽衬线小字 + 浅底）
 
+### 批次三新增组件类（已写入 styles.css §33–37）
+
+- **导航滚动保护**：`.nav { overflow-y:auto; min-height:0 }`（9 项导航需要）
+- **项目卡**：`.proj-grid`（自适应网格）· `.proj-card`（`is-current` 表示当前作品）· `.proj-spine`（顶部书脊色条，`is-2/3/4` 换色）· `.proj-body` · `.proj-head` · `.proj-title` · `.proj-sub` · `.proj-logline`（衬线摘要）· `.proj-stats` · `.proj-foot` · `.proj-new`（虚线「新建作品」卡）
+- **导入投放区**：`.dropzone`（`is-over` 表示拖入中）
+- **步骤条**：`.steps` · `.step-item` · `.step-rail` · `.step-dot`（`is-done` / `is-active`）· `.step-line` · `.step-body` · `.step-title` · `.step-desc`
+- **键值行 / 开关**：`.kv` · `.kv-row` · `.kv-key` · `.kv-val` · `.switch`（`is-on` 表示启用）
+
 ## App Shell + Canonical Nav（多页必须逐字一致）
 
 **权威来源：`do-bi/index.html`。其余页面必须从该文件复制 `<aside class="sidebar">…</aside>` 整块，一字不改。**
 
 ```html
-<body data-page="<workbench|chat|characters|hooks|outline|audit|style|settings>">
+<body data-page="<projects|workbench|chat|characters|hooks|outline|audit|style|settings|disassemble>">
   <aside class="sidebar"> … brand + nav + side-foot … </aside>
   <main class="main" id="main"> … 本页内容（含 .topbar） … </main>
 </body>
 ```
 
-nav items（**批次二扩为 8 项**，顺序冻结，禁止增删改序）：
+nav items（**批次三扩为 9 项**，顺序冻结，禁止增删改序）：
 | 顺序 | label | lucide | href | data-nav |
 |---|---|---|---|---|
-| 1 | 工作台 | pen-line | index.html | workbench |
-| 2 | 共创 | messages-square | chat.html | chat |
-| 3 | 角色 | users | characters.html | characters |
-| 4 | 伏笔 | bookmark | hooks.html | hooks |
-| 5 | **章纲** | **git-branch** | **outline.html** | **outline** |
-| 6 | **审计** | **clipboard-check** | **audit.html** | **audit** |
-| 7 | **文风** | **type** | **style.html** | **style** |
-| 8 | 设置 | settings-2 | settings.html | settings |
+| 1 | **项目** | **library** | **index.html** | **projects** |
+| 2 | 工作台 | pen-line | **workbench.html** | workbench |
+| 3 | 共创 | messages-square | chat.html | chat |
+| 4 | 角色 | users | characters.html | characters |
+| 5 | 伏笔 | bookmark | hooks.html | hooks |
+| 6 | 章纲 | git-branch | outline.html | outline |
+| 7 | 审计 | clipboard-check | audit.html | audit |
+| 8 | 文风 | type | style.html | style |
+| 9 | 设置 | settings-2 | settings.html | settings |
 
 nav positioning: `.sidebar` 固定左侧 `width:var(--sidebar-w)`；`.main` `margin-left:var(--sidebar-w)` —— 每页一致
 active rule（唯一机制）: `app.js` 为 `[data-nav]` 中 `data-nav === document.body.dataset.page` 的项加 `.active`
@@ -150,14 +161,18 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
 
 | # | 文件 | 页面 | 批次 | 职责 | 关键组件 |
 |---|---|---|---|---|---|
-| 1 | index.html | 写作工作台 | 一 | 写作 + 确认 + 干预 | 三栏、手稿页边、助手面板、干预开关 |
-| 2 | chat.html | 共创对话 | 一 | Chat-first 立项 | 对话流、选项卡、设定沉淀 |
-| 3 | characters.html | 角色与关系 | 一 | 角色卡与关系 | 角色列表、详情、不可变特征 |
-| 4 | hooks.html | 伏笔看板 | 一 | 伏笔追踪与回收率 | 统计条、状态泳道、时间线 |
-| 5 | **outline.html** | **章纲与依赖图** | **二** | 分卷/分章结构 + 依赖边 + 思维链 | 罗盘卡、依赖图 SVG、边清单表、节点详情 |
-| 6 | **audit.html** | **审计报告** | **二** | L1 规则 + L2 维度 + 可举证评审 + diff | 统计条、规则行、发现卡、评分行、diff 预览 |
-| 7 | **style.html** | **文风档案** | **二** | 仿写分析结果、可编辑、注入预览 | 句式/视角/比例卡、可删 chip、区间条、注入对比 |
-| 8 | settings.html | 设置 | 一 | Provider / 模型 / 预算 | Provider 列表、映射表、预算、成本 |
+| 1 | **index.html** | **我的作品（首页）** | **三** | 项目总览、新建、拆书入口、最近记录 | 项目卡网格、继续创作卡、新建模态 |
+| 2 | **workbench.html** | 写作工作台 | 一 | 写作 + 确认 + 干预 | 三栏、手稿页边、助手面板、干预开关 |
+| 3 | chat.html | 共创对话 | 一 | Chat-first 立项 | 对话流、选项卡、设定沉淀 |
+| 4 | characters.html | 角色与关系 | 一 | 角色卡与关系 | 角色列表、详情、不可变特征 |
+| 5 | hooks.html | 伏笔看板 | 一 | 伏笔追踪与回收率 | 统计条、状态泳道、时间线 |
+| 6 | outline.html | 章纲与依赖图 | 二 | 分卷/分章结构 + 依赖边 + 思维链 | 罗盘卡、依赖图 SVG、边清单表、节点详情 |
+| 7 | audit.html | 审计报告 | 二 | L1 规则 + L2 维度 + 可举证评审 + diff | 统计条、规则行、发现卡、评分行、diff 预览 |
+| 8 | style.html | 文风档案 | 二 | 仿写分析结果、可编辑、注入预览 | 句式/视角/比例卡、可删 chip、区间条、注入对比 |
+| 9 | settings.html | 设置 | 一/三 | Provider / 模型 / 预算 / **MCP** | Provider 列表、映射表、预算、成本、MCP 面板 |
+| 10 | **disassemble.html** | **拆书** | **三** | 导入已有作品反推结构化设定 | 投放区、反推流水线步骤条、抽取结果选项卡、写入提案 |
+
+**导航高亮特例**：`disassemble.html` 的 `data-page="disassemble"` 在导航中无对应项，因此该页**刻意没有导航高亮**——拆书是「项目」下的任务流，不是日常工作面。页面顶部提供「← 返回全部作品」回链。这是契约规定行为，不是缺陷。
 
 ## Mock Schema（统一假数据，禁止 lorem ipsum）
 
@@ -175,10 +190,16 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
   - `nodes[]`：`{ chapter, title, arc, status:"written|planned|skeleton", goal, beats[], rationale }`
   - `edges[]`：`{ from, to, type:"motivation|setup|payoff|causality|parallel", note, confirmed:boolean }`
 - **`auditReport`**：`{ chapter, title, stats:{l1,l2,fixed,open,passRate}, l1[{rule,hit,count,threshold,isHit}], findings[{dim,severity,evidence,suggestion,ref,fixed,decision}], review[{dim,score,evidence,note}], diffs[{dim,before[],after[]}] }`
-- **`styleProfile`**：`{ source, analyzedAt, tokens, sentence:{mean,p50,p90,min,max}, narrative:{person,tense,povSwitch}, ratio:[{label,pct}], patterns[], banned[], lexicon[], injection:{text,tokens}, sample:{plain,styled} }`
+- **`styleProfile`**：`{ source, analyzedAt, tokens, sentence:{mean,p50,p90,min,max,scale}, narrative:{person,tense,povSwitch,anchor}, ratio:[{label,pct,color}], patterns[], banned[], lexicon:[{key,value}], injection:{text,tokens}, sample:{plain,styled} }`
+
+批次三新增：
+- **`projects[]`**：`{ id, title, genre, spine, isCurrent, logline, chaptersDone, chaptersTotal, words, mode, budgetUsed, budgetTotal, updatedAt, hooksResolved, hooksTotal, auditPass }`
+- **`disassemble`**：`{ source:{name,chapters,words,format,size}, stages:[{key,title,desc,status:'done|active|todo'}], stats:{chapters,characters,worldRules,hooks,hooksMatched,tokens}, extracted:{characters[{name,role,traits[],relations}], hooks[{content,plantedChapter,matched,importance}], worldRules[], style:{sentence,pov,ratio}}, proposals:[{id,kind,content,confidence:'high|medium|low',decision}] }`
+- **`mcpServers[]`**：`{ name, transport:'stdio|http', command|url, tools[], enabled, status:'ok|idle|failed', latency, calls, error? }`
 
 ## 交互约定（stub，不调真模型）
 
 - 所有「生成 / 审计 / 分析 / 刷新」按钮：显示 loading → `setTimeout` 模拟 → 写回 mock 并重渲染
 - `api.js` 暴露 `api.*` 全部返回 `Promise`，内部只读 `mock.js`，**不发起任何网络请求**
 - 批次二新增交互：依赖图节点点击选中并高亮其边 + 联动节点详情；边清单表行点击高亮对应 SVG 边；审计发现「接受 / 忽略」切换决策并刷新统计；diff 折叠展开；文风档案禁用词增删；注入对比切换
+- 批次三新增交互：项目卡「打开 / 开始立项」跳转；新建作品模态创建后重渲染列表；拆书投放区 dragover/drop 高亮；「继续执行」推进流水线阶段；提案逐条接受 / 拒绝 / 撤回 + 全部接受 / 拒绝；MCP 开关切换与连通性测试
