@@ -104,7 +104,7 @@ bg-texture: 极淡纸纹 = 暖色 radial 光晕 + 极低不透明度纤维纹（
 **权威来源：`do-bi/index.html`。其余页面必须从该文件复制 `<aside class="sidebar">…</aside>` 整块，一字不改。**
 
 ```html
-<body data-page="<workbench|chat|outline|characters|hooks|voice|settings>">
+<body data-page="<workbench|chat|characters|hooks|settings>">
   <aside class="sidebar"> … brand + nav + side-foot … </aside>
   <main class="main" id="main"> … 本页内容（含 .topbar） … </main>
 </body>
@@ -115,10 +115,8 @@ nav items（顺序冻结，禁止增删改序）：
 |---|---|---|---|
 | 工作台 | pen-line | index.html | workbench |
 | 共创 | messages-square | chat.html | chat |
-| 大纲 | list-tree | outline.html | outline |
 | 角色 | users | characters.html | characters |
 | 伏笔 | bookmark | hooks.html | hooks |
-| 文风 | feather | voice.html | voice |
 | 设置 | settings-2 | settings.html | settings |
 
 nav positioning: `.sidebar` 固定左侧 `width:var(--sidebar-w)`；`.main` `margin-left:var(--sidebar-w)` —— 每页一致
@@ -134,13 +132,11 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
 
 | # | 文件 | 页面 | 职责 | 关键组件 |
 |---|---|---|---|---|
-| 1 | index.html | 写作工作台 | 写作 + 确认 + 干预（核心页） | 三栏布局、章节目录、手稿编辑区、助手面板、干预开关、**实时干预输入**、审计内联卡（**含原文举证**）、去 AI 味报告 |
+| 1 | index.html | 写作工作台 | 写作 + 确认 + 干预（核心页） | 三栏布局、章节目录、手稿编辑区、助手面板、干预开关、审计内联卡 |
 | 2 | chat.html | 共创对话 | Chat-first 立项，多轮追问沉淀设定 | 对话流、消息气泡、选项卡、右侧「设定沉淀」实时预览 |
-| 3 | outline.html | 大纲与依赖图 | 卷弧结构、章纲依赖、思维链 | 卷骨架卡、章节树、**依赖图（SVG）**、**思维链面板**、拆书入口 |
-| 4 | characters.html | 角色与关系 | 管理角色卡与关系 | 角色列表、角色详情、关系列表、不可变特征标记 |
-| 5 | hooks.html | 伏笔看板 | 追踪伏笔，未回收告警 | 统计条、伏笔时间线、状态泳道、告警行 |
-| 6 | voice.html | 文风与题材 | 文风档案与题材规则 | **文风指纹卡**、参考文本上传、题材规则列表、注入范围 |
-| 7 | settings.html | 设置 | Provider / 模型映射 / 预算 / **MCP** | Provider 列表、模型角色映射表、预算熔断、成本统计、**MCP 服务器与工具清单** |
+| 3 | characters.html | 角色与关系 | 管理角色卡与关系 | 角色列表、角色详情、关系列表、不可变特征标记 |
+| 4 | hooks.html | 伏笔看板 | 追踪伏笔，未回收告警 | 统计条、伏笔时间线、状态泳道、告警行 |
+| 5 | settings.html | 设置 | Provider / 模型映射 / 预算 | Provider 列表、模型角色映射表、预算熔断、成本统计 |
 
 ## Mock Schema（统一假数据，禁止 lorem ipsum）
 
@@ -154,12 +150,6 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
 - `provider`：`{ name, baseUrl, models[], configured:true, priority }`
 - `modelRole`：`{ step, model, temperature, format }`
 - `usage`：`{ chapter, promptTokens, completionTokens, cost }`
-- `aigcReport`：`{ chapter, deterministicRules[{rule,hits,samples[]}], externalDetector{provider,score}, spotfixApplied }` —— 去 AI 味报告
-- `styleProfile`：`{ source, hash, updatedAt, sentence{}, lexicon{}, dialogue{}, narrative{}, genreRules[{genre,enabled,note}] }` —— 文风档案
-- `outline`：`{ volumes[{id,title,status,chapters,progress}], arcs[{id,title,goal,est,status}], nodes[{id,label,kind,status}], edges[{from,to,kind}], compass{endgame,longLines[],scale,refreshedAt}, reasoning[{step,note,decision}] }`
-  - `node.kind` ∈ `chapter|hook`；`edge.kind` ∈ `causality|payoff|setup|subplot`
-- `mcpServer`：`{ name, transport:"stdio|sse", command|url, enabled, readonly:true, tools[] }`
-- `steerSamples`：`string[]` —— 实时干预示例指令
 
 ## 交互约定（stub，不调真模型）
 

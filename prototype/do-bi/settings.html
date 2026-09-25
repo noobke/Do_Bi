@@ -27,10 +27,6 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
       共创
     </a>
-    <a class="nav-item" data-nav="outline" href="outline.html">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12h-8"/><path d="M21 6H8"/><path d="M21 18h-8"/><path d="M3 6v4c0 1.1.9 2 2 2h3"/><path d="M3 10v6c0 1.1.9 2 2 2h3"/></svg>
-      大纲
-    </a>
     <a class="nav-item" data-nav="characters" href="characters.html">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       角色
@@ -38,10 +34,6 @@
     <a class="nav-item" data-nav="hooks" href="hooks.html">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
       伏笔
-    </a>
-    <a class="nav-item" data-nav="voice" href="voice.html">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.67 19a2 2 0 0 0 1.416-.588l6.154-6.172a6 6 0 0 0-8.49-8.49L5.586 9.914A2 2 0 0 0 5 11.328V18a1 1 0 0 0 1 1z"/><path d="M16 8 2 22"/><path d="M17.5 15H9"/></svg>
-      文风
     </a>
     <a class="nav-item" data-nav="settings" href="settings.html">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
@@ -139,23 +131,6 @@
             <span class="fs-13 muted">合计</span>
             <span class="mono" id="usage-total">—</span>
           </div>
-        </div>
-      </section>
-
-      <!-- 5. MCP 扩展 -->
-      <section class="card" data-reveal>
-        <div class="card-head">
-          <h3>MCP 扩展</h3>
-          <div class="row">
-            <span class="tag tag-info">只读</span>
-            <button class="btn btn-ghost btn-sm" id="btn-add-mcp">添加服务器</button>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="list" id="mcp-list"></div>
-        </div>
-        <div class="card-foot">
-          <div class="fs-12 muted">仅授予只读工具；工具返回结果只进上下文，写入真相文件必须经过 Proposal → Validate → Commit。</div>
         </div>
       </section>
 
@@ -288,61 +263,6 @@
       tb.appendChild(tr);
     });
     $('#usage-total').textContent = App.fmtMoney(total);
-  });
-
-  /* ---------- 5. MCP 扩展 ---------- */
-  $('#btn-add-mcp').addEventListener('click', function () {
-    App.toast('添加 MCP 服务器（演示）');
-  });
-
-  /* MCP 服务器为异步动态渲染，晚于 app.js 的 initSegs() 执行，
-     故此处按 app.js 的分段控件约定，为每个 .seg 单独补绑点击派发 seg:change */
-  function bindSeg(group) {
-    group.querySelectorAll('button[data-value]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        if (b.classList.contains('active')) return;
-        group.querySelectorAll('button').forEach(function (x) { x.classList.remove('active'); });
-        b.classList.add('active');
-        group.dispatchEvent(new CustomEvent('seg:change', {
-          bubbles: true,
-          detail: { value: b.dataset.value, group: group.dataset.seg }
-        }));
-      });
-    });
-  }
-
-  api.listMcpServers().then(function (list) {
-    var box = $('#mcp-list');
-    list.forEach(function (s) {
-      var row = h('div', { class: 'list-row' });
-      var main = h('div', { class: 'row-main' });
-      var endpoint = s.transport === 'stdio' ? s.command : s.url;
-      main.innerHTML =
-        '<div class="row-title">' + s.name + '</div>' +
-        '<div class="row-sub row">' +
-          '<span class="chip mono">' + endpoint + '</span>' +
-          '<span class="tag tag-ok">只读</span>' +
-        '</div>' +
-        '<div class="wrap-row" style="margin-top:8px">' +
-          s.tools.map(function (t) { return '<span class="chip mono">' + t + '</span>'; }).join('') +
-        '</div>';
-
-      var seg = h('div', { class: 'seg', 'data-seg': 'mcp-' + s.name });
-      seg.innerHTML =
-        '<button data-value="on"' + (s.enabled ? ' class="active"' : '') + '>启用</button>' +
-        '<button data-value="off"' + (s.enabled ? '' : ' class="active"') + '>停用</button>';
-      bindSeg(seg);
-      seg.addEventListener('seg:change', function (e) {
-        var enabled = e.detail.value === 'on';
-        api.toggleMcp(s.name, enabled).then(function () {
-          App.toast((enabled ? '已启用' : '已停用') + ' MCP 服务器：' + s.name);
-        });
-      });
-
-      row.appendChild(main);
-      row.appendChild(seg);
-      box.appendChild(row);
-    });
   });
 
   /* ---------- 模态：添加 Provider ---------- */
