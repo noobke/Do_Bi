@@ -62,6 +62,35 @@ window.api = (function () {
     listHooks: function () { return delay(M.hooks); },
     listModes: function () { return delay(M.modes); },
 
+    /* ---------- 去 AI 味（反 AIGC） ---------- */
+    getAigcReport: function (n) { return delay(M.aigcReport); },
+    runDeai: function (n) { return delay(M.aigcReport, 800); },
+
+    /* ---------- 文风与题材 ---------- */
+    getStyleProfile: function () { return delay(M.styleProfile); },
+    analyzeStyle: function () { return delay(M.styleProfile, 900); },
+
+    /* ---------- 大纲 / 依赖图 / 思维链 ---------- */
+    getOutline: function () { return delay(M.outline); },
+    getOutlineGraph: function () { return delay({ nodes: M.outline.nodes, edges: M.outline.edges }); },
+    nextVolume: function () {
+      return delay({ ok: true, volume: '第二卷 · 文脉司来人', arcs: 3 }, 900);
+    },
+
+    /* ---------- MCP ---------- */
+    listMcpServers: function () { return delay(M.mcpServers); },
+    toggleMcp: function (name, enabled) {
+      var hit = M.mcpServers.filter(function (x) { return x.name === name; })[0];
+      if (hit) hit.enabled = !!enabled;
+      return delay({ ok: true, name: name, enabled: !!enabled }, 240);
+    },
+
+    /* ---------- 实时干预 ---------- */
+    getSteerSamples: function () { return delay(M.steerSamples); },
+    steer: function (n, text) {
+      return delay({ ok: true, scope: 'affected-only', rewritten: 2, text: text }, 700);
+    },
+
     /* ---------- 共创对话 ---------- */
     getChatSeed: function () { return delay(M.chatSeed); },
     getChatScript: function () { return delay(M.chatScript, 220); },

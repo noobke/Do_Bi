@@ -187,11 +187,104 @@ window.MOCK = (function () {
     { name: '不可变特征被违背', hit: 0 }, { name: '套话密度超阈值', hit: 1 },
     { name: '连续「了/的」字句', hit: 1 }, { name: '段落长度异常', hit: 0 },
     { name: '视角切换未标注', hit: 1 }, { name: '时间线倒错', hit: 0 },
-    { name: '伏笔超期未回收', hit: 1 }, { name: '数值设定矛盾', hit: 0 }
+    { name: '伏笔超期未回收', hit: 1 }, { name: '数值设定矛盾', hit: 0 },
+    { name: '词汇疲劳', hit: 2 }
+  ];
+
+  /* ---------- 去 AI 味报告 ---------- */
+  const aigcReport = {
+    chapter: 17,
+    deterministicRules: [
+      { rule: '套话密度', hits: 1, samples: ['极其', '不由得'] },
+      { rule: '连续「了」字句', hits: 1, samples: ['他看了看，又走了走'] },
+      { rule: '词汇疲劳', hits: 2, samples: ['雪（本章 14 次）', '冷冷地（本章 5 次）'] }
+    ],
+    externalDetector: { provider: '未启用', score: null },
+    spotfixApplied: 1
+  };
+
+  /* ---------- 文风档案 ---------- */
+  const styleProfile = {
+    source: '参考样例 · 3 章 · 共 18,400 字',
+    hash: 'sfp_9c21',
+    updatedAt: '2026-09-23',
+    sentence: { avgLength: 22, shortRatio: 0.41, variance: '中' },
+    lexicon: { preferred: ['雪', '关', '灯', '灰'], banned: ['极其', '瞬间', '不禁'], register: '冷峻书面' },
+    dialogue: { ratio: 0.18, tagStyle: '极少标签，动作代引' },
+    narrative: { pov: '第三人称限知', tense: '过去', descriptionRatio: 0.34 },
+    genreRules: [
+      { genre: '古风悬疑', enabled: true,  note: '禁用现代词汇；对话不带引号标签；环境描写占比 30%–40%' },
+      { genre: '玄幻',     enabled: false, note: '境界体系须与账本数值一致；战斗段落节奏密度提高' },
+      { genre: '仙侠',     enabled: false, note: '避免现代科技词；道法描写需成体系' },
+      { genre: '都市',     enabled: false, note: '口语化对话；场景切换需时间锚点' }
+    ]
+  };
+
+  /* ---------- 大纲 / 依赖图 / 思维链 ---------- */
+  const outline = {
+    project: '雁回关',
+    volumes: [
+      { id: 'vol_1', title: '第一卷 · 雪落雁回', status: 'writing', chapters: '1–20', progress: 85 },
+      { id: 'vol_2', title: '第二卷 · 文脉司来人', status: 'skeleton', chapters: '21–36', progress: 0 },
+      { id: 'vol_3', title: '第三卷 · 铜牌合流', status: 'skeleton', chapters: '37–48', progress: 0 }
+    ],
+    arcs: [
+      { id: 'arc_1', title: '雁回关失踪案', goal: '沈砚查清驿馆失踪案', est: 8, status: 'done' },
+      { id: 'arc_2', title: '铜灯与文脉', goal: '让铜灯线索浮出水面', est: 12, status: 'writing' },
+      { id: 'arc_3', title: '文脉司对峙', goal: '与文脉司正面冲突', est: 16, status: 'skeleton' }
+    ],
+    nodes: [
+      { id: 'ch_015', label: '15 夜访烛龙巷', kind: 'chapter', status: 'done' },
+      { id: 'ch_016', label: '16 副将的靴印', kind: 'chapter', status: 'done' },
+      { id: 'ch_017', label: '17 雪落雁回',   kind: 'chapter', status: 'audit' },
+      { id: 'ch_018', label: '18 铜灯不熄',   kind: 'chapter', status: 'draft' },
+      { id: 'ch_019', label: '19 文脉司来人', kind: 'chapter', status: 'todo' },
+      { id: 'hook_007', label: 'H7 铜灯未熄', kind: 'hook', status: 'planted' },
+      { id: 'hook_011', label: 'H11 半枚铜牌', kind: 'hook', status: 'planted' },
+      { id: 'hook_004', label: 'H4 验尸文书', kind: 'hook', status: 'planted' }
+    ],
+    edges: [
+      { from: 'ch_015', to: 'ch_016', kind: 'causality' },
+      { from: 'ch_016', to: 'ch_017', kind: 'causality' },
+      { from: 'ch_017', to: 'ch_018', kind: 'causality' },
+      { from: 'hook_007', to: 'ch_018', kind: 'payoff' },
+      { from: 'ch_018', to: 'hook_011', kind: 'setup' },
+      { from: 'hook_004', to: 'ch_019', kind: 'payoff' },
+      { from: 'ch_019', to: 'ch_017', kind: 'subplot' }
+    ],
+    compass: {
+      endgame: '沈砚查明父亲死因，揭穿文脉司以「文脉」吞噬北境的真相',
+      longLines: ['父亲的死因（hook_004）', '铜灯与铜牌的来源（hook_007 / hook_011）', '崔十九的真实立场（hook_009）'],
+      scale: '预计 60 章 · 约 30 万字',
+      refreshedAt: '第 20 章边界'
+    },
+    reasoning: [
+      { step: 1, note: '先让铜灯亮起（呼应 hook_007），再引出文脉司', decision: '把铜灯作为卷一收束的钩子' },
+      { step: 2, note: '第 19 章让文脉司正式登场，与周崇线合流', decision: '反派升级节奏放在卷边界后' },
+      { step: 3, note: '第 20 章安排第二枚铜牌，与 hook_011 合流', decision: '避免支线长期悬空' }
+    ]
+  };
+
+  /* ---------- MCP 服务器 ---------- */
+  const mcpServers = [
+    { name: '史料检索', transport: 'stdio', command: 'mcp-history', enabled: true,  readonly: true,
+      tools: ['search_historical_records', 'get_era_customs', 'verify_title'] },
+    { name: '地理词条', transport: 'stdio', command: 'mcp-geo',     enabled: true,  readonly: true,
+      tools: ['lookup_place', 'distance_between'] },
+    { name: '时间线校验器', transport: 'sse', url: 'http://127.0.0.1:8731/sse', enabled: false, readonly: true,
+      tools: ['validate_timeline'] }
+  ];
+
+  /* ---------- 实时干预示例 ---------- */
+  const steerSamples = [
+    '这一章节奏太慢，把追查部分压缩到三段以内',
+    '把周崇的反应写得更克制，不要直接摊牌',
+    '雪景描写太多，删掉一半'
   ];
 
   return {
     project, chapters, manuscript, modes, characters, hooks, audit,
-    chatSeed, chatScript, providers, modelRoles, budgetSplit, usage, rules
+    chatSeed, chatScript, providers, modelRoles, budgetSplit, usage, rules,
+    aigcReport, styleProfile, outline, mcpServers, steerSamples
   };
 })();

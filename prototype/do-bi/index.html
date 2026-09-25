@@ -27,6 +27,10 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
       共创
     </a>
+    <a class="nav-item" data-nav="outline" href="outline.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12h-8"/><path d="M21 6H8"/><path d="M21 18h-8"/><path d="M3 6v4c0 1.1.9 2 2 2h3"/><path d="M3 10v6c0 1.1.9 2 2 2h3"/></svg>
+      大纲
+    </a>
     <a class="nav-item" data-nav="characters" href="characters.html">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       角色
@@ -34,6 +38,10 @@
     <a class="nav-item" data-nav="hooks" href="hooks.html">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
       伏笔
+    </a>
+    <a class="nav-item" data-nav="voice" href="voice.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.67 19a2 2 0 0 0 1.416-.588l6.154-6.172a6 6 0 0 0-8.49-8.49L5.586 9.914A2 2 0 0 0 5 11.328V18a1 1 0 0 0 1 1z"/><path d="M16 8 2 22"/><path d="M17.5 15H9"/></svg>
+      文风
     </a>
     <a class="nav-item" data-nav="settings" href="settings.html">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
@@ -157,10 +165,17 @@
                   <button class="btn btn-ghost btn-sm" data-tool="去 AI 味">去 AI 味</button>
                   <button class="btn btn-ghost btn-sm" data-tool="查设定">查设定</button>
                 </div>
+                <div class="stack-8">
+                  <div class="row-between">
+                    <span class="fs-12 muted">实时干预（生成中可用）</span>
+                    <span class="tag tag-info">仅重写受影响区间</span>
+                  </div>
+                  <div class="wrap-row" id="steer-samples"></div>
+                </div>
                 <div class="field" style="margin-top:8px">
                   <label class="field-label" for="chat-input">补充指令（可选）</label>
                   <textarea class="textarea" id="chat-input" placeholder="例如：这一章节奏太慢，把追查部分压缩到三段以内"></textarea>
-                  <span class="field-hint">指令会随上下文一起进入本次生成，不影响项目设定。</span>
+                  <span class="field-hint">生成中提交即触发实时干预，只重算受影响段落，不做整章废弃。</span>
                 </div>
                 <button class="btn btn-primary btn-sm btn-block" id="btn-apply">应用</button>
               </div>
@@ -199,6 +214,24 @@
               </div>
               <button class="btn btn-ghost btn-sm" data-open-modal="modal-commit">审阅</button>
             </div>
+          </div>
+        </div>
+
+        <!-- 去 AI 味 -->
+        <div class="card" data-reveal>
+          <div class="card-head">
+            <h3>去 AI 味</h3>
+            <div class="row">
+              <span class="tag tag-quiet">确定性规则</span>
+              <button class="btn btn-quiet btn-sm" id="btn-deai">运行检测</button>
+            </div>
+          </div>
+          <div class="card-body stack-8">
+            <div class="fs-12 muted">规则命中</div>
+            <div class="list" id="deai-rules"></div>
+            <div class="divider"></div>
+            <div class="row-between fs-13"><span class="muted">外部检测</span><span class="tag tag-quiet" id="deai-external">—</span></div>
+            <div class="row-between fs-13"><span class="muted">已定点修复</span><span class="mono" id="deai-spotfix">—</span></div>
           </div>
         </div>
 
@@ -364,8 +397,17 @@
             '<span class="fs-13" style="font-weight:500">' + it.dim + '</span>' +
             (it.fixed ? '<span class="tag tag-ok">已修订</span>' : '<span class="tag ' + t[0] + '">' + t[1] + '</span>') +
           '</div>' +
+          '<div class="fs-12 muted" style="margin-top:8px">原文举证 · <span class="mono">' + it.dim + '</span></div>' +
           '<div class="audit-evidence">' + it.evidence + '</div>' +
           '<div class="audit-fix">' + it.suggestion + '</div>';
+
+        var locate = h('div', { class: 'row', style: 'margin-top:10px' });
+        var loc = h('button', { class: 'btn btn-quiet btn-sm', text: '在正文中定位' });
+        loc.addEventListener('click', function () {
+          App.toast('已在正文中定位：' + it.dim);
+        });
+        locate.appendChild(loc);
+        card.appendChild(locate);
 
         if (!it.fixed) {
           var act = h('div', { class: 'row', style: 'margin-top:10px' });
@@ -421,6 +463,38 @@
     $('#usage-total').textContent = App.fmtMoney(total) + ' （本次会话）';
   });
 
+  /* ---------- 去 AI 味 ---------- */
+  function renderDeai() {
+    return api.getAigcReport(state.chapter).then(function (r) {
+      var box = $('#deai-rules');
+      box.innerHTML = '';
+      r.deterministicRules.forEach(function (d) {
+        var row = h('div', { class: 'list-row' });
+        row.innerHTML =
+          '<span class="row-main"><span class="row-title">' + d.rule + '</span>' +
+          '<span class="row-sub row">' +
+            d.samples.map(function (s) { return '<span class="chip chip-seal">' + s + '</span>'; }).join('') +
+          '</span></span>' +
+          '<span class="mono fs-13">' + d.hits + ' 次</span>';
+        box.appendChild(row);
+      });
+      $('#deai-external').textContent = r.externalDetector.provider;
+      $('#deai-spotfix').textContent = r.spotfixApplied + ' 处';
+    });
+  }
+  renderDeai();
+
+  $('#btn-deai').addEventListener('click', function () {
+    var btn = this;
+    App.loading(btn, true, '检测中…');
+    api.runDeai(state.chapter).then(function () {
+      App.loading(btn, false);
+      return renderDeai();
+    }).then(function () {
+      App.toast('检测完成：4 处命中，已定点修复 1 处');
+    });
+  });
+
   /* ---------- 干预模式 ---------- */
   $('#mode-seg').addEventListener('seg:change', function (e) {
     state.mode = e.detail.value;
@@ -430,14 +504,35 @@
     });
   });
 
-  /* ---------- 助手工具 ---------- */
+  /* ---------- 助手工具 / 实时干预 ---------- */
   $$('[data-tool]').forEach(function (b) {
     b.addEventListener('click', function () {
       App.toast('已加入指令：' + b.dataset.tool + '（演示，不调用真实模型）');
     });
   });
+
+  api.getSteerSamples().then(function (samples) {
+    var box = $('#steer-samples');
+    samples.forEach(function (s) {
+      var chip = h('button', { class: 'chip', type: 'button' });
+      chip.textContent = s;
+      chip.addEventListener('click', function () {
+        $('#chat-input').value = s;
+        App.toast('已填入干预指令');
+      });
+      box.appendChild(chip);
+    });
+  });
+
   $('#btn-apply').addEventListener('click', function () {
-    App.toast('指令已应用（演示）');
+    var btn = this;
+    var text = $('#chat-input').value.trim();
+    if (!text) { App.toast('先写一条干预指令'); return; }
+    App.loading(btn, true, '注入中…');
+    api.steer(state.chapter, text).then(function () {
+      App.loading(btn, false);
+      App.toast('已注入干预，仅重写受影响段落（演示）');
+    });
   });
 
   $('#btn-rolling').addEventListener('click', function () {
