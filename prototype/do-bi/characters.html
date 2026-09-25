@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>角色与关系 · Do_Bi 小说创作台</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="characters">
+
+<!-- App Shell（冻结）· 逐字复制自 index.html -->
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-seal" aria-hidden="true"></span>
+    <span class="brand-name">Do_Bi</span>
+    <span class="brand-sub">小说创作台</span>
+  </div>
+
+  <nav class="nav" aria-label="主导航">
+    <a class="nav-item" data-nav="workbench" href="index.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
+      工作台
+    </a>
+    <a class="nav-item" data-nav="chat" href="chat.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+      共创
+    </a>
+    <a class="nav-item" data-nav="characters" href="characters.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      角色
+    </a>
+    <a class="nav-item" data-nav="hooks" href="hooks.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+      伏笔
+    </a>
+    <a class="nav-item" data-nav="settings" href="settings.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+      设置
+    </a>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="foot-label">当前项目</div>
+    <div class="foot-title" id="foot-title">雁回关</div>
+    <div class="foot-meta"><span id="foot-progress">第 17 / 60 章</span><span id="foot-words">86,420 字</span></div>
+    <div class="progress" style="margin-top:10px"><i id="foot-bar" style="width:28%"></i></div>
+    <div class="foot-meta"><span>预算已用</span><span id="foot-budget">¥12.60 / ¥80.00</span></div>
+  </div>
+</aside>
+
+<main class="main" id="main">
+  <div class="wrap">
+
+    <!-- topbar -->
+    <header class="topbar" data-reveal>
+      <div>
+        <h1>角色与关系</h1>
+        <div class="topbar-sub">4 位角色 · 7 条关系 · 2 位已离场</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary btn-sm" id="btn-new-char">新建角色</button>
+      </div>
+    </header>
+
+    <div style="display:grid;grid-template-columns:340px minmax(0,1fr);gap:var(--sp-24);align-items:start">
+
+      <!-- ============ 左栏：角色列表 ============ -->
+      <section class="card" data-reveal>
+        <div class="card-head">
+          <h2>角色</h2>
+          <span class="tag tag-quiet" id="char-count">4</span>
+        </div>
+        <div class="list" id="char-list"></div>
+      </section>
+
+      <!-- ============ 右栏：角色详情 ============ -->
+      <div class="stack-24" id="char-detail" data-reveal></div>
+
+    </div>
+  </div>
+</main>
+
+<script src="assets/mock.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = App.$, $$ = App.$$, h = App.h;
+  var chars = [];
+  var selectedId = 'char_001';
+
+  function nameOf(id) {
+    var hit = chars.filter(function (c) { return c.id === id; })[0];
+    return hit ? hit.name : id;
+  }
+
+  /* ---------- 左栏列表 ---------- */
+  function renderList() {
+    var box = $('#char-list');
+    box.innerHTML = '';
+    chars.forEach(function (c) {
+      var row = h('div', { class: 'list-row', 'data-id': c.id });
+      var item = h('div', { class: 'char-item', style: 'flex:1;min-width:0' });
+      item.innerHTML =
+        '<div class="char-avatar' + (c.lead ? ' is-lead' : '') + '">' + c.name.charAt(0) + '</div>' +
+        '<div class="row-main">' +
+          '<div class="row-title">' + c.name + '</div>' +
+          '<div class="row-sub">' + c.role + ' · ' + c.state.location + '</div>' +
+        '</div>';
+      row.appendChild(item);
+      row.addEventListener('click', function () { select(c.id); });
+      box.appendChild(row);
+    });
+    markActive();
+  }
+
+  function markActive() {
+    $$('#char-list .list-row').forEach(function (r) {
+      r.classList.toggle('is-active', r.dataset.id === selectedId);
+    });
+  }
+
+  function select(id) {
+    selectedId = id;
+    markActive();
+    renderDetail();
+  }
+
+  /* ---------- 右栏详情 ---------- */
+  function renderDetail() {
+    var c = chars.filter(function (x) { return x.id === selectedId; })[0];
+    if (!c) return;
+
+    var traits = c.immutableTraits.map(function (t) {
+      return '<div class="trait"><i></i><span>' + t + '</span></div>';
+    }).join('');
+
+    var rels = c.relations.map(function (r) {
+      return '<div class="list-row">' +
+        '<div class="rel-row"><span class="rel-arrow">→</span><span class="chip">' + r.type + '</span></div>' +
+        '<div class="row-main">' +
+          '<div class="row-title">' + r.note + '</div>' +
+          '<div class="row-sub fs-12 muted">' + nameOf(r.target) + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    $('#char-detail').innerHTML =
+      /* 1. 角色档案 */
+      '<div class="card">' +
+        '<div class="card-head">' +
+          '<h3>角色档案</h3>' +
+          '<span class="tag tag-quiet mono">' + c.id + '</span>' +
+        '</div>' +
+        '<div class="card-body stack">' +
+
+          '<div>' +
+            '<div class="grid-2">' +
+              '<div class="stat"><div class="stat-label">身份</div><div class="stat-value">' + c.role + '</div></div>' +
+              '<div class="stat"><div class="stat-label">首次登场</div><div class="stat-value">第 ' + c.firstAppearance + ' 章</div></div>' +
+            '</div>' +
+            '<div class="fs-13" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">' +
+              '<span class="chip">' + c.state.location + '</span>' +
+              '<span class="chip">' + c.state.status + '</span>' +
+            '</div>' +
+          '</div>' +
+
+          '<div>' +
+            '<div class="fs-13" style="font-weight:500">不可变特征</div>' +
+            '<div class="fs-13 muted">写入后不可被 AI 修改</div>' +
+            '<div class="trait-list" style="margin-top:12px">' + traits + '</div>' +
+          '</div>' +
+
+          '<div class="grid-2">' +
+            '<div class="card card-pad">' +
+              '<div class="fs-12 muted">性格</div>' +
+              '<div class="fs-14">' + c.personality + '</div>' +
+            '</div>' +
+            '<div class="card card-pad">' +
+              '<div class="fs-12 muted">说话方式</div>' +
+              '<div class="fs-14">' + c.speechStyle + '</div>' +
+            '</div>' +
+          '</div>' +
+
+          '<div>' +
+            '<div class="fs-13">当前状态：' + c.state.status + '</div>' +
+            '<div class="fs-12 muted">更新于第 ' + c.updatedAtChapter + ' 章</div>' +
+          '</div>' +
+
+        '</div>' +
+      '</div>' +
+
+      /* 2. 关系 */
+      '<div class="card">' +
+        '<div class="card-head">' +
+          '<h3>关系</h3>' +
+          '<span class="tag tag-quiet">' + c.relations.length + ' 条</span>' +
+        '</div>' +
+        '<div class="card-body" style="padding:0">' +
+          '<div class="list">' + rels + '</div>' +
+        '</div>' +
+      '</div>' +
+
+      /* 3. 写作约束提示 */
+      '<div class="card">' +
+        '<div class="card-head"><h3>写作约束提示</h3></div>' +
+        '<div class="card-body stack-8">' +
+          '<p class="fs-13 muted">不可变特征会被审计规则 3（不可变特征被违背）逐章校验，一旦触发即阻塞定稿。</p>' +
+          '<p class="fs-13 muted">角色状态变更需经 Proposal → Validate → Commit 三步写入，冲突项会降级为待人工确认。</p>' +
+          '<p class="fs-13 muted">OOC 由 L2 审计第 1 维检查，对照 personality 与 speechStyle 判断是否符合人设。</p>' +
+        '</div>' +
+      '</div>';
+  }
+
+  /* ---------- 初始化 ---------- */
+  api.listCharacters().then(function (list) {
+    chars = list;
+    $('#char-count').textContent = list.length;
+    renderList();
+    renderDetail();
+  });
+
+  $('#btn-new-char').addEventListener('click', function () {
+    App.toast('新建角色（演示）');
+  });
+})();
+</script>
+</body>
+</html>

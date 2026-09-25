@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>共创对话 · Do_Bi 小说创作台</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="chat">
+
+<!-- App Shell（冻结）· 逐字复制自 index.html -->
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-seal" aria-hidden="true"></span>
+    <span class="brand-name">Do_Bi</span>
+    <span class="brand-sub">小说创作台</span>
+  </div>
+
+  <nav class="nav" aria-label="主导航">
+    <a class="nav-item" data-nav="workbench" href="index.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
+      工作台
+    </a>
+    <a class="nav-item" data-nav="chat" href="chat.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+      共创
+    </a>
+    <a class="nav-item" data-nav="characters" href="characters.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      角色
+    </a>
+    <a class="nav-item" data-nav="hooks" href="hooks.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+      伏笔
+    </a>
+    <a class="nav-item" data-nav="settings" href="settings.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+      设置
+    </a>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="foot-label">当前项目</div>
+    <div class="foot-title" id="foot-title">雁回关</div>
+    <div class="foot-meta"><span id="foot-progress">第 17 / 60 章</span><span id="foot-words">86,420 字</span></div>
+    <div class="progress" style="margin-top:10px"><i id="foot-bar" style="width:28%"></i></div>
+    <div class="foot-meta"><span>预算已用</span><span id="foot-budget">¥12.60 / ¥80.00</span></div>
+  </div>
+</aside>
+
+<main class="main" id="main">
+  <div class="wrap">
+
+    <!-- topbar -->
+    <header class="topbar" data-reveal>
+      <div>
+        <h1>共创对话</h1>
+        <div class="topbar-sub">《雁回关》· 立项阶段 · 已沉淀 4 条设定</div>
+      </div>
+      <div class="topbar-actions">
+        <a class="btn btn-ghost btn-sm" href="index.html">进入工作台</a>
+      </div>
+    </header>
+
+    <div class="chat">
+
+      <!-- ============ 左栏：对话流 ============ -->
+      <section class="card" data-reveal>
+        <div class="card-head">
+          <h2>与 AI 共创</h2>
+          <span class="tag tag-info">Chat-first</span>
+        </div>
+        <div class="card-body">
+          <div class="chat-stream" id="chat-stream"></div>
+
+          <div class="compose">
+            <textarea class="textarea" id="chat-input" placeholder="说出你的想法，AI 会一次只追问一个问题…"></textarea>
+            <div class="compose-row">
+              <span class="fs-12 muted">按 Enter 发送 · Shift+Enter 换行</span>
+              <div class="row">
+                <button class="btn btn-ghost btn-sm" id="btn-skip">跳过追问</button>
+                <button class="btn btn-primary btn-sm" id="btn-send">发送</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 右栏：设定沉淀 + 提示 ============ -->
+      <aside class="stack-24">
+
+        <div class="card" data-reveal>
+          <div class="card-head">
+            <h3>设定沉淀</h3>
+            <span class="tag tag-quiet">实时</span>
+          </div>
+          <div class="card-body">
+            <div class="stack-8" id="seed-list"></div>
+            <div class="divider"></div>
+            <div class="stack-8">
+              <div class="row-between fs-13"><span class="muted">已埋伏笔</span><span class="mono">3 条</span></div>
+              <div class="row-between fs-13"><span class="muted">待确认项</span><span class="mono">1 条</span></div>
+            </div>
+            <button class="btn btn-primary btn-block" id="btn-gen-world" style="margin-top:16px">生成世界观与大纲</button>
+          </div>
+        </div>
+
+        <div class="card" data-reveal>
+          <div class="card-head">
+            <h3>写作提示</h3>
+            <span class="tag tag-quiet">提示</span>
+          </div>
+          <div class="card-body">
+            <div class="stack-8">
+              <p class="fs-13 muted">不用先填设定表：聊到哪算哪，AI 会自己把散落的念头整理成结构化设定。</p>
+              <p class="fs-13 muted">一次只追问一个问题：回答当前这一问即可，其余的留到下一轮。</p>
+              <p class="fs-13 muted">随时可改：这里聊出的设定，之后都能在角色页与设置页随时修订。</p>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </div>
+</main>
+
+<script src="assets/mock.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = App.$, h = App.h;
+  var stream = $('#chat-stream');
+  var input = $('#chat-input');
+
+  /* ---------- 消息渲染 ---------- */
+  function renderMsg(item) {
+    var wrap = h('div', { class: 'msg' + (item.role === 'me' ? ' msg-user' : '') });
+    wrap.appendChild(h('div', {
+      class: 'avatar ' + (item.role === 'me' ? 'avatar-me' : 'avatar-ai'),
+      text: item.role === 'me' ? '我' : 'AI'
+    }));
+
+    var bubble = h('div', { class: 'bubble' });
+    var html = '';
+    if (item.role === 'ai' && item.title) {
+      html += '<div class="bubble-title">' + item.title + '</div>';
+    }
+    html += item.text;
+    bubble.innerHTML = html;
+
+    if (item.role === 'ai' && item.options && item.options.length) {
+      var row = h('div', { class: 'opt-row' });
+      item.options.forEach(function (opt) {
+        var b = h('button', { class: 'opt', text: opt });
+        b.addEventListener('click', function () { chooseOption(opt); });
+        row.appendChild(b);
+      });
+      bubble.appendChild(row);
+    }
+
+    wrap.appendChild(bubble);
+    return wrap;
+  }
+
+  function appendMsg(item) {
+    stream.appendChild(renderMsg(item));
+    stream.lastElementChild.scrollIntoView({ block: 'end', behavior: 'smooth' });
+  }
+
+  function chooseOption(text) {
+    App.toast('已选择：' + text);
+    appendMsg({ role: 'me', text: text });
+  }
+
+  /* ---------- 载入历史对话 ---------- */
+  api.getChatScript().then(function (list) {
+    list.forEach(function (item) { stream.appendChild(renderMsg(item)); });
+  });
+
+  /* ---------- 发送 ---------- */
+  function send() {
+    var val = input.value.trim();
+    if (!val) { App.toast('先写点什么再发送'); return; }
+    appendMsg({ role: 'me', text: val });
+    input.value = '';
+
+    var btn = $('#btn-send');
+    App.loading(btn, true, '思考中…');
+    api.getChatScript().then(function () {
+      setTimeout(function () {
+        App.loading(btn, false);
+        appendMsg({
+          role: 'ai',
+          title: '继续追问',
+          text: '明白。那「文脉」在北境的传递方式，你想让它落在器物上（比如那盏青铜灯），还是落在文书与口传上？这决定了后面伏笔能埋在哪里。'
+        });
+        App.toast('已沉淀到项目记录（演示）');
+      }, 600);
+    });
+  }
+
+  $('#btn-send').addEventListener('click', send);
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  });
+  $('#btn-skip').addEventListener('click', function () {
+    App.toast('已跳过本轮追问（演示）');
+  });
+
+  /* ---------- 设定沉淀 ---------- */
+  var seedFields = [
+    ['genre', '题材'],
+    ['premise', '核心设定'],
+    ['protagonist', '主角'],
+    ['coreConflict', '核心冲突'],
+    ['tone', '语调']
+  ];
+  api.getChatSeed().then(function (seed) {
+    var box = $('#seed-list');
+    seedFields.forEach(function (f) {
+      var item = h('div', { class: 'sink-item' });
+      item.innerHTML =
+        '<div class="sink-key">' + f[1] + '</div>' +
+        '<div class="sink-val">' + (seed[f[0]] || '—') + '</div>';
+      box.appendChild(item);
+    });
+  });
+
+  /* ---------- 生成世界观与大纲 ---------- */
+  $('#btn-gen-world').addEventListener('click', function () {
+    var btn = this;
+    App.loading(btn, true, '生成中…');
+    api.getChatSeed().then(function () {
+      setTimeout(function () {
+        App.loading(btn, false);
+        App.toast('已生成世界观与大纲，前往工作台');
+      }, 900);
+    });
+  });
+})();
+</script>
+</body>
+</html>
