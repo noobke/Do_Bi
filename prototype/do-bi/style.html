@@ -41,7 +41,11 @@
     </a>
     <a class="nav-item" data-nav="outline" href="outline.html">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
-      章纲
+      结构
+    </a>
+    <a class="nav-item" data-nav="world" href="world.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      世界观
     </a>
     <a class="nav-item" data-nav="audit" href="audit.html">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
@@ -73,13 +77,26 @@
     <header class="topbar" data-reveal>
       <div>
         <h1>文风档案</h1>
-        <div class="topbar-sub">来源：参考样本《寒江独钓》前 8 章 · 已作为必选上下文注入全部生成</div>
+        <div class="topbar-sub" id="topbar-sub">当前文风：寒江独钓 · 从样本提取 · 已作为必选上下文注入全部生成</div>
       </div>
       <div class="topbar-actions">
-        <button class="btn btn-ghost btn-sm" id="btn-analyze">重新分析</button>
-        <button class="btn btn-primary btn-sm" id="btn-export">导出 JSON</button>
+        <button class="btn btn-ghost btn-sm" data-open-modal="modal-extract">提取文风</button>
+        <button class="btn btn-primary btn-sm" id="btn-goto-selector">选择文风</button>
+        <button class="btn btn-ghost btn-sm" id="btn-export">导出 JSON</button>
       </div>
     </header>
+
+    <!-- 0 · 当前文风 -->
+    <section class="card" data-reveal style="margin-bottom:24px">
+      <div class="card-head">
+        <h3>当前文风</h3>
+        <div class="row">
+          <span class="tag tag-ok" id="cur-state">已应用</span>
+          <button class="btn btn-ghost btn-sm" data-open-modal="modal-extract">重新提取</button>
+        </div>
+      </div>
+      <div class="card-body" id="cur-body"></div>
+    </section>
 
     <div class="stack-24">
 
@@ -137,7 +154,19 @@
 
       </div>
 
-      <!-- 2 · 禁用表达 -->
+      <!-- 2 · 选择文风 -->
+      <section class="card" id="style-selector" data-reveal style="margin-bottom:24px">
+        <div class="card-head">
+          <h3>选择文风</h3>
+          <div class="seg" data-seg="style-cat" id="style-cat"></div>
+        </div>
+        <div class="card-body">
+          <div class="fs-12 muted" style="margin-bottom:16px">样段是选择文风最可靠的依据——设置文案会骗人，输出不会。</div>
+          <div class="style-grid" id="preset-grid"></div>
+        </div>
+      </section>
+
+      <!-- 3 · 禁用表达 -->
       <div class="card" data-reveal>
         <div class="card-head">
           <h3>禁用表达</h3>
@@ -155,7 +184,7 @@
         </div>
       </div>
 
-      <!-- 3 · 注入预览 -->
+      <!-- 4 · 注入预览 -->
       <div class="card" data-reveal>
         <div class="card-head">
           <h3>注入预览</h3>
@@ -185,6 +214,31 @@
     </div>
   </div>
 </main>
+
+<!-- 提取文风 -->
+<div class="modal" id="modal-extract" hidden>
+  <div class="modal-veil"></div>
+  <div class="modal-card">
+    <div class="card-head">
+      <h3>提取文风</h3>
+      <button class="btn btn-quiet btn-sm" data-close-modal>关闭</button>
+    </div>
+    <div class="card-body stack">
+      <p class="fs-13 muted">提取会读样本的行文特征（句长分布、叙述视角、描写与对话比例、高频句式、套语），产出一份 style_profile.json，作为每次生成的必选上下文。</p>
+      <div class="fs-13">选择提取来源</div>
+      <div class="src-list" id="src-list"></div>
+      <div class="field">
+        <label class="field-label" for="src-paste">或直接粘贴样本</label>
+        <textarea class="textarea" id="src-paste" placeholder="粘贴 8000 字以上同风格文本，效果更稳。留空则只用上面勾选的来源。"></textarea>
+        <span class="field-hint">样本越纯净（单一作者、同一文体），提取结果越可用。</span>
+      </div>
+    </div>
+    <div class="card-foot row" style="justify-content:flex-end">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="btn-extract">开始提取</button>
+    </div>
+  </div>
+</div>
 
 <script src="assets/mock.js"></script>
 <script src="assets/api.js"></script>
@@ -304,25 +358,20 @@
 
   /* ---------- 加载 / 重渲染整页 ---------- */
   function load() {
-    return api.getStyleProfile().then(function (p) {
+    return Promise.all([api.getStyleProfile(), api.listStylePresets()]).then(function (res) {
+      var p = res[0];
+      currentPresets = res[1];
       renderSentence(p);
       renderNarrative(p);
       renderRatio(p);
       renderBanned(p.banned);
       renderInjection(p);
+      renderCurrentStyle();
+      setTopbarSub();
+      renderCategories();
+      renderPresetGrid('全部');
     });
   }
-
-  $('#btn-analyze').addEventListener('click', function () {
-    var btn = this;
-    App.loading(btn, true, '分析中…');
-    api.analyzeStyle().then(function () {
-      App.loading(btn, false);
-      return load();
-    }).then(function () {
-      App.toast('已重新分析样本，档案已更新');
-    });
-  });
 
   $('#btn-export').addEventListener('click', function () {
     App.toast('已导出 style_profile.json（演示）');
@@ -332,6 +381,187 @@
   $('#banned-input').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') addBanned();
   });
+
+  /* ---------- 当前文风 ---------- */
+  var currentPresets = [];
+
+  function appliedPreset() {
+    return currentPresets.filter(function (p) { return p.applied; })[0];
+  }
+
+  function setTopbarSub() {
+    var sub = $('#topbar-sub');
+    if (!sub) return;
+    var p = appliedPreset();
+    sub.textContent = p
+      ? '当前文风：' + p.name + ' · 已作为必选上下文注入全部生成'
+      : '尚未选择文风 · 提取或选择一份档案后自动注入全部生成';
+  }
+
+  function gotoSelector() {
+    var el = $('#style-selector');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderCurrentStyle() {
+    var body = $('#cur-body');
+    if (!body) return;
+    body.innerHTML = '';
+
+    var p = appliedPreset();
+    if (!p) {
+      body.appendChild(h('div', { class: 'empty' },
+        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>' +
+        '<div class="fs-13">尚未选择文风</div>'));
+      $('#cur-state').textContent = '未应用';
+      $('#cur-state').className = 'tag tag-quiet';
+      return;
+    }
+    $('#cur-state').textContent = '已应用';
+    $('#cur-state').className = 'tag tag-ok';
+
+    body.appendChild(h('div', { class: 'row-between' },
+      '<div class="style-name">' + p.name + '</div>' +
+      '<span class="tag tag-quiet">' + p.category + '</span>'));
+    body.appendChild(h('div', { class: 'fs-12 muted', style: 'margin-top:4px' }, p.tagline));
+    body.appendChild(h('div', { class: 'style-sample', style: 'border:1px solid var(--line);border-radius:var(--r-sm);margin-top:12px' }, p.sample));
+    body.appendChild(h('div', { class: 'row', style: 'margin-top:12px' },
+      '<a class="btn btn-ghost btn-sm" id="btn-cur-goto">更换文风</a>' +
+      '<button class="btn btn-quiet btn-sm" id="btn-cur-reanalyze">重新分析当前</button>'));
+
+    $('#btn-cur-goto').addEventListener('click', gotoSelector);
+    $('#btn-cur-reanalyze').addEventListener('click', function () {
+      var btn = this;
+      App.loading(btn, true, '分析中…');
+      api.analyzeStyle().then(function () {
+        App.loading(btn, false);
+        return load();
+      }).then(function () {
+        App.toast('已重新分析当前文风样本');
+      });
+    });
+  }
+
+  /* ---------- 选择文风 ---------- */
+  function activeCat() {
+    var b = $('#style-cat button.active');
+    return b ? b.dataset.value : '全部';
+  }
+
+  function renderCategories() {
+    var box = $('#style-cat');
+    if (!box) return;
+    api.listStyleCategories().then(function (cats) {
+      box.innerHTML = '';
+      cats.forEach(function (c, i) {
+        var b = h('button', { 'data-value': c, text: c });
+        if (i === 0) b.classList.add('active');
+        box.appendChild(b);
+      });
+    });
+  }
+
+  function renderPresetGrid(cat) {
+    var grid = $('#preset-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    currentPresets
+      .filter(function (p) { return !cat || cat === '全部' || p.category === cat; })
+      .forEach(function (p) {
+        var card = h('div', { class: 'style-card' + (p.applied ? ' is-applied' : '') });
+        var action = p.applied
+          ? '<button class="btn btn-ghost btn-sm" disabled>当前使用中</button>'
+          : '<button class="btn btn-primary btn-sm" data-apply="' + p.id + '">应用</button>';
+        card.innerHTML =
+          '<div class="style-card-head">' +
+            '<div><div class="style-name">' + p.name + '</div>' +
+            '<div class="style-tagline">' + p.tagline + '</div></div>' +
+            '<span class="tag tag-quiet">' + p.category + '</span>' +
+          '</div>' +
+          '<div class="style-sample">' + p.sample + '</div>' +
+          '<div class="style-foot">' +
+            '<span class="fs-12 muted">样段节选</span>' +
+            action +
+          '</div>';
+        grid.appendChild(card);
+      });
+
+    App.$$('[data-apply]', grid).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.dataset.apply;
+        var p = currentPresets.filter(function (x) { return x.id === id; })[0];
+        App.loading(btn, true, '应用中…');
+        api.applyStylePreset(id).then(function () {
+          App.loading(btn, false);
+          return refreshSelection();
+        }).then(function () {
+          App.toast('已应用文风：' + (p ? p.name : ''));
+        });
+      });
+    });
+  }
+
+  function refreshSelection() {
+    return api.listStylePresets().then(function (list) {
+      currentPresets = list;
+      renderCurrentStyle();
+      setTopbarSub();
+      renderPresetGrid(activeCat());
+    });
+  }
+
+  /* ---------- 提取来源 ---------- */
+  function renderSources() {
+    return api.listStyleSources().then(function (list) {
+      var box = $('#src-list');
+      if (!box) return;
+      box.innerHTML = '';
+      list.forEach(function (s) {
+        var row = h('label', { class: 'src-row' });
+        var cb = h('input', { type: 'checkbox', 'data-id': s.id });
+        cb.checked = !!s.checked;
+        row.appendChild(cb);
+        row.appendChild(h('div', { class: 'src-main' },
+          '<div class="row-title">' + s.label + '</div>' +
+          '<div class="row-sub">' + s.hint + '</div>'));
+        box.appendChild(row);
+      });
+    });
+  }
+
+  /* ---------- 新按钮绑定 ---------- */
+  $('#btn-goto-selector').addEventListener('click', function () {
+    gotoSelector();
+    App.toast('已定位到文风选择器');
+  });
+
+  /* #style-cat 的点击与 seg:change 派发统一由 app.js 的事件委托处理（支持动态注入的按钮） */
+  $('#style-cat').addEventListener('seg:change', function (e) {
+    renderPresetGrid(e.detail.value);
+  });
+
+  $('#btn-extract').addEventListener('click', function () {
+    var btn = this;
+    var ids = App.$$('#src-list input[type="checkbox"]')
+      .filter(function (c) { return c.checked; })
+      .map(function (c) { return c.dataset.id; });
+    var paste = $('#src-paste').value.trim();
+    if (!ids.length && !paste) {
+      App.toast('至少选择一个来源，或粘贴一段样本');
+      return;
+    }
+    App.loading(btn, true, '提取中…');
+    api.extractStyle(ids).then(function () {
+      $('#modal-extract').hidden = true;
+      return refreshSelection();
+    }).then(function () {
+      App.toast('提取完成，文风档案已更新' + (paste ? '（已包含粘贴样本）' : ''));
+      App.loading(btn, false);
+    });
+  });
+
+  renderSources();
 
   load();
 })();

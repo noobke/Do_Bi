@@ -733,3 +733,139 @@ svg { display:block; }
 }
 .switch.is-on { background:var(--accent); border-color:var(--accent); }
 .switch.is-on::after { transform:translateX(16px); border-color:var(--accent); }
+
+/* ==========================================================================
+   批次四（v1.3 新增）· 结构多视图 / 情节线 / 文风选择器 / 世界观
+   ========================================================================== */
+
+/* ---------- 38. 视图切换（同一故事多视图） ---------- */
+.viewbar {
+  display:flex; align-items:center; justify-content:space-between; gap:var(--sp-16);
+  flex-wrap:wrap; border-bottom:1px solid var(--line);
+  padding-bottom:var(--sp-12); margin-bottom:var(--sp-24);
+}
+.viewbar-tabs { display:flex; gap:var(--sp-4); flex-wrap:wrap; }
+.vtab {
+  display:inline-flex; align-items:center; gap:var(--sp-8);
+  height:30px; padding:0 var(--sp-12);
+  border:1px solid transparent; border-radius:var(--r-sm);
+  background:transparent; color:var(--ink-3); font-size:var(--fs-13); cursor:pointer;
+  transition:background 120ms var(--ease), border-color 120ms var(--ease), color 120ms var(--ease);
+}
+.vtab:hover { background:var(--paper-2); color:var(--ink); }
+.vtab.active { background:var(--paper); border-color:var(--line-strong); color:var(--accent-ink); font-weight:500; }
+.vtab svg { color:currentColor; }
+
+/* ---------- 39. 章节板（按卷分列） ---------- */
+.board { display:grid; gap:var(--sp-16); align-items:start; }
+.board-col { background:var(--paper-2); border:1px solid var(--line); border-radius:var(--r-md); padding:var(--sp-12); }
+.board-col-head {
+  display:flex; align-items:center; justify-content:space-between; gap:var(--sp-8);
+  padding:0 var(--sp-4) var(--sp-12); border-bottom:1px solid var(--line); margin-bottom:var(--sp-12);
+}
+.board-col-title { font-family:var(--font-display); font-size:var(--fs-14); font-weight:600; }
+.board-body { display:flex; flex-direction:column; gap:var(--sp-8); }
+.chap-card {
+  background:var(--paper); border:1px solid var(--line); border-left:3px solid var(--line-strong);
+  border-radius:var(--r-sm); padding:var(--sp-8) var(--sp-12); cursor:pointer;
+  transition:border-color 120ms var(--ease), background 120ms var(--ease);
+}
+.chap-card:hover { border-color:var(--line-strong); }
+.chap-card.is-done  { border-left-color:var(--moss); }
+.chap-card.is-audit { border-left-color:var(--amber); }
+.chap-card.is-draft { border-left-color:var(--accent); }
+.chap-card.is-todo  { border-left-color:var(--line-strong); }
+.chap-card.is-selected { border-color:var(--accent); background:var(--accent-soft); }
+.chap-top { display:flex; align-items:baseline; justify-content:space-between; gap:var(--sp-8); }
+.chap-no { font-family:var(--font-mono); font-size:var(--fs-11); color:var(--ink-3); }
+.chap-name { font-size:var(--fs-13); color:var(--ink); margin-top:2px; }
+.chap-meta {
+  display:flex; align-items:center; justify-content:space-between; gap:var(--sp-8);
+  margin-top:var(--sp-8); font-size:var(--fs-11); color:var(--ink-3);
+}
+.intensity { display:flex; gap:2px; }
+.intensity > i { width:3px; height:10px; border-radius:1px; background:var(--line-strong); }
+.intensity > i.on { background:var(--accent); }
+
+/* ---------- 40. 情节线（主线 / 支线 · 地铁图） ---------- */
+.plotline { display:flex; flex-direction:column; gap:var(--sp-8); }
+.pl-row { display:grid; grid-template-columns:150px minmax(0,1fr); gap:var(--sp-16); align-items:center; }
+.pl-name { display:flex; align-items:center; gap:var(--sp-8); font-size:var(--fs-13); color:var(--ink-2); }
+.pl-name .dot { width:10px; height:10px; border-radius:3px; flex:none; }
+.pl-kind { font-size:var(--fs-11); color:var(--ink-4); }
+.pl-track { position:relative; height:30px; }
+.pl-track::before { content:""; position:absolute; left:0; right:0; top:14px; height:2px; background:var(--paper-3); border-radius:2px; }
+.pl-seg { position:absolute; top:14px; height:2px; border-radius:2px; }
+.pl-node { position:absolute; top:9px; width:12px; height:12px; border-radius:3px; border:2px solid var(--paper); }
+.pl-axis { display:grid; grid-template-columns:150px minmax(0,1fr); gap:var(--sp-16); }
+.pl-ticks { position:relative; height:20px; }
+.pl-tick { position:absolute; top:0; transform:translateX(-50%); font-family:var(--font-mono); font-size:var(--fs-11); color:var(--ink-4); }
+.pl-cross { position:absolute; top:0; width:1px; background:var(--line); }
+
+/* ---------- 41. 结构矩阵（章节 × 情节线） ---------- */
+.matrix { overflow-x:auto; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--paper); }
+.matrix table { border-collapse:separate; border-spacing:0; font-size:var(--fs-12); }
+.matrix th, .matrix td { border-bottom:1px solid var(--line); padding:var(--sp-4) var(--sp-8); text-align:center; white-space:nowrap; }
+.matrix thead th { font-weight:500; color:var(--ink-3); background:var(--paper-2); position:sticky; top:0; z-index:1; }
+.matrix th.rowhead, .matrix td.rowhead {
+  text-align:left; position:sticky; left:0; background:var(--paper-2); z-index:2; min-width:150px;
+}
+.matrix .cell > span {
+  display:inline-flex; width:20px; height:20px; border-radius:var(--r-sm);
+  align-items:center; justify-content:center; font-size:var(--fs-11);
+  background:var(--paper-3); color:var(--ink-4);
+}
+.matrix .cell.is-on > span { background:var(--accent); color:var(--paper); }
+.matrix .cell.is-peak > span { background:var(--accent-ink); color:var(--paper); font-weight:600; }
+.matrix tbody tr:hover td { background:var(--paper-3); }
+.matrix tbody tr:hover th.rowhead { background:var(--paper-3); }
+
+/* ---------- 42. 文风选择器 ---------- */
+.style-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(272px,1fr)); gap:var(--sp-16); }
+.style-card {
+  display:flex; flex-direction:column; overflow:hidden;
+  background:var(--paper); border:1px solid var(--line); border-radius:var(--r-md);
+  transition:border-color 120ms var(--ease);
+}
+.style-card:hover { border-color:var(--line-strong); }
+.style-card.is-applied { border-color:var(--accent); }
+.style-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--sp-12); padding:var(--sp-16) var(--sp-16) var(--sp-8); }
+.style-name { font-family:var(--font-display); font-size:var(--fs-16); font-weight:600; }
+.style-tagline { font-size:var(--fs-12); color:var(--ink-3); margin-top:2px; }
+.style-sample {
+  flex:1; padding:var(--sp-12) var(--sp-16);
+  font-family:var(--font-read); font-size:var(--fs-13); line-height:1.85; color:var(--ink-2);
+  background:var(--paper-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+}
+.style-foot { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-8); padding:var(--sp-12) var(--sp-16); }
+
+/* ---------- 43. 提取来源选择 ---------- */
+.src-list { display:flex; flex-direction:column; border:1px solid var(--line); border-radius:var(--r-sm); background:var(--paper); }
+.src-row {
+  display:flex; align-items:center; gap:var(--sp-12);
+  padding:var(--sp-8) var(--sp-12); border-bottom:1px solid var(--line); font-size:var(--fs-13);
+}
+.src-row:last-child { border-bottom:none; }
+.src-row input[type="checkbox"] { width:15px; height:15px; accent-color:var(--accent); flex:none; }
+.src-main { flex:1; min-width:0; }
+
+/* ---------- 44. 世界观规则卡 ---------- */
+.rule-card {
+  padding:var(--sp-12); background:var(--paper);
+  border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:var(--r-sm);
+}
+.rule-card.is-conflict { border-left-color:var(--crimson); background:var(--crimson-soft); }
+.rule-card.is-soft { border-left-color:var(--ink-4); }
+.rule-card.is-unused { border-left-color:var(--amber); }
+.rule-text { font-family:var(--font-read); font-size:var(--fs-14); line-height:1.8; color:var(--ink); }
+.rule-meta {
+  display:flex; align-items:center; justify-content:space-between; gap:var(--sp-8);
+  margin-top:var(--sp-8); font-size:var(--fs-12); color:var(--ink-3);
+}
+.ref-chips { display:flex; flex-wrap:wrap; gap:var(--sp-4); margin-top:var(--sp-8); }
+.ref-chip {
+  font-family:var(--font-mono); font-size:var(--fs-11); color:var(--ink-3);
+  background:var(--paper-3); border-radius:4px; padding:1px 6px;
+}
+.cat-bar { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-12); padding:var(--sp-8) 0; border-bottom:1px solid var(--line); }
+.cat-name { font-family:var(--font-display); font-size:var(--fs-14); font-weight:600; }

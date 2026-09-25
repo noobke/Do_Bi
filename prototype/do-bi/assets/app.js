@@ -55,19 +55,19 @@
   }
 
   /* ---------- 4) 分段控件 ---------- */
+  /* 用事件委托，使页面载入后「动态注入」的 .seg 按钮同样生效 */
   function initSegs() {
-    document.querySelectorAll('[data-seg]').forEach(function (group) {
-      group.querySelectorAll('button[data-value]').forEach(function (b) {
-        b.addEventListener('click', function () {
-          if (b.classList.contains('active')) return;
-          group.querySelectorAll('button').forEach(function (x) { x.classList.remove('active'); });
-          b.classList.add('active');
-          group.dispatchEvent(new CustomEvent('seg:change', {
-            bubbles: true,
-            detail: { value: b.dataset.value, group: group.dataset.seg }
-          }));
-        });
-      });
+    document.addEventListener('click', function (e) {
+      var b = e.target && e.target.closest ? e.target.closest('[data-seg] button[data-value]') : null;
+      if (!b) return;
+      var group = b.closest('[data-seg]');
+      if (!group || b.classList.contains('active')) return;
+      group.querySelectorAll('button').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active');
+      group.dispatchEvent(new CustomEvent('seg:change', {
+        bubbles: true,
+        detail: { value: b.dataset.value, group: group.dataset.seg }
+      }));
     });
   }
 

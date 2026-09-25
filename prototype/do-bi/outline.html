@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>章纲与依赖图 · Do_Bi 小说创作台</title>
+<title>结构与大纲 · Do_Bi 小说创作台</title>
 <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body data-page="outline">
@@ -41,7 +41,11 @@
     </a>
     <a class="nav-item" data-nav="outline" href="outline.html">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
-      章纲
+      结构
+    </a>
+    <a class="nav-item" data-nav="world" href="world.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      世界观
     </a>
     <a class="nav-item" data-nav="audit" href="audit.html">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
@@ -72,79 +76,155 @@
     <!-- topbar -->
     <header class="topbar" data-reveal>
       <div>
-        <h1>章纲与依赖图</h1>
-        <div class="topbar-sub">4 卷 · 已展开 2 卷 · 8 个关键节点 · 6 条依赖</div>
+        <h1>结构与大纲</h1>
+        <div class="topbar-sub">4 卷 · 已展开 2 卷 · 20 章 · 6 条情节线（2 主线 / 4 支线）</div>
       </div>
       <div class="topbar-actions">
         <button class="btn btn-ghost btn-sm" id="btn-refresh-compass">刷新罗盘</button>
       </div>
     </header>
 
-    <div class="stack-24">
+    <!-- 视图切换 -->
+    <div class="viewbar" data-reveal>
+      <div class="viewbar-tabs" id="view-tabs">
+        <button class="vtab active" data-view="overview">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+          总纲
+        </button>
+        <button class="vtab" data-view="board">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
+          章节板
+        </button>
+        <button class="vtab" data-view="plotlines">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg>
+          情节线
+        </button>
+        <button class="vtab" data-view="graph">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+          依赖图
+        </button>
+      </div>
+      <span class="fs-12 muted" id="view-hint">罗盘 + 章节×情节线矩阵</span>
+    </div>
 
-      <!-- 1 · 罗盘 -->
-      <section class="card" data-reveal>
-        <div class="card-head">
-          <h3>罗盘 Compass</h3>
-          <span class="tag tag-info">滚动规划</span>
-        </div>
-        <div class="card-body">
-          <div class="stack" id="compass-body"></div>
-        </div>
-      </section>
+    <!-- 视图 1 · 总纲 -->
+    <div id="view-overview">
+      <div class="stack-24">
 
-      <!-- 2 · 依赖图 + 节点详情 -->
-      <div class="split">
-
-        <!-- 左：依赖图 -->
+        <!-- 1 · 罗盘 -->
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>依赖图</h3>
-            <span class="tag tag-quiet">6 条边</span>
+            <h3>罗盘 Compass</h3>
+            <span class="tag tag-info">滚动规划</span>
           </div>
-          <div class="card-body" style="padding:0">
-            <div class="graph-wrap">
-              <svg id="graph" viewBox="0 0 720 360" width="100%" height="auto" role="img" aria-label="章纲依赖图"></svg>
-            </div>
-            <div class="legend">
-              <div class="legend-item"><span class="legend-swatch"></span><span>已确立依赖</span></div>
-              <div class="legend-item"><span class="legend-swatch is-dashed"></span><span>待确认</span></div>
-              <div class="legend-item"><span class="legend-swatch is-active"></span><span>当前选中</span></div>
-              <div class="legend-item"><span class="legend-swatch is-node-skeleton"></span><span>骨架弧</span></div>
-            </div>
-            <div class="card-foot" style="padding:0">
-              <div class="rule-row">
-                <span class="rule-name fs-13">依赖清单</span>
-                <span class="rule-count">6 条</span>
-              </div>
-              <table class="table">
-                <thead>
-                  <tr><th>从</th><th>到</th><th>类型</th><th>说明</th></tr>
-                </thead>
-                <tbody id="edge-rows"></tbody>
-              </table>
-            </div>
+          <div class="card-body">
+            <div class="stack" id="compass-body"></div>
           </div>
         </section>
 
-        <!-- 右：节点详情 + 骨架弧 -->
-        <aside class="stack-24" data-reveal>
-
-          <div class="card" id="node-detail"></div>
-
-          <div class="card">
-            <div class="card-head">
-              <h3>未展开的骨架弧</h3>
-              <span class="tag tag-quiet" id="skeleton-count">0</span>
-            </div>
-            <div class="card-body">
-              <div class="list" id="skeleton-list"></div>
-            </div>
+        <!-- 1b · 章节 × 情节线矩阵 -->
+        <section class="card" data-reveal>
+          <div class="card-head">
+            <h3>章节 × 情节线矩阵</h3>
+            <span class="tag tag-quiet">20 章 · 6 条线</span>
           </div>
+          <div class="card-body">
+            <div class="matrix" id="matrix-body"></div>
+            <div class="fs-12 muted" style="margin-top:12px">深色 = 该线在本章达到高潮；浅色 = 本章推进该线；空格 = 本章未涉及</div>
+          </div>
+        </section>
 
-        </aside>
       </div>
+    </div>
 
+    <!-- 视图 2 · 章节板 -->
+    <div id="view-board" hidden>
+      <div class="stack-24">
+        <section class="card" data-reveal>
+          <div class="card-head">
+            <h3>章节板</h3>
+            <span class="tag tag-quiet">20 章</span>
+          </div>
+          <div class="card-body">
+            <div class="board" id="board-cols" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- 视图 3 · 情节线 -->
+    <div id="view-plotlines" hidden>
+      <div class="stack-24">
+        <section class="card" data-reveal>
+          <div class="card-head">
+            <h3>情节线地铁图</h3>
+            <span class="tag tag-info">2 主线 · 4 支线</span>
+          </div>
+          <div class="card-body">
+            <div class="plotline" id="plotline-body"></div>
+            <div class="fs-12 muted" style="margin-top:12px">方块 = 该线活跃章节；放大方块 = 该线高潮点；竖直细线为章节参考线</div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- 视图 4 · 依赖图 -->
+    <div id="view-graph" hidden>
+      <div class="stack-24">
+
+        <!-- 2 · 依赖图 + 节点详情 -->
+        <div class="split">
+
+          <!-- 左：依赖图 -->
+          <section class="card" data-reveal>
+            <div class="card-head">
+              <h3>依赖图</h3>
+              <span class="tag tag-quiet">6 条边</span>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div class="graph-wrap">
+                <svg id="graph" viewBox="0 0 720 360" width="100%" height="auto" role="img" aria-label="章纲依赖图"></svg>
+              </div>
+              <div class="legend">
+                <div class="legend-item"><span class="legend-swatch"></span><span>已确立依赖</span></div>
+                <div class="legend-item"><span class="legend-swatch is-dashed"></span><span>待确认</span></div>
+                <div class="legend-item"><span class="legend-swatch is-active"></span><span>当前选中</span></div>
+                <div class="legend-item"><span class="legend-swatch is-node-skeleton"></span><span>骨架弧</span></div>
+              </div>
+              <div class="card-foot" style="padding:0">
+                <div class="rule-row">
+                  <span class="rule-name fs-13">依赖清单</span>
+                  <span class="rule-count">6 条</span>
+                </div>
+                <table class="table">
+                  <thead>
+                    <tr><th>从</th><th>到</th><th>类型</th><th>说明</th></tr>
+                  </thead>
+                  <tbody id="edge-rows"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- 右：节点详情 + 骨架弧 -->
+          <aside class="stack-24" data-reveal>
+
+            <div class="card" id="node-detail"></div>
+
+            <div class="card">
+              <div class="card-head">
+                <h3>未展开的骨架弧</h3>
+                <span class="tag tag-quiet" id="skeleton-count">0</span>
+              </div>
+              <div class="card-body">
+                <div class="list" id="skeleton-list"></div>
+              </div>
+            </div>
+
+          </aside>
+        </div>
+
+      </div>
     </div>
   </div>
 </main>
@@ -480,6 +560,171 @@
     });
   }
 
+  /* ================= 6 · 视图切换 ================= */
+  var VIEWS = ['overview', 'board', 'plotlines', 'graph'];
+  var VIEW_HINT = {
+    overview: '罗盘 + 章节×情节线矩阵',
+    board: '按卷分列，左侧色条为状态',
+    plotlines: '每行一条线，方块为该线活跃章节，深色为高潮',
+    graph: '章节间因果依赖，可点击节点看思维链'
+  };
+
+  function setView(name) {
+    VIEWS.forEach(function (v) {
+      var el = document.getElementById('view-' + v);
+      if (el) el.hidden = (v !== name);
+    });
+    $$('#view-tabs .vtab').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.view === name);
+    });
+    var hint = $('#view-hint');
+    if (hint) hint.textContent = VIEW_HINT[name] || '—';
+  }
+
+  /* ================= 7 · 章节板（按卷分列） ================= */
+  var CHAP_STATUS = {
+    done:  ['is-done',  'tag-ok',   '已完成'],
+    audit: ['is-audit', 'tag-warn', '待审计'],
+    draft: ['is-draft', 'tag-info', '草稿'],
+    todo:  ['is-todo',  'tag-quiet', '未写']
+  };
+
+  function renderBoard(s) {
+    var chapters = s.chapters || [];
+    var vols = s.volumes || [];
+    var box = $('#board-cols');
+
+    box.innerHTML = vols.map(function (v) {
+      var chs = chapters.filter(function (c) { return c.volume === v.name; });
+      var count = v.status === 'skeleton' ? v.chapters : chs.length;
+
+      var head =
+        '<div class="board-col-head">' +
+          '<span class="board-col-title">' + v.name + '</span>' +
+          '<span class="mono fs-12">' + count + ' 章</span>' +
+        '</div>';
+
+      var body;
+      if (v.status === 'skeleton') {
+        body =
+          '<div class="empty">' +
+            '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>' +
+            '<span class="fs-12">骨架卷，尚未展开章纲</span>' +
+          '</div>';
+      } else {
+        body = chs.map(function (c) {
+          var st = CHAP_STATUS[c.status] || CHAP_STATUS.todo;
+          var bars = '';
+          for (var i = 0; i < 5; i++) bars += '<i' + (i < c.intensity ? ' class="on"' : '') + '></i>';
+          return '<div class="chap-card ' + st[0] + '" data-ch="' + c.n + '">' +
+            '<div class="chap-top">' +
+              '<span class="chap-no">第 ' + c.n + ' 章</span>' +
+              '<span class="tag ' + st[1] + '">' + st[2] + '</span>' +
+            '</div>' +
+            '<div class="chap-name">' + c.title + '</div>' +
+            '<div class="chap-meta">' +
+              '<span class="row">' +
+                '<span class="mono">' + App.fmtInt(c.words) + ' 字</span>' +
+                '<span class="chip">' + c.pov + '</span>' +
+              '</span>' +
+              '<span class="intensity">' + bars + '</span>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+
+      return '<div class="board-col">' + head + '<div class="board-body">' + body + '</div></div>';
+    }).join('');
+
+    $$('.chap-card', box).forEach(function (card) {
+      card.addEventListener('click', function () {
+        $$('.chap-card', box).forEach(function (x) { x.classList.remove('is-selected'); });
+        card.classList.add('is-selected');
+        var c = chapters.filter(function (x) { return String(x.n) === card.dataset.ch; })[0];
+        if (c) {
+          var st = CHAP_STATUS[c.status] || CHAP_STATUS.todo;
+          App.toast('第 ' + c.n + ' 章 · ' + c.title + ' · ' + st[2]);
+        }
+      });
+    });
+  }
+
+  /* ================= 8 · 章节 × 情节线矩阵 ================= */
+  function renderMatrix(mx) {
+    var thead = '<tr><th class="rowhead">情节线</th>';
+    for (var c = 1; c <= mx.maxChapter; c++) thead += '<th>' + c + '</th>';
+    thead += '</tr>';
+
+    var tbody = mx.rows.map(function (r) {
+      var cells = r.cells.map(function (cell) {
+        var cls = cell.level === 2 ? ' is-peak' : (cell.level === 1 ? ' is-on' : '');
+        var txt = cell.level === 0 ? '' : (cell.level === 2 ? '◆' : '·');
+        return '<td class="cell' + cls + '"><span>' + txt + '</span></td>';
+      }).join('');
+      return '<tr>' +
+        '<th class="rowhead">' +
+          '<span class="dot" style="background:' + r.color + ';width:10px;height:10px;border-radius:3px;display:inline-block"></span> ' +
+          r.name + ' <span class="pl-kind">' + (r.kind === 'main' ? '主线' : '支线') + '</span>' +
+        '</th>' +
+        cells +
+      '</tr>';
+    }).join('');
+
+    $('#matrix-body').innerHTML = '<table><thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table>';
+  }
+
+  /* ================= 9 · 情节线地铁图 ================= */
+  function plSegments(arr) {
+    var a = arr.slice().sort(function (x, y) { return x - y; });
+    var segs = [], start = null, prev = null;
+    a.forEach(function (v) {
+      if (start === null) { start = v; prev = v; return; }
+      if (v === prev + 1) { prev = v; return; }
+      segs.push([start, prev]); start = v; prev = v;
+    });
+    if (start !== null) segs.push([start, prev]);
+    return segs;
+  }
+
+  function renderPlotlines(list) {
+    var html = list.map(function (pl) {
+      var segs = plSegments(pl.active).map(function (s) {
+        var left = (s[0] - 1) / 19 * 100;
+        var width = s[1] > s[0] ? (s[1] - s[0]) / 19 * 100 : 1.2;
+        return '<i class="pl-seg" style="left:' + left + '%;width:' + width + '%;background:' + pl.color + '"></i>';
+      }).join('');
+
+      var nodes = pl.active.map(function (ch) {
+        var peak = pl.peak.indexOf(ch) >= 0;
+        var style = 'left:' + (ch - 1) / 19 * 100 + '%;transform:translateX(-50%);background:' + pl.color +
+          (peak ? ';width:16px;height:16px;top:7px' : '');
+        return '<i class="pl-node" style="' + style + '"></i>';
+      }).join('');
+
+      var crosses = pl.active.map(function (ch) {
+        return '<i class="pl-cross" style="left:' + (ch - 1) / 19 * 100 + '%;height:30px"></i>';
+      }).join('');
+
+      return '<div class="pl-row">' +
+          '<div class="pl-name">' +
+            '<span class="dot" style="background:' + pl.color + '"></span>' +
+            '<span>' + pl.name + '</span>' +
+            '<span class="pl-kind">' + (pl.kind === 'main' ? '主线' : '支线') + '</span>' +
+          '</div>' +
+          '<div class="pl-track">' + segs + nodes + crosses + '</div>' +
+        '</div>' +
+        '<div class="pl-axis"><span></span><span class="fs-12 muted">' + pl.summary + '</span></div>';
+    }).join('');
+
+    var ticks = [1, 5, 10, 15, 20].map(function (t) {
+      return '<span class="pl-tick" style="left:' + (t - 1) / 19 * 100 + '%">' + t + '</span>';
+    }).join('');
+
+    html += '<div class="pl-axis"><span></span><div class="pl-ticks">' + ticks + '</div></div>';
+
+    $('#plotline-body').innerHTML = html;
+  }
+
   /* ================= 刷新罗盘 ================= */
   $('#btn-refresh-compass').addEventListener('click', function () {
     var btn = this;
@@ -505,6 +750,15 @@
     renderSkeleton();
     renderEdges();
   });
+
+  api.getStructure().then(function (s) { renderBoard(s); });
+  api.getMatrix().then(function (mx) { renderMatrix(mx); });
+  api.getPlotlines().then(function (pl) { renderPlotlines(pl); });
+
+  $$('#view-tabs .vtab').forEach(function (b) {
+    b.addEventListener('click', function () { setView(b.dataset.view); });
+  });
+  setView('overview');
 })();
 </script>
 </body>

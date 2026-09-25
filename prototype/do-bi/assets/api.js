@@ -72,6 +72,86 @@ window.api = (function () {
     listBudgetSplit: function () { return delay(M.budgetSplit); },
     listUsage: function () { return delay(M.usage); },
 
+    /* ---------- 批次四：结构多视图 ---------- */
+    getStructure: function () {
+      return delay({ chapters: M.structureChapters, plotlines: M.plotlines,
+                     volumes: M.outlineGraph.volumes, nodes: M.outlineGraph.nodes,
+                     edges: M.outlineGraph.edges, compass: M.outlineGraph.compass });
+    },
+
+    getPlotlines: function () { return delay(M.plotlines); },
+
+    /* 章节 × 情节线矩阵 */
+    getMatrix: function () {
+      var maxCh = 20;
+      var rows = M.plotlines.map(function (pl) {
+        var cells = [];
+        for (var c = 1; c <= maxCh; c++) {
+          cells.push({ chapter: c, level: pl.peak.indexOf(c) >= 0 ? 2 : (pl.active.indexOf(c) >= 0 ? 1 : 0) });
+        }
+        return { id: pl.id, name: pl.name, kind: pl.kind, color: pl.color, cells: cells };
+      });
+      return delay({ maxChapter: maxCh, rows: rows, chapters: M.structureChapters });
+    },
+
+    /* ---------- 批次四：文风预设与提取 ---------- */
+    listStylePresets: function () { return delay(M.stylePresets); },
+
+    listStyleCategories: function () {
+      var set = [];
+      M.stylePresets.forEach(function (p) { if (set.indexOf(p.category) < 0) set.push(p.category); });
+      return delay(['全部'].concat(set));
+    },
+
+    applyStylePreset: function (id) {
+      M.stylePresets.forEach(function (p) { p.applied = (p.id === id); });
+      var hit = M.stylePresets.filter(function (p) { return p.id === id; })[0];
+      if (hit) {
+        M.styleProfile.source = hit.name + '（预设）';
+        M.styleProfile.analyzedAt = '刚刚';
+      }
+      return delay({ ok: true, id: id, name: hit ? hit.name : '' }, 420);
+    },
+
+    listStyleSources: function () { return delay(M.styleSources); },
+
+    /* 从选中的来源提取文风（模拟） */
+    extractStyle: function (sourceIds) {
+      M.styleProfile.source = '从本书已定稿章节提取（第 1 – 16 章）';
+      M.styleProfile.analyzedAt = '刚刚';
+      return delay({ ok: true, sources: sourceIds, tokens: 96400 }, 1200);
+    },
+
+    /* ---------- 批次四：世界观 ---------- */
+    listWorldSettings: function () { return delay(M.worldSettings); },
+
+    worldCategories: function () {
+      var set = [];
+      M.worldSettings.forEach(function (w) { if (set.indexOf(w.category) < 0) set.push(w.category); });
+      return delay(['全部'].concat(set));
+    },
+
+    setWorldRuleKind: function (id, kind) {
+      var hit = M.worldSettings.filter(function (w) { return w.id === id; })[0];
+      if (hit) hit.kind = kind;
+      return delay({ ok: true, id: id, kind: kind }, 220);
+    },
+
+    /* 解决冲突：保留正文并改写规则 */
+    resolveWorldConflict: function (id, resolution) {
+      var hit = M.worldSettings.filter(function (w) { return w.id === id; })[0];
+      if (hit) {
+        hit.status = 'ok';
+        if (resolution === 'keep_text') {
+          hit.rule = '铜灯可自行燃起，但每燃一次，持灯者会失去一段记忆';
+          hit.note = '已按正文改写规则（原规则：铜灯须以血引方燃）';
+        } else {
+          hit.note = '已按规则修改正文（第 17 章第 17.5 段）';
+        }
+      }
+      return delay({ ok: true, id: id, resolution: resolution }, 320);
+    },
+
     /* ---------- 批次三：项目列表 ---------- */
     listProjects: function () { return delay(M.projects); },
 

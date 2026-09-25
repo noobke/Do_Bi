@@ -418,10 +418,114 @@ window.MOCK = (function () {
       error: 'connection refused（上次尝试 2026-09-24 21:02）' }
   ];
 
+  /* ====================== 批次四新增数据 ====================== */
+
+  /* 章节结构（1–20 章，供章节板 / 矩阵 / 情节线共用） */
+  const structureChapters = [
+    { n: 1,  title: '黑水营的雪',   volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 4620, pov: '沈砚',   intensity: 3 },
+    { n: 2,  title: '溃口',         volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 4880, pov: '沈砚',   intensity: 4 },
+    { n: 3,  title: '验尸文书',     volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 5010, pov: '沈砚',   intensity: 3 },
+    { n: 4,  title: '驿馆火起',     volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 5240, pov: '沈砚',   intensity: 5 },
+    { n: 5,  title: '不该有的车辙', volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 4760, pov: '沈砚',   intensity: 2 },
+    { n: 6,  title: '副将周崇',     volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 4930, pov: '沈砚',   intensity: 3 },
+    { n: 7,  title: '酒肆闲话',     volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 4180, pov: '沈砚',   intensity: 1 },
+    { n: 8,  title: '生面孔',       volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 4450, pov: '沈砚',   intensity: 2 },
+    { n: 9,  title: '断指',         volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 5120, pov: '崔十九', intensity: 4 },
+    { n: 10, title: '空印',         volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 4380, pov: '沈砚',   intensity: 2 },
+    { n: 11, title: '夜巡',         volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 4210, pov: '沈砚',   intensity: 2 },
+    { n: 12, title: '溃口真相',     volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 5460, pov: '周崇',   intensity: 5 },
+    { n: 13, title: '一页之差',     volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 4670, pov: '沈砚',   intensity: 3 },
+    { n: 14, title: '灰烬里的名字', volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 4820, pov: '沈砚',   intensity: 4 },
+    { n: 15, title: '夜访烛龙巷',   volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 5110, pov: '沈砚',   intensity: 3 },
+    { n: 16, title: '副将的靴印',   volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'done',  words: 5360, pov: '沈砚',   intensity: 4 },
+    { n: 17, title: '雪落雁回',     volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'audit', words: 5240, pov: '沈砚',   intensity: 5 },
+    { n: 18, title: '铜灯不熄',     volume: '第一卷 · 雁回关篇', arc: '雁回关篇', status: 'draft', words: 1180, pov: '沈砚',   intensity: 4 },
+    { n: 19, title: '文脉司来人',   volume: '第二卷 · 风起文脉', arc: '风起文脉', status: 'todo',  words: 0,    pov: '沈砚',   intensity: 4 },
+    { n: 20, title: '第二枚铜牌',   volume: '第二卷 · 风起文脉', arc: '风起文脉', status: 'todo',  words: 0,    pov: '沈砚',   intensity: 3 }
+  ];
+
+  /* 情节线（主线 / 支线）—— 支撑地铁图与结构矩阵 */
+  const plotlines = [
+    { id: 'pl_m1', name: '追查失踪案',   kind: 'main', color: '#2C4A63',
+      summary: '从驿馆火案到雁回关通敌', active: [1,2,3,4,5,6,9,14,15,16,17,18,19,20], peak: [4,17] },
+    { id: 'pl_m2', name: '文脉真相',     kind: 'main', color: '#1C3145',
+      summary: '文脉与铜灯同源，以「名」为薪', active: [3,7,14,17,18,19,20], peak: [19] },
+    { id: 'pl_s1', name: '崔十九的来历', kind: 'sub',  color: '#4F6B4A',
+      summary: '断指与师门旧账', active: [8,9,15,17], peak: [9] },
+    { id: 'pl_s2', name: '旧友反目',     kind: 'sub',  color: '#B0791F',
+      summary: '第 17 章放走 → 后续反水', active: [6,17,18], peak: [17] },
+    { id: 'pl_s3', name: '文脉司登场',   kind: 'sub',  color: '#A6392E',
+      summary: '三年未收人的秘密', active: [7,17,18,19], peak: [19] },
+    { id: 'pl_s4', name: '沈定山之死',   kind: 'sub',  color: '#857D6D',
+      summary: '验尸文书缺页', active: [3,13,20], peak: [3] }
+  ];
+
+  /* 文风预设（支撑文风选择器）—— 样段是选择的唯一可靠依据 */
+  const stylePresets = [
+    { id: 'sp_lean', name: '冷峻纪实', tagline: '短句、实感，动作压过内心独白', category: '通用', applied: false,
+      sample: '雪停了。他把刀插回鞘里，手指冻得发僵。远处有火光，不大，像是有人在烧什么东西。他没有立刻过去。他先数了数地上的脚印——四双，两进两出。' },
+    { id: 'sp_lyrical', name: '长句绵密', tagline: '长句层叠，感官累积，神话式语调', category: '通用', applied: false,
+      sample: '雪是后半夜落下来的，一层一层盖住关外的车辙，像是有人执意要把什么痕迹重新抹平，而风偏偏不肯，一遍遍把新雪掀开，露出底下那些不肯安分的旧印子。' },
+    { id: 'sp_voice', name: '声腔叙述', tagline: '叙述者有自己的脉搏，冷幽默压着苦事', category: '通用', applied: false,
+      sample: '我在关城做了七年小吏，最大的本事是知道什么时候该看不见。这天晚上我看见了不该看的，还得假装没看见——这活儿我熟。' },
+    { id: 'sp_mystery', name: '古风悬疑', tagline: '克制的冷笔，线索藏进器物细节', category: '悬疑', applied: false,
+      sample: '灯是旧的。柄上有一道缺口，缺口里积着黑垢。他盯着那道缺口，许久没有动。' },
+    { id: 'sp_zhiguai', name: '志怪笔记', tagline: '笔记体，志异而不惊怪', category: '志怪', applied: false,
+      sample: '北人言铜灯者，多不实。余亲见其一，灯不燃而芯自明，持之者三日内必失一亲。不知其理，记之待考。' },
+    { id: 'sp_wuxia', name: '武侠硬派', tagline: '刀法写实，招招见骨，少用虚词', category: '武侠', applied: false,
+      sample: '刀从下往上。他没有格，只侧了半步，刀锋擦着肋过去，割开了棉袄。对手收刀时手腕一沉——这是沉境的毛病，改不掉。' },
+    { id: 'sp_urban', name: '都市冷感', tagline: '白描都市，情绪藏在动作里', category: '都市', applied: false,
+      sample: '地铁到站，他没下。对面的人换了三拨，他还在看那份文件。第十七页的数字他背了下来，但他还是再看了一遍，因为他不信自己。' },
+    { id: 'sp_epic', name: '玄幻史诗', tagline: '宏大修辞，力量体系明确，节奏外放', category: '玄幻', applied: false,
+      sample: '那一剑落下时，整座雁回关的雪都停了半息。不是风止，是天地先听懂了这一剑的分量，才敢继续落雪。' },
+    { id: 'sp_extracted', name: '寒江独钓 · 从样本提取', tagline: '本书当前文风（提取自参考样本前 8 章）', category: '我的', applied: true,
+      sample: '退隐的刀客在江边钓了十年鱼。第十一年，那把刀顺流而下，自己漂了回来。他看了很久，然后把它捡起来，插回腰上，没说话。' }
+  ];
+
+  /* 文风提取来源（支撑提取入口） */
+  const styleSources = [
+    { id: 'src_upload', kind: 'file', label: '上传或粘贴参考样本', hint: 'txt / md / docx，建议 ≥ 8000 字；样本越纯，提取越准', checked: true },
+    { id: 'src_book_a', kind: 'book', label: '从本书已定稿章节提取', hint: '第 1 – 16 章 · 17 章中 16 章已定稿 · 约 7.8 万字', checked: false },
+    { id: 'src_book_b', kind: 'book', label: '从本书指定章节提取',   hint: '可勾选范围；建议避开未审计章节', checked: false },
+    { id: 'src_merge',  kind: 'merge', label: '与当前档案合并（保留禁用词）', hint: '合并而非覆盖，适合逐步调教', checked: true }
+  ];
+
+  /* 世界观设定（支撑世界观页） */
+  const worldSettings = [
+    { id: 'w1', category: '器物', kind: 'hard', status: 'conflict',
+      rule: '铜灯须以血引方燃',
+      refs: [4, 17], note: '与第 17 章正文「灯没有点，可灯芯是亮的」冲突，待裁定' },
+    { id: 'w2', category: '体系', kind: 'hard', status: 'ok',
+      rule: '文脉以「名」为薪：被抹名者将从所有人的记忆中消失，只余文书上的空缺',
+      refs: [3, 19], note: '第 3 章首次暗示，第 19 章将正面展开' },
+    { id: 'w3', category: '地理', kind: 'hard', status: 'ok',
+      rule: '雁回关以北无城池，只有驿站与烽燧，最远的驿站在冰河对岸',
+      refs: [14, 16], note: '' },
+    { id: 'w4', category: '组织', kind: 'hard', status: 'ok',
+      rule: '文脉司不受兵部节制，可先斩后奏，关将不得阻拦其入境',
+      refs: [17, 19], note: '第 17 章借崔十九之口点出' },
+    { id: 'w5', category: '历史', kind: 'hard', status: 'ok',
+      rule: '二十年前黑水营溃口并非敌军所为，是有人自内开门',
+      refs: [2, 12], note: '第 12 章回收' },
+    { id: 'w6', category: '器物', kind: 'soft', status: 'ok',
+      rule: '铜牌与铜灯同源，纹样为「三足乌」',
+      refs: [14], note: '' },
+    { id: 'w7', category: '地理', kind: 'soft', status: 'ok',
+      rule: '烛龙巷夜禁后只点青灯，不点火把',
+      refs: [15], note: '' },
+    { id: 'w8', category: '体系', kind: 'soft', status: 'unused',
+      rule: '刀法分「沉、滞、断」三境，入断境需以命换',
+      refs: [], note: '已写入但尚未在任何章节使用' },
+    { id: 'w9', category: '组织', kind: 'soft', status: 'unused',
+      rule: '雁回关守军分「关兵」与「屯兵」，关兵不入屯籍',
+      refs: [], note: '已写入但尚未在任何章节使用' }
+  ];
+
   return {
     project, chapters, manuscript, modes, characters, hooks, audit,
     chatSeed, chatScript, providers, modelRoles, budgetSplit, usage, rules,
     outlineGraph, auditReport, styleProfile,
-    projects, disassemble, mcpServers
+    projects, disassemble, mcpServers,
+    structureChapters, plotlines, stylePresets, styleSources, worldSettings
   };
 })();

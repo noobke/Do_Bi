@@ -1,10 +1,11 @@
 # Design Contract · Do_Bi 小说创作台原型
 
-> 版本 **v1.2（批次三 · 原型完成）** · 单一真相源。所有页面必须逐字引用本契约，不得自创颜色 / 字号 / 圆角。
+> 版本 **v1.3（批次四 · 结构可视化 + 文风双入口）** · 单一真相源。所有页面必须逐字引用本契约，不得自创颜色 / 字号 / 圆角。
 > 批次一：工作台 · 共创 · 角色 · 伏笔 · 设置
 > 批次二：章纲与依赖图 · 审计报告 · 文风档案
-> 批次三（本次）：项目列表（首页）· 拆书 · 设置页 MCP 面板
-> **入口页：`index.html`（我的作品）** · 共 10 页
+> 批次三：项目列表（首页）· 拆书 · 设置页 MCP 面板
+> 批次四（本次）：结构页多视图改造 · 文风页「提取 / 选择」双入口 · 新增世界观页
+> **入口页：`index.html`（我的作品）** · 共 11 页
 
 ## Tech stack & delivery
 stack: plain HTML + CSS + vanilla JS
@@ -124,29 +125,44 @@ bg-texture: 极淡纸纹 = 暖色 radial 光晕 + 极低不透明度纤维纹（
 - **步骤条**：`.steps` · `.step-item` · `.step-rail` · `.step-dot`（`is-done` / `is-active`）· `.step-line` · `.step-body` · `.step-title` · `.step-desc`
 - **键值行 / 开关**：`.kv` · `.kv-row` · `.kv-key` · `.kv-val` · `.switch`（`is-on` 表示启用）
 
+### 批次四新增组件类（已写入 styles.css §38–44）
+
+- **多视图切换**：`.viewbar` · `.viewbar-tabs` · `.vtab`（`.active`；**视图切换各自实现，不复用 `.tab`**）
+- **章节板**：`.board` · `.board-col` · `.board-col-head` · `.board-col-title` · `.board-body` · `.chap-card`（`.is-done/.is-audit/.is-draft/.is-todo/.is-selected`）· `.chap-top` · `.chap-no` · `.chap-name` · `.chap-meta` · `.intensity`（`> i` / `> i.on`）
+- **情节线地铁图**：`.plotline` · `.pl-row` · `.pl-name`（`.dot` / `.pl-kind`）· `.pl-track` · `.pl-seg` · `.pl-node` · `.pl-axis` · `.pl-ticks` · `.pl-tick` · `.pl-cross`
+- **结构矩阵**：`.matrix`（含 `.rowhead` 冻结列 / `.cell`（`.is-on` / `.is-peak`））
+- **文风选择器**：`.style-grid` · `.style-card`（`.is-applied`）· `.style-card-head` · `.style-name` · `.style-tagline` · `.style-sample`（衬线样段，**选文风的唯一可靠依据**）· `.style-foot`
+- **提取来源**：`.src-list` · `.src-row` · `.src-main`
+- **世界观**：`.rule-card`（`.is-conflict/.is-soft/.is-unused`）· `.rule-text` · `.rule-meta` · `.ref-chips` · `.ref-chip` · `.cat-bar` · `.cat-name`
+
+> **框架约定（v1.3 修订）**：`.seg` 的分段控件改用**事件委托**（见 app.js `initSegs`），因此**页面载入后动态注入的 `.seg` 按钮同样生效**；页面不得再自行派发 `seg:change`，只监听即可。
+
 ## App Shell + Canonical Nav（多页必须逐字一致）
 
 **权威来源：`do-bi/index.html`。其余页面必须从该文件复制 `<aside class="sidebar">…</aside>` 整块，一字不改。**
 
 ```html
-<body data-page="<projects|workbench|chat|characters|hooks|outline|audit|style|settings|disassemble>">
+<body data-page="<projects|workbench|chat|characters|hooks|outline|world|audit|style|settings|disassemble>">
   <aside class="sidebar"> … brand + nav + side-foot … </aside>
   <main class="main" id="main"> … 本页内容（含 .topbar） … </main>
 </body>
 ```
 
-nav items（**批次三扩为 9 项**，顺序冻结，禁止增删改序）：
+nav items（**批次四扩为 10 项**，顺序冻结，禁止增删改序）：
 | 顺序 | label | lucide | href | data-nav |
 |---|---|---|---|---|
-| 1 | **项目** | **library** | **index.html** | **projects** |
-| 2 | 工作台 | pen-line | **workbench.html** | workbench |
+| 1 | 项目 | library | index.html | projects |
+| 2 | 工作台 | pen-line | workbench.html | workbench |
 | 3 | 共创 | messages-square | chat.html | chat |
 | 4 | 角色 | users | characters.html | characters |
 | 5 | 伏笔 | bookmark | hooks.html | hooks |
-| 6 | 章纲 | git-branch | outline.html | outline |
-| 7 | 审计 | clipboard-check | audit.html | audit |
-| 8 | 文风 | type | style.html | style |
-| 9 | 设置 | settings-2 | settings.html | settings |
+| 6 | **结构** | git-branch | outline.html | outline |
+| 7 | **世界观** | **globe** | **world.html** | **world** |
+| 8 | 审计 | clipboard-check | audit.html | audit |
+| 9 | 文风 | type | style.html | style |
+| 10 | 设置 | settings-2 | settings.html | settings |
+
+> 注：`outline.html` 的 label 由「章纲」改为「结构」（覆盖大纲/章节/情节线/依赖图四个视图），但 `data-nav` 键与文件名保持不变以避免无谓改动。
 
 nav positioning: `.sidebar` 固定左侧 `width:var(--sidebar-w)`；`.main` `margin-left:var(--sidebar-w)` —— 每页一致
 active rule（唯一机制）: `app.js` 为 `[data-nav]` 中 `data-nav === document.body.dataset.page` 的项加 `.active`
@@ -166,11 +182,12 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
 | 3 | chat.html | 共创对话 | 一 | Chat-first 立项 | 对话流、选项卡、设定沉淀 |
 | 4 | characters.html | 角色与关系 | 一 | 角色卡与关系 | 角色列表、详情、不可变特征 |
 | 5 | hooks.html | 伏笔看板 | 一 | 伏笔追踪与回收率 | 统计条、状态泳道、时间线 |
-| 6 | outline.html | 章纲与依赖图 | 二 | 分卷/分章结构 + 依赖边 + 思维链 | 罗盘卡、依赖图 SVG、边清单表、节点详情 |
-| 7 | audit.html | 审计报告 | 二 | L1 规则 + L2 维度 + 可举证评审 + diff | 统计条、规则行、发现卡、评分行、diff 预览 |
-| 8 | style.html | 文风档案 | 二 | 仿写分析结果、可编辑、注入预览 | 句式/视角/比例卡、可删 chip、区间条、注入对比 |
-| 9 | settings.html | 设置 | 一/三 | Provider / 模型 / 预算 / **MCP** | Provider 列表、映射表、预算、成本、MCP 面板 |
-| 10 | **disassemble.html** | **拆书** | **三** | 导入已有作品反推结构化设定 | 投放区、反推流水线步骤条、抽取结果选项卡、写入提案 |
+| 6 | outline.html | **结构与大纲** | 二/四 | 四视图：总纲 / 章节板 / 情节线 / 依赖图 | 罗盘卡、**章节×情节线矩阵**、章节板（按卷分列）、**情节线地铁图**、依赖图 SVG + 边清单 + 节点详情 |
+| 7 | **world.html** | **世界观** | **四** | 设定清单、冲突裁定、与情节线对齐 | 统计条、冲突裁定卡、**分类规则卡**、引用章 chips、`world.md` 片段 |
+| 8 | audit.html | 审计报告 | 二 | L1 规则 + L2 维度 + 可举证评审 + diff | 统计条、规则行、发现卡、评分行、diff 预览 |
+| 9 | style.html | 文风档案 | 二/四 | 当前文风 + **提取入口** + **选择入口** + 分析结果 | 当前文风卡、**文风选择器网格（含样段）**、提取模态、句式/视角/比例卡、禁用 chip、注入对比 |
+| 10 | settings.html | 设置 | 一/三 | Provider / 模型 / 预算 / MCP | Provider 列表、映射表、预算、成本、MCP 面板 |
+| 11 | disassemble.html | 拆书 | 三 | 导入已有作品反推结构化设定 | 投放区、反推流水线步骤条、抽取结果选项卡、写入提案 |
 
 **导航高亮特例**：`disassemble.html` 的 `data-page="disassemble"` 在导航中无对应项，因此该页**刻意没有导航高亮**——拆书是「项目」下的任务流，不是日常工作面。页面顶部提供「← 返回全部作品」回链。这是契约规定行为，不是缺陷。
 
@@ -197,9 +214,21 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
 - **`disassemble`**：`{ source:{name,chapters,words,format,size}, stages:[{key,title,desc,status:'done|active|todo'}], stats:{chapters,characters,worldRules,hooks,hooksMatched,tokens}, extracted:{characters[{name,role,traits[],relations}], hooks[{content,plantedChapter,matched,importance}], worldRules[], style:{sentence,pov,ratio}}, proposals:[{id,kind,content,confidence:'high|medium|low',decision}] }`
 - **`mcpServers[]`**：`{ name, transport:'stdio|http', command|url, tools[], enabled, status:'ok|idle|failed', latency, calls, error? }`
 
+批次四新增：
+- **`structureChapters[]`**：`{ n, title, volume, arc, status:'done|audit|draft|todo', words, pov, intensity:1-5 }`（1–20 章，供章节板 / 矩阵 / 情节线共用）
+- **`plotlines[]`**：`{ id, name, kind:'main'|'sub', color, summary, active:[章号], peak:[章号] }`
+- **`stylePresets[]`**：`{ id, name, tagline, sample, category, applied }`（`sample` 为样段，是选择文风的核心依据；`category:'我的'` 表示从样本/本书提取所得）
+- **`styleSources[]`**：`{ id, kind:'file'|'book'|'merge', label, hint, checked }`
+- **`worldSettings[]`**：`{ id, category, kind:'hard'|'soft', status:'ok'|'conflict'|'unused', rule, refs:[章号], note }`
+
 ## 交互约定（stub，不调真模型）
 
 - 所有「生成 / 审计 / 分析 / 刷新」按钮：显示 loading → `setTimeout` 模拟 → 写回 mock 并重渲染
 - `api.js` 暴露 `api.*` 全部返回 `Promise`，内部只读 `mock.js`，**不发起任何网络请求**
 - 批次二新增交互：依赖图节点点击选中并高亮其边 + 联动节点详情；边清单表行点击高亮对应 SVG 边；审计发现「接受 / 忽略」切换决策并刷新统计；diff 折叠展开；文风档案禁用词增删；注入对比切换
 - 批次三新增交互：项目卡「打开 / 开始立项」跳转；新建作品模态创建后重渲染列表；拆书投放区 dragover/drop 高亮；「继续执行」推进流水线阶段；提案逐条接受 / 拒绝 / 撤回 + 全部接受 / 拒绝；MCP 开关切换与连通性测试
+- 批次四新增交互：
+  - **结构页四视图切换**（`setView`，独立实现，不复用 `data-tabs`）；章节卡点击选中；情节线 hover 不做额外态；矩阵仅作展示
+  - **文风页**：顶栏「提取文风」开模态、「选择文风」滚动定位；选择器分类筛选（监听 `#style-cat` 的 `seg:change`）；点「应用」→ `api.applyStylePreset` → 重渲当前文风卡 + 选择器 + 顶栏副标题
+  - **提取模态**：勾选来源（`src-list`）+ 可选粘贴样本；空来源且空粘贴时拦截并提示；成功后重渲当前文风卡
+  - **世界观页**：分类筛选（`#world-cat` 的 `seg:change`）；「改为硬约束 / 改为软设定」切换；冲突裁定两选项（保留正文改写规则 / 按规则修改正文）；「查看引用章」提示章号
