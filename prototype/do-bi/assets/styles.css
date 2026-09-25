@@ -923,3 +923,80 @@ svg { display:block; }
 .curve-axis { font-family:var(--font-mono); font-size:10px; fill:var(--ink-4); }
 .curve-label { font-family:var(--font-body); font-size:11px; fill:var(--ink-2); }
 .curve-peak-label { font-family:var(--font-body); font-size:11px; font-weight:500; fill:var(--accent-ink); }
+
+/* ==========================================================================
+   批次六（v1.5 新增）· 章节详情：生产流程 / 场景流程 / 时间线 / 结构位置 / 鱼骨图
+   ========================================================================== */
+
+/* ---------- 47. 生产流程（步骤流程图） ---------- */
+.pipe { display:flex; align-items:stretch; overflow-x:auto; padding:var(--sp-4) 0; }
+.pipe-step { display:flex; align-items:center; flex:none; }
+.pipe-node {
+  min-width:118px; padding:var(--sp-8) var(--sp-12);
+  display:flex; flex-direction:column; gap:2px;
+  background:var(--paper); border:1px solid var(--line); border-radius:var(--r-sm);
+}
+.pipe-node.is-done   { border-color:var(--moss);   background:var(--moss-soft); }
+.pipe-node.is-active { border-color:var(--accent); background:var(--accent-soft); }
+.pipe-node.is-todo   { border-style:dashed; background:var(--paper-3); }
+.pipe-name { font-size:var(--fs-13); color:var(--ink); }
+.pipe-node.is-todo .pipe-name { color:var(--ink-3); }
+.pipe-meta { font-family:var(--font-mono); font-size:var(--fs-11); color:var(--ink-3); }
+.pipe-arrow { width:26px; height:2px; background:var(--line-strong); position:relative; flex:none; }
+.pipe-arrow::after {
+  content:""; position:absolute; right:-1px; top:-3px;
+  border-left:7px solid var(--line-strong);
+  border-top:4px solid transparent; border-bottom:4px solid transparent;
+}
+
+/* ---------- 48. 场景流程图 ---------- */
+.flow-wrap, .tl-wrap, .struct-wrap, .fish-wrap {
+  position:relative; width:100%; overflow:hidden;
+  background:var(--paper); border:1px solid var(--line); border-radius:var(--r-sm);
+}
+.flow-wrap svg, .tl-wrap svg, .struct-wrap svg, .fish-wrap svg { display:block; width:100%; height:auto; }
+
+.flow-pill { fill:var(--accent); }
+.flow-pill-text { font-family:var(--font-body); font-size:11px; font-weight:500; fill:var(--paper); }
+.flow-node rect { fill:var(--paper-2); stroke:var(--line-strong); }
+.flow-node.is-conflict rect { fill:var(--amber-soft); stroke:var(--amber); }
+.flow-node.is-turn rect { fill:var(--accent-soft); stroke:var(--accent); }
+.flow-node.is-resolve rect { fill:var(--moss-soft); stroke:var(--moss); }
+.flow-node { cursor:default; }
+.flow-node .fn-t { font-family:var(--font-body); font-size:12px; font-weight:500; fill:var(--ink); }
+.flow-node .fn-s { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.flow-edge { stroke:var(--ink-4); stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.flow-edge.is-branch { stroke:var(--amber); stroke-dasharray:5 4; }
+.flow-edge-label { font-family:var(--font-body); font-size:11px; fill:var(--ink-3); }
+
+/* ---------- 49. 时间线图 ---------- */
+.tl-line { stroke:var(--ink-4); stroke-width:2; fill:none; stroke-linecap:round; }
+.tl-tick { stroke:var(--line-strong); stroke-width:1; }
+.tl-band { fill:var(--paper-2); }
+.tl-band-label { font-family:var(--font-display); font-size:11px; font-weight:600; fill:var(--ink-3); }
+.tl-dot { fill:var(--accent); stroke:var(--paper); stroke-width:2; }
+.tl-dot.is-flashback { fill:var(--amber); }
+.tl-dot.is-future { fill:var(--ink-4); }
+.tl-at { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.tl-label { font-family:var(--font-body); font-size:12px; fill:var(--ink); }
+.tl-label-sub { font-family:var(--font-mono); font-size:10px; fill:var(--ink-4); }
+
+/* ---------- 50. 情节结构图 ---------- */
+.struct-act { fill:var(--paper-2); }
+.struct-act-line { stroke:var(--line); stroke-width:1; stroke-dasharray:4 4; fill:none; }
+.struct-area { fill:color-mix(in srgb, var(--accent) 10%, transparent); }
+.struct-curve { stroke:var(--accent); stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.struct-act-name { font-family:var(--font-display); font-size:12px; font-weight:600; fill:var(--ink-2); }
+.struct-beat { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.struct-marker-line { stroke:var(--crimson); stroke-width:1.5; stroke-dasharray:3 3; }
+.struct-marker { fill:var(--crimson); stroke:var(--paper); stroke-width:2; }
+.struct-label { font-family:var(--font-body); font-size:11px; font-weight:500; fill:var(--crimson); }
+
+/* ---------- 51. 鱼骨图 ---------- */
+.fish-spine { stroke:var(--ink-4); stroke-width:2.5; fill:none; stroke-linecap:round; }
+.fish-head { fill:var(--crimson-soft); stroke:var(--crimson); }
+.fish-head-text { font-family:var(--font-read); font-size:12px; fill:var(--crimson); }
+.fish-rib { stroke:var(--line-strong); stroke-width:1.5; fill:none; stroke-linecap:round; }
+.fish-cat { font-family:var(--font-display); font-size:12px; font-weight:600; fill:var(--ink-2); }
+.fish-cause-dot { fill:var(--ink-4); }
+.fish-cause { font-family:var(--font-body); font-size:11px; fill:var(--ink-2); }

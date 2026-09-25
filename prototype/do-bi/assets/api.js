@@ -72,6 +72,32 @@ window.api = (function () {
     listBudgetSplit: function () { return delay(M.budgetSplit); },
     listUsage: function () { return delay(M.usage); },
 
+    /* ---------- 批次五：章节详情（生产流程 / 场景 / 时间线 / 结构 / 鱼骨） ---------- */
+    getPipelineSteps: function () { return delay(M.pipelineSteps); },
+    getStructureActs: function () { return delay(M.structureActs); },
+
+    /* 章节详情：done = 已完成步数；active = 进行中步序号（1 起），全部完成则为 null */
+    getChapterDetail: function (n) {
+      n = Number(n) || 17;
+      var ch = M.structureChapters.filter(function (c) { return c.n === n; })[0] || M.structureChapters[0];
+      var doneMap = { done: 8, audit: 3, draft: 2, todo: 0 };
+      var done = doneMap[ch.status];
+      if (done == null) done = 0;
+      var total = M.pipelineSteps.length;
+      var active = (done >= total) ? null : (done === 0 ? 1 : done + 1);
+      var detail = M.chapterDetails[ch.n] || { beat: '—', scenes: [], timeline: [], problem: null };
+      var acts = M.structureActs;
+      var act = acts.filter(function (a) { return ch.n >= a.from && ch.n <= a.to; })[0] || null;
+      return delay({
+        chapter: ch,
+        detail: detail,
+        steps: M.pipelineSteps,
+        acts: acts,
+        act: act,
+        pipeline: { done: done, active: active, total: total }
+      });
+    },
+
     /* ---------- 批次四：结构多视图 ---------- */
     getStructure: function () {
       return delay({ chapters: M.structureChapters, plotlines: M.plotlines,

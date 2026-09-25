@@ -1,12 +1,13 @@
 # Design Contract · Do_Bi 小说创作台原型
 
-> 版本 **v1.4（批次五 · 剧情走向可视化）** · 单一真相源。所有页面必须逐字引用本契约，不得自创颜色 / 字号 / 圆角。
+> 版本 **v1.5（批次六 · 章节内容生产可视化）** · 单一真相源。所有页面必须逐字引用本契约，不得自创颜色 / 字号 / 圆角。
 > 批次一：工作台 · 共创 · 角色 · 伏笔 · 设置
 > 批次二：章纲与依赖图 · 审计报告 · 文风档案
 > 批次三：项目列表（首页）· 拆书 · 设置页 MCP 面板
 > 批次四：结构页多视图改造 · 文风页「提取 / 选择」双入口 · 新增世界观页
-> 批次五（本次）：结构页新增**故事树**与**节奏曲线**，并把故事树设为默认视图
-> **入口页：`index.html`（我的作品）** · 共 11 页
+> 批次五：结构页新增故事树与节奏曲线，故事树设为默认视图
+> 批次六（本次）：**新增章节详情页**，用生产流程 / 场景流程 / 时间线 / 结构位置 / 问题鱼骨五图呈现「一章怎么生产出来」
+> **入口页：`index.html`（我的作品）** · 共 12 页
 
 ## Tech stack & delivery
 stack: plain HTML + CSS + vanilla JS
@@ -143,6 +144,17 @@ bg-texture: 极淡纸纹 = 暖色 radial 光晕 + 极低不透明度纤维纹（
 
 > **数据零新增**：故事树与节奏曲线所需的「主轴、支线分岔/收束、高潮、状态、张力」全部从既有 `structureChapters` / `plotlines` / `outlineGraph.volumes` **派生**，未新增任何 mock 数据集。派生规则固定为：分岔章 = `min(active)`、收束章 = `max(active)`、高潮 = `intensity >= 4`（曲线标注仅取 `=== 5`）。
 
+### 批次六新增组件类（已写入 styles.css §47–51）
+
+- **生产流程（流程图 · HTML）**：`.pipe` · `.pipe-step` · `.pipe-node`（`.is-done/.is-active/.is-todo`）· `.pipe-name` · `.pipe-meta` · `.pipe-arrow`（`::after` 三角箭头）
+- **四个 SVG 容器（统一约定）**：`.flow-wrap` / `.tl-wrap` / `.struct-wrap` / `.fish-wrap` —— 均须给 `> svg { width:100%; height:auto }`，且显式写 `viewBox`
+- **场景流程图**：`.flow-pill` · `.flow-pill-text`（起止 pill）· `.flow-node`（`.is-conflict/.is-turn/.is-resolve`）· `.fn-t`（场景名）· `.fn-s`（序号）· `.flow-edge`（`.is-branch` 虚线支路）· `.flow-edge-label`
+- **时间线图**：`.tl-line` · `.tl-tick` · `.tl-band` · `.tl-band-label` · `.tl-dot`（`.is-flashback/.is-future`）· `.tl-at`（时间）· `.tl-label`（事件）· `.tl-label-sub`（类型）
+- **情节结构图**：`.struct-act`（幕块）· `.struct-act-line` · `.struct-area` · `.struct-curve` · `.struct-act-name` · `.struct-beat` · `.struct-marker-line` · `.struct-marker` · `.struct-label`
+- **鱼骨图**：`.fish-spine` · `.fish-head` · `.fish-head-text` · `.fish-rib` · `.fish-cat` · `.fish-cause-dot` · `.fish-cause`
+
+> **注意**：`.fs-11` **不是**本契约的工具类（不存在）；可用的字号工具类仅 `.fs-12 / .fs-13 / .fs-14 / .fs-16 / .fs-20`。需要更小时用 `.pipe-meta`、`.tl-at` 这类自带字号的组件类。
+
 > **框架约定（v1.3 修订）**：`.seg` 的分段控件改用**事件委托**（见 app.js `initSegs`），因此**页面载入后动态注入的 `.seg` 按钮同样生效**；页面不得再自行派发 `seg:change`，只监听即可。
 
 ## App Shell + Canonical Nav（多页必须逐字一致）
@@ -191,13 +203,18 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
 | 4 | characters.html | 角色与关系 | 一 | 角色卡与关系 | 角色列表、详情、不可变特征 |
 | 5 | hooks.html | 伏笔看板 | 一 | 伏笔追踪与回收率 | 统计条、状态泳道、时间线 |
 | 6 | outline.html | **结构与大纲** | 二/四/五 | **六视图**：故事树（默认）/ 节奏曲线 / 情节线 / 总纲 / 章节板 / 依赖图 | **故事树**（主干 + 支线分岔合流）、**节奏曲线**（张力折线 + 自动诊断）、情节线地铁图、罗盘卡 + 章节×情节线矩阵、章节板（按卷分列）、依赖图 SVG + 边清单 + 节点详情 |
-| 7 | **world.html** | **世界观** | **四** | 设定清单、冲突裁定、与情节线对齐 | 统计条、冲突裁定卡、**分类规则卡**、引用章 chips、`world.md` 片段 |
-| 8 | audit.html | 审计报告 | 二 | L1 规则 + L2 维度 + 可举证评审 + diff | 统计条、规则行、发现卡、评分行、diff 预览 |
-| 9 | style.html | 文风档案 | 二/四 | 当前文风 + **提取入口** + **选择入口** + 分析结果 | 当前文风卡、**文风选择器网格（含样段）**、提取模态、句式/视角/比例卡、禁用 chip、注入对比 |
-| 10 | settings.html | 设置 | 一/三 | Provider / 模型 / 预算 / MCP | Provider 列表、映射表、预算、成本、MCP 面板 |
-| 11 | disassemble.html | 拆书 | 三 | 导入已有作品反推结构化设定 | 投放区、反推流水线步骤条、抽取结果选项卡、写入提案 |
+| 7 | **chapter.html** | **章节详情** | **六** | 五视图：生产流程 / 场景流程 / 时间线 / 结构位置 / 问题鱼骨 | **生产流程图**（8 环节状态机）、**场景流程图**、**故事内时间线**、**情节结构位置图**、**问题归因鱼骨图** |
+| 8 | world.html | 世界观 | 四 | 设定清单、冲突裁定、与情节线对齐 | 统计条、冲突裁定卡、分类规则卡、引用章 chips、`world.md` 片段 |
+| 9 | audit.html | 审计报告 | 二 | L1 规则 + L2 维度 + 可举证评审 + diff | 统计条、规则行、发现卡、评分行、diff 预览 |
+| 10 | style.html | 文风档案 | 二/四 | 当前文风 + 提取入口 + 选择入口 + 分析结果 | 当前文风卡、文风选择器网格（含样段）、提取模态、句式/视角/比例卡、禁用 chip、注入对比 |
+| 11 | settings.html | 设置 | 一/三 | Provider / 模型 / 预算 / MCP | Provider 列表、映射表、预算、成本、MCP 面板 |
+| 12 | disassemble.html | 拆书 | 三 | 导入已有作品反推结构化设定 | 投放区、反推流水线步骤条、抽取结果选项卡、写入提案 |
 
-**导航高亮特例**：`disassemble.html` 的 `data-page="disassemble"` 在导航中无对应项，因此该页**刻意没有导航高亮**——拆书是「项目」下的任务流，不是日常工作面。页面顶部提供「← 返回全部作品」回链。这是契约规定行为，不是缺陷。
+**导航高亮特例（两页，均为刻意行为）**：
+- `disassemble.html`（`data-page="disassemble"`）在导航中无对应项——拆书是「项目」下的任务流，不是日常工作面。顶部提供「← 返回全部作品」回链。
+- `chapter.html`（`data-page="chapter"`）同样无导航高亮——章节是**明细页**，由结构页的故事树节点 / 章节卡 / 依赖图节点详情按钮进入，通过 `location.hash`（如 `chapter.html#17`）传递章号。顶部提供「在结构页查看」回链。
+
+以上均为契约规定行为，不是缺陷。
 
 ## Mock Schema（统一假数据，禁止 lorem ipsum）
 
@@ -231,6 +248,12 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
 
 批次五：**无新增数据集**（故事树与节奏曲线全部由 `structureChapters` + `plotlines` + `outlineGraph.volumes` 派生，见「批次五新增组件类」下的派生规则）。
 
+批次六新增：
+- **`pipelineSteps[]`**：`{ key, name, hint, minutes, tokens }` —— 内容生产流水线 8 环节（章纲 / 上下文组装 / 草稿 / 审计 L1+L2 / 可举证评审 / 去 AI 味 / 修订 / 定稿）。`minutes`/`tokens` 为**流水线典型值**，页面须注明真实计量以本地账本为准
+- **`structureActs[]`**：`{ name, from, to, note }` —— 情节结构模板（三幕四段）
+- **`chapterDetails{}`**：键为章号（1–20），值 `{ beat, scenes:[string], timeline:[{at,label,kind:'now'|'flashback'|'future'}], problem?:{title, causes:[{category, items:[string]}]} }`
+- `api.getChapterDetail(n)` 返回 `{ chapter, detail, steps, acts, act, pipeline:{done, active, total} }`；`done` 由章节状态映射（done→8 / audit→3 / draft→2 / todo→0），`active = done < total ? done + 1 : null`
+
 ## 交互约定（stub，不调真模型）
 
 - 所有「生成 / 审计 / 分析 / 刷新」按钮：显示 loading → `setTimeout` 模拟 → 写回 mock 并重渲染
@@ -244,5 +267,9 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
   - **世界观页**：分类筛选（`#world-cat` 的 `seg:change`）；「改为硬约束 / 改为软设定」切换；冲突裁定两选项（保留正文改写规则 / 按规则修改正文）；「查看引用章」提示章号
 - 批次五新增交互：
   - **结构页六视图切换**：视图顺序 `tree · curve · plotlines · overview · board · graph`，默认 `tree`；`.vtab` 的 `data-view` 与 `#view-*` 容器一一对应（`hidden` 必须加在**无 class 的外层容器**上，否则 `.stack-24` 的 `display:flex` 会覆盖 UA 的 `[hidden]{display:none}`）
-  - **故事树**：点击章节节点 → `is-selected` + toast（第 N 章 · 标题 · 状态）；节点内含 `<title>` 提示「第N章 · 标题 · 强度X」；支线颜色取自 `plotlines[].color`
+  - **故事树**：点击章节节点 → **跳转章节详情**（v1.5 起由 `is-selected` + toast 改为 `location.href`，见批次六）；节点内含 `<title>` 提示「第N章 · 标题 · 强度X」；支线颜色取自 `plotlines[].color`
   - **节奏曲线**：纯前端诊断（连续低强度段 → `sev-major`；全书最低点 → `sev-minor`；5 级高潮分布 → 说明行）；`#curve-risk-tag` 随风险数切换文案与配色
+- 批次六新增交互：
+  - **结构页 → 章节详情**：故事树节点、章节板卡片的点击均改为 `location.href = 'chapter.html#' + n`（不再是 toast）；依赖图节点详情卡在选中节点存在 `chapter` 字段时追加「打开第 N 章详情 →」按钮
+  - **章节详情页 hash 路由**：从 `location.hash` 解析章号（非法或缺省回退 **17**）；切换时写 hash 并用标记位抑制自触发的 `hashchange`，同时监听 `hashchange` 以支持浏览器前进/后退；渲染用 `Promise.all([getChapterDetail(n), getStructure()])` 并配 `seq` 序号防止乱序覆盖
+  - **章节详情页五视图**：顺序 `pipeline · flow · timeline · structure · fishbone`，默认 `pipeline`；上一章/下一章按钮在边界章 `disabled`；章号 `select` 可直达

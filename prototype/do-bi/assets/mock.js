@@ -521,11 +521,93 @@ window.MOCK = (function () {
       refs: [], note: '已写入但尚未在任何章节使用' }
   ];
 
+  /* ====================== 批次五新增数据（章节详情可视化） ====================== */
+
+  /* 内容生产流水线的 8 个环节（典型耗时与 Token，供流程图标注） */
+  const pipelineSteps = [
+    { key: 'outline', name: '章纲',       hint: '生成本章目标与节拍',            minutes: 1.2, tokens: 3200 },
+    { key: 'context', name: '上下文组装', hint: 'Token 预算 + 检索 + 文风注入', minutes: 0.1, tokens: 0 },
+    { key: 'draft',   name: '草稿',       hint: '流式生成正文',                minutes: 4.8, tokens: 9600 },
+    { key: 'audit',   name: '审计 L1+L2', hint: '13 条规则 + 5 维维度审计',     minutes: 1.6, tokens: 5400 },
+    { key: 'review',  name: '可举证评审', hint: '7 维质量评审，须引用原文',      minutes: 1.4, tokens: 4800 },
+    { key: 'deai',    name: '去 AI 味',   hint: '定点修复 + 重跑 L1',           minutes: 0.9, tokens: 2600 },
+    { key: 'revise',  name: '修订',       hint: 'JSON Patch 定点修复',          minutes: 1.1, tokens: 3400 },
+    { key: 'commit',  name: '定稿',       hint: '更新真相文件',                minutes: 0.2, tokens: 900 }
+  ];
+
+  /* 情节结构模板（三幕四段） */
+  const structureActs = [
+    { name: '第一幕 · 建置', from: 1,  to: 6,  note: '交代处境，落定激励事件' },
+    { name: '第二幕 · 上升', from: 7,  to: 13, note: '中点转向，代价开始累积' },
+    { name: '第二幕 · 崩塌', from: 14, to: 18, note: '转折点二后冲向高潮' },
+    { name: '第三幕 · 重启', from: 19, to: 20, note: '第二卷开端，赌注升级' }
+  ];
+
+  /* 章节详情：结构节拍 / 场景节拍 / 故事内时间线 / 问题根因（鱼骨） */
+  const chapterDetails = {
+    1:  { beat: '开场画面', scenes: ['雪夜换防', '冻毙的驿卒', '记下第一个疑点'],
+          timeline: [{ at: '二十年前', label: '黑水营溃口', kind: 'flashback' }, { at: '当夜', label: '巡城遇驿卒', kind: 'now' }] },
+    2:  { beat: '激励事件', scenes: ['翻查旧档', '质问老驿卒', '溃口记载与实际不符'],
+          timeline: [{ at: '二十年前', label: '溃口（真相未揭）', kind: 'flashback' }, { at: '次日', label: '查档', kind: 'now' }] },
+    3:  { beat: '激励事件', scenes: ['收到父亲死讯', '验尸文书缺一页', '决定继续查'],
+          timeline: [{ at: '十年前', label: '父亲下葬', kind: 'flashback' }, { at: '午后', label: '接收文书', kind: 'now' }] },
+    4:  { beat: '第一次尝试', scenes: ['驿馆火起', '灰烬中寻得半枚铜牌', '铜灯首次出现'],
+          timeline: [{ at: '黄昏', label: '火起', kind: 'now' }, { at: '入夜', label: '余烬翻找', kind: 'now' }],
+          problem: { title: '铜灯首次登场，但缺少代价铺垫', causes: [
+            { category: '设定', items: ['铜灯燃法未交代', '铜牌纹样只写一半'] },
+            { category: '节奏', items: ['火起到寻获仅两段，场面略仓促'] },
+            { category: '角色', items: ['面对大火情绪反应偏淡'] } ] } },
+    5:  { beat: '第一次尝试', scenes: ['发现不该有的车辙', '比对雪势', '疑有人夜里出关'],
+          timeline: [{ at: '三日前', label: '那场雪', kind: 'flashback' }, { at: '清晨', label: '勘验车辙', kind: 'now' }] },
+    6:  { beat: '转折点一', scenes: ['初见周崇', '被警告不要多事', '旧友出现'],
+          timeline: [{ at: '正午', label: '中军帐', kind: 'now' }] },
+    7:  { beat: '转折点一', scenes: ['酒肆闲话', '得知文脉司三年未收人', '借口离席'],
+          timeline: [{ at: '傍晚', label: '酒肆', kind: 'now' }] },
+    8:  { beat: '中点', scenes: ['生面孔入城', '暗中跟随', '跟丢'],
+          timeline: [{ at: '夜', label: '城门', kind: 'now' }] },
+    9:  { beat: '中点', scenes: ['崔十九的断指', '师门旧账', '交换情报'],
+          timeline: [{ at: '十二年前', label: '断指之因', kind: 'flashback' }, { at: '夜', label: '烛龙巷外', kind: 'now' }] },
+    10: { beat: '中点', scenes: ['调阅空印文书', '同一批人反复出现', '锁定文脉司'],
+          timeline: [{ at: '次日', label: '档房', kind: 'now' }] },
+    11: { beat: '一切尽失', scenes: ['夜巡遇袭', '证人被杀', '线索断了一半'],
+          timeline: [{ at: '子时', label: '遇袭', kind: 'now' }] },
+    12: { beat: '一切尽失', scenes: ['周崇视角', '溃口真相', '决定灭口'],
+          timeline: [{ at: '二十年前', label: '溃口真凶', kind: 'flashback' }, { at: '夜', label: '中军帐密议', kind: 'now' }],
+          problem: { title: '视角切到反派，缺少回切的锚点', causes: [
+            { category: '结构', items: ['主线连续两章离开主角视角'] },
+            { category: '角色', items: ['周崇动机充分，但沈砚线断开'] },
+            { category: '节奏', items: ['强度峰值与前章落差过大'] } ] } },
+    13: { beat: '一切尽失', scenes: ['一页之差', '确认父亲之死另有隐情', '不再按规矩来'],
+          timeline: [{ at: '清晨', label: '文书比对', kind: 'now' }] },
+    14: { beat: '转折点二', scenes: ['灰烬里的名字', '半枚铜牌对上了', '决定设局'],
+          timeline: [{ at: '黄昏', label: '灰烬再勘', kind: 'now' }] },
+    15: { beat: '转折点二', scenes: ['夜访烛龙巷', '崔十九透露「文脉」二字', '对方随即噤声'],
+          timeline: [{ at: '夜禁后', label: '青灯巷口', kind: 'now' }] },
+    16: { beat: '高潮', scenes: ['副将的靴印', '量鞋尖弧度', '证据链合上'],
+          timeline: [{ at: '后半夜', label: '西门足迹', kind: 'now' }] },
+    17: { beat: '高潮', scenes: ['雪夜巡查', '当面对质', '放走旧友', '铜灯初亮'],
+          timeline: [{ at: '三日前', label: '驿馆火起', kind: 'flashback' },
+                     { at: '后半夜', label: '雪落雁回', kind: 'now' },
+                     { at: '黎明前', label: '铜灯初亮', kind: 'now' }],
+          problem: { title: '张力够高，但设定与人物一致性存在硬伤', causes: [
+            { category: '设定', items: ['铜灯燃法与世界规则冲突', '铜牌纹样未在本章兑现'] },
+            { category: '角色', items: ['未见过崔十九却瞬间辨声', '放走旧友缺心理过渡'] },
+            { category: '节奏', items: ['对质到放走仅两段，转折过快'] },
+            { category: '文风', items: ['「尤其是别让文脉司的人看见」口语化偏高', '「仿佛」6 次，词汇疲劳'] } ] } },
+    18: { beat: '收束', scenes: ['夜路上灯自亮', '接文脉司传令', '决定带灯回关'],
+          timeline: [{ at: '黎明', label: '回关路上', kind: 'now' }, { at: '三日后', label: '文脉司传令', kind: 'future' }] },
+    19: { beat: '第二幕 · 重启', scenes: ['文脉司来人', '验灯', '传召入京'],
+          timeline: [{ at: '十日后', label: '入境', kind: 'now' }] },
+    20: { beat: '第二幕 · 重启', scenes: ['第二枚铜牌现身', '旧友的下落', '赌注升级'],
+          timeline: [{ at: '同月', label: '铜牌再现', kind: 'now' }] }
+  };
+
   return {
     project, chapters, manuscript, modes, characters, hooks, audit,
     chatSeed, chatScript, providers, modelRoles, budgetSplit, usage, rules,
     outlineGraph, auditReport, styleProfile,
     projects, disassemble, mcpServers,
-    structureChapters, plotlines, stylePresets, styleSources, worldSettings
+    structureChapters, plotlines, stylePresets, styleSources, worldSettings,
+    pipelineSteps, structureActs, chapterDetails
   };
 })();

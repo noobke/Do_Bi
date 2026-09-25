@@ -511,6 +511,10 @@
         }).join('') + '</div>'
       : '<div class="fs-12 muted">骨架节点暂无节拍</div>';
 
+    var openBtn = (n.chapter != null)
+      ? '<a class="btn btn-ghost btn-sm" href="chapter.html#' + n.chapter + '">打开第 ' + n.chapter + ' 章详情 →</a>'
+      : '';
+
     function edgeList(list, dir) {
       if (!list.length) return '<div class="fs-12 muted">无' + (dir === 'in' ? '入' : '出') + '边</div>';
       return '<div class="list">' + list.map(function (e) {
@@ -559,6 +563,7 @@
           '<div class="fs-12 muted" style="margin-bottom:8px">出边 · 下游影响</div>' +
           edgeList(outEdges, 'out') +
         '</div>' +
+        openBtn +
       '</div></div>';
   }
 
@@ -627,11 +632,11 @@
   /* ================= 6 · 视图切换 ================= */
   var VIEWS = ['tree', 'curve', 'plotlines', 'overview', 'board', 'graph'];
   var VIEW_HINT = {
-    tree: '主干向右推进即剧情走向；支线自分岔章长出、在收束章合流',
+    tree: '主干向右推进即剧情走向；支线自分岔章长出、在收束章合流 · 点击章节可进入章节详情',
     curve: '按章张力起伏；连续低强度段会被标记为节奏风险',
     plotlines: '每行一条线，方块为该线活跃章节，深色为高潮',
     overview: '罗盘 + 章节×情节线矩阵',
-    board: '按卷分列，左侧色条为状态',
+    board: '按卷分列，左侧色条为状态 · 点击章节卡进入章节详情',
     graph: '章节间因果依赖，可点击节点看思维链'
   };
 
@@ -704,13 +709,7 @@
 
     $$('.chap-card', box).forEach(function (card) {
       card.addEventListener('click', function () {
-        $$('.chap-card', box).forEach(function (x) { x.classList.remove('is-selected'); });
-        card.classList.add('is-selected');
-        var c = chapters.filter(function (x) { return String(x.n) === card.dataset.ch; })[0];
-        if (c) {
-          var st = CHAP_STATUS[c.status] || CHAP_STATUS.todo;
-          App.toast('第 ' + c.n + ' 章 · ' + c.title + ' · ' + st[2]);
-        }
+        location.href = 'chapter.html#' + card.dataset.ch;
       });
     });
   }
@@ -899,13 +898,7 @@
 
     $$('.tree-node', svg).forEach(function (g) {
       g.addEventListener('click', function () {
-        $$('.tree-node', svg).forEach(function (x) { x.classList.remove('is-selected'); });
-        g.classList.add('is-selected');
-        var c = chapters.filter(function (x) { return String(x.n) === g.dataset.ch; })[0];
-        if (c) {
-          var st = CHAP_STATUS[c.status] || CHAP_STATUS.todo;
-          App.toast('第' + c.n + ' 章 · ' + c.title + ' · ' + st[2]);
-        }
+        location.href = 'chapter.html#' + g.dataset.ch;
       });
     });
   }
