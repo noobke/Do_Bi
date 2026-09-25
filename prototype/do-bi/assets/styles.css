@@ -869,3 +869,57 @@ svg { display:block; }
 }
 .cat-bar { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-12); padding:var(--sp-8) 0; border-bottom:1px solid var(--line); }
 .cat-name { font-family:var(--font-display); font-size:var(--fs-14); font-weight:600; }
+
+/* ==========================================================================
+   批次五（v1.4 新增）· 故事树 / 节奏曲线（剧情走向可视化）
+   ========================================================================== */
+
+/* ---------- 45. 故事树（主干 + 支线分岔合流） ---------- */
+.tree-wrap {
+  position:relative; width:100%; overflow:hidden;
+  background:var(--paper); border:1px solid var(--line); border-radius:var(--r-sm);
+}
+.tree-wrap svg { display:block; width:100%; height:auto; }
+
+.tree-vol-band { fill:var(--paper-2); }
+.tree-vol-label { font-family:var(--font-display); font-size:12px; font-weight:600; fill:var(--ink-2); }
+.tree-vol-split { stroke:var(--line); stroke-width:1; stroke-dasharray:4 4; fill:none; }
+
+.tree-trunk { stroke:var(--ink-4); stroke-width:2; fill:none; stroke-linecap:round; }
+
+.tree-node rect { fill:var(--paper-2); stroke:var(--line-strong); stroke-width:1; }
+.tree-node.is-audit rect { fill:var(--amber-soft); stroke:var(--amber); }
+.tree-node.is-draft rect { fill:var(--accent-soft); stroke:var(--accent); }
+.tree-node.is-todo rect { fill:var(--paper-3); stroke:var(--line-strong); stroke-dasharray:4 3; }
+.tree-node.is-peak rect { stroke-width:2; }
+.tree-node.is-selected rect { fill:var(--accent); stroke:var(--accent-ink); }
+.tree-node { cursor:pointer; }
+.tree-node .tn-n { font-family:var(--font-mono); font-size:11px; fill:var(--ink-2); }
+.tree-node.is-selected .tn-n { fill:var(--paper); }
+.tree-node .tn-t { font-family:var(--font-body); font-size:12px; font-weight:500; fill:var(--ink); }
+.tree-node .tn-s { font-family:var(--font-mono); font-size:10px; fill:var(--ink-4); }
+
+.tree-branch { fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.tree-branch-dot { stroke:var(--paper); stroke-width:1.5; }
+.tree-branch-label { font-family:var(--font-body); font-size:11px; font-weight:500; }
+.tree-branch-caption { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.tree-axis { font-family:var(--font-mono); font-size:10px; fill:var(--ink-4); }
+.tree-axis-line { stroke:var(--line); stroke-width:1; }
+
+/* ---------- 46. 节奏曲线 ---------- */
+.curve-wrap {
+  position:relative; width:100%; overflow:hidden;
+  background:var(--paper); border:1px solid var(--line); border-radius:var(--r-sm);
+}
+.curve-wrap svg { display:block; width:100%; height:auto; }
+.curve-band { fill:var(--paper-2); }
+.curve-grid { stroke:var(--line); stroke-width:1; }
+.curve-grid-strong { stroke:var(--line-strong); stroke-width:1; }
+.curve-area { fill:color-mix(in srgb, var(--accent) 12%, transparent); }
+.curve-line { stroke:var(--accent); stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.curve-dot { fill:var(--paper); stroke:var(--accent); stroke-width:2; }
+.curve-dot.is-peak { fill:var(--accent-ink); stroke:var(--accent-ink); }
+.curve-dot.is-low { fill:var(--paper-3); stroke:var(--ink-4); }
+.curve-axis { font-family:var(--font-mono); font-size:10px; fill:var(--ink-4); }
+.curve-label { font-family:var(--font-body); font-size:11px; fill:var(--ink-2); }
+.curve-peak-label { font-family:var(--font-body); font-size:11px; font-weight:500; fill:var(--accent-ink); }

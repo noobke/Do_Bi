@@ -1,10 +1,11 @@
 # Design Contract · Do_Bi 小说创作台原型
 
-> 版本 **v1.3（批次四 · 结构可视化 + 文风双入口）** · 单一真相源。所有页面必须逐字引用本契约，不得自创颜色 / 字号 / 圆角。
+> 版本 **v1.4（批次五 · 剧情走向可视化）** · 单一真相源。所有页面必须逐字引用本契约，不得自创颜色 / 字号 / 圆角。
 > 批次一：工作台 · 共创 · 角色 · 伏笔 · 设置
 > 批次二：章纲与依赖图 · 审计报告 · 文风档案
 > 批次三：项目列表（首页）· 拆书 · 设置页 MCP 面板
-> 批次四（本次）：结构页多视图改造 · 文风页「提取 / 选择」双入口 · 新增世界观页
+> 批次四：结构页多视图改造 · 文风页「提取 / 选择」双入口 · 新增世界观页
+> 批次五（本次）：结构页新增**故事树**与**节奏曲线**，并把故事树设为默认视图
 > **入口页：`index.html`（我的作品）** · 共 11 页
 
 ## Tech stack & delivery
@@ -135,6 +136,13 @@ bg-texture: 极淡纸纹 = 暖色 radial 光晕 + 极低不透明度纤维纹（
 - **提取来源**：`.src-list` · `.src-row` · `.src-main`
 - **世界观**：`.rule-card`（`.is-conflict/.is-soft/.is-unused`）· `.rule-text` · `.rule-meta` · `.ref-chips` · `.ref-chip` · `.cat-bar` · `.cat-name`
 
+### 批次五新增组件类（已写入 styles.css §45–46）
+
+- **故事树**：`.tree-wrap`（显式 viewBox 的 SVG 容器）· `.tree-vol-band`（卷分带）· `.tree-vol-label`（卷名）· `.tree-vol-split`（卷分隔虚线）· `.tree-trunk`（主干）· `.tree-node`（`.is-audit/.is-draft/.is-todo/.is-peak/.is-selected`）· `.tn-n`（章号）· `.tn-t`（关键章标题）· `.tn-s`（关键章副行）· `.tree-branch`（支线，`stroke` 取数据色）· `.tree-branch-dot` · `.tree-branch-label` · `.tree-branch-caption` · `.tree-axis` · `.tree-axis-line`
+- **节奏曲线**：`.curve-wrap` · `.curve-band` · `.curve-grid` · `.curve-grid-strong`（中位参考线）· `.curve-area` · `.curve-line` · `.curve-dot`（`.is-peak/.is-low`）· `.curve-axis` · `.curve-label` · `.curve-peak-label`
+
+> **数据零新增**：故事树与节奏曲线所需的「主轴、支线分岔/收束、高潮、状态、张力」全部从既有 `structureChapters` / `plotlines` / `outlineGraph.volumes` **派生**，未新增任何 mock 数据集。派生规则固定为：分岔章 = `min(active)`、收束章 = `max(active)`、高潮 = `intensity >= 4`（曲线标注仅取 `=== 5`）。
+
 > **框架约定（v1.3 修订）**：`.seg` 的分段控件改用**事件委托**（见 app.js `initSegs`），因此**页面载入后动态注入的 `.seg` 按钮同样生效**；页面不得再自行派发 `seg:change`，只监听即可。
 
 ## App Shell + Canonical Nav（多页必须逐字一致）
@@ -182,7 +190,7 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
 | 3 | chat.html | 共创对话 | 一 | Chat-first 立项 | 对话流、选项卡、设定沉淀 |
 | 4 | characters.html | 角色与关系 | 一 | 角色卡与关系 | 角色列表、详情、不可变特征 |
 | 5 | hooks.html | 伏笔看板 | 一 | 伏笔追踪与回收率 | 统计条、状态泳道、时间线 |
-| 6 | outline.html | **结构与大纲** | 二/四 | 四视图：总纲 / 章节板 / 情节线 / 依赖图 | 罗盘卡、**章节×情节线矩阵**、章节板（按卷分列）、**情节线地铁图**、依赖图 SVG + 边清单 + 节点详情 |
+| 6 | outline.html | **结构与大纲** | 二/四/五 | **六视图**：故事树（默认）/ 节奏曲线 / 情节线 / 总纲 / 章节板 / 依赖图 | **故事树**（主干 + 支线分岔合流）、**节奏曲线**（张力折线 + 自动诊断）、情节线地铁图、罗盘卡 + 章节×情节线矩阵、章节板（按卷分列）、依赖图 SVG + 边清单 + 节点详情 |
 | 7 | **world.html** | **世界观** | **四** | 设定清单、冲突裁定、与情节线对齐 | 统计条、冲突裁定卡、**分类规则卡**、引用章 chips、`world.md` 片段 |
 | 8 | audit.html | 审计报告 | 二 | L1 规则 + L2 维度 + 可举证评审 + diff | 统计条、规则行、发现卡、评分行、diff 预览 |
 | 9 | style.html | 文风档案 | 二/四 | 当前文风 + **提取入口** + **选择入口** + 分析结果 | 当前文风卡、**文风选择器网格（含样段）**、提取模态、句式/视角/比例卡、禁用 chip、注入对比 |
@@ -221,6 +229,8 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
 - **`styleSources[]`**：`{ id, kind:'file'|'book'|'merge', label, hint, checked }`
 - **`worldSettings[]`**：`{ id, category, kind:'hard'|'soft', status:'ok'|'conflict'|'unused', rule, refs:[章号], note }`
 
+批次五：**无新增数据集**（故事树与节奏曲线全部由 `structureChapters` + `plotlines` + `outlineGraph.volumes` 派生，见「批次五新增组件类」下的派生规则）。
+
 ## 交互约定（stub，不调真模型）
 
 - 所有「生成 / 审计 / 分析 / 刷新」按钮：显示 loading → `setTimeout` 模拟 → 写回 mock 并重渲染
@@ -232,3 +242,7 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
   - **文风页**：顶栏「提取文风」开模态、「选择文风」滚动定位；选择器分类筛选（监听 `#style-cat` 的 `seg:change`）；点「应用」→ `api.applyStylePreset` → 重渲当前文风卡 + 选择器 + 顶栏副标题
   - **提取模态**：勾选来源（`src-list`）+ 可选粘贴样本；空来源且空粘贴时拦截并提示；成功后重渲当前文风卡
   - **世界观页**：分类筛选（`#world-cat` 的 `seg:change`）；「改为硬约束 / 改为软设定」切换；冲突裁定两选项（保留正文改写规则 / 按规则修改正文）；「查看引用章」提示章号
+- 批次五新增交互：
+  - **结构页六视图切换**：视图顺序 `tree · curve · plotlines · overview · board · graph`，默认 `tree`；`.vtab` 的 `data-view` 与 `#view-*` 容器一一对应（`hidden` 必须加在**无 class 的外层容器**上，否则 `.stack-24` 的 `display:flex` 会覆盖 UA 的 `[hidden]{display:none}`）
+  - **故事树**：点击章节节点 → `is-selected` + toast（第 N 章 · 标题 · 状态）；节点内含 `<title>` 提示「第N章 · 标题 · 强度X」；支线颜色取自 `plotlines[].color`
+  - **节奏曲线**：纯前端诊断（连续低强度段 → `sev-major`；全书最低点 → `sev-minor`；5 级高潮分布 → 说明行）；`#curve-risk-tag` 随风险数切换文案与配色
