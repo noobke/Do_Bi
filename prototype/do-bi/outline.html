@@ -99,7 +99,7 @@
         <section class="card" data-reveal>
           <div class="card-head">
             <h3>故事树</h3>
-            <span class="tag tag-info">主干 + 4 条支线</span>
+            <div class="row" id="tree-stat"></div>
           </div>
           <div class="card-body" style="padding:0">
             <div class="tree-wrap">
@@ -107,7 +107,7 @@
             </div>
             <div class="legend">
               <div class="legend-item"><span class="legend-swatch"></span><span>主干</span></div>
-              <div class="legend-item"><span class="legend-swatch is-node"></span><span>已完成</span></div>
+              <div class="legend-item"><span class="legend-swatch is-node" style="background:var(--moss-soft);border-color:var(--moss)"></span><span>已完成</span></div>
               <div class="legend-item"><span class="legend-swatch is-node" style="background:var(--amber-soft);border-color:var(--amber)"></span><span>待审计</span></div>
               <div class="legend-item"><span class="legend-swatch is-node" style="background:var(--accent-soft);border-color:var(--accent)"></span><span>草稿</span></div>
               <div class="legend-item"><span class="legend-swatch is-node" style="background:var(--paper-3);border-color:var(--line-strong);border-style:dashed"></span><span>未写</span></div>
@@ -117,6 +117,7 @@
               <div class="legend-item"><span class="legend-swatch" style="border-top-color:var(--crimson)"></span><span>文脉司登场</span></div>
               <div class="legend-item"><span class="legend-swatch" style="border-top-color:var(--ink-3)"></span><span>沈定山之死</span></div>
             </div>
+            <div style="padding:14px 16px 16px"><div class="chart-note" id="tree-note"></div></div>
           </div>
         </section>
       </div>
@@ -128,13 +129,13 @@
         <section class="card" data-reveal>
           <div class="card-head">
             <h3>节拍骨架</h3>
-            <span class="tag tag-quiet">4 幕 · 12 个节拍</span>
+            <div class="row" id="beats-stat"></div>
           </div>
           <div class="card-body" style="padding:0">
             <div class="beat-wrap">
               <svg id="beatsheet" viewBox="0 0 900 230" role="img" aria-label="节拍骨架"></svg>
             </div>
-            <div class="fs-12 muted" id="beats-desc" style="padding:14px 16px 16px"></div>
+            <div style="padding:14px 16px 16px"><div class="chart-note" id="beats-note"></div></div>
           </div>
         </section>
       </div>
@@ -152,6 +153,7 @@
             <div class="curve-wrap">
               <svg id="curve" viewBox="0 0 980 320" width="100%" height="auto" role="img" aria-label="节奏曲线"></svg>
             </div>
+            <div style="padding:14px 16px 16px"><div class="chart-note" id="curve-note"></div></div>
           </div>
         </section>
 
@@ -179,7 +181,7 @@
             <div class="tl2-wrap">
               <svg id="booktl" viewBox="0 0 900 320" role="img" aria-label="全书时间线"></svg>
             </div>
-            <div class="fs-12 muted" style="padding:14px 16px 16px">上轨按故事内时间排序，下轨按叙述顺序（章节）排列；两点之间的斜虚线即「闪回/预叙」造成的错位。琥珀色为背景设定，灰色为预叙或尚未写入。</div>
+            <div style="padding:14px 16px 16px"><div class="chart-note" id="timeline-note"></div></div>
           </div>
         </section>
       </div>
@@ -208,7 +210,7 @@
           </div>
           <div class="card-body">
             <div class="matrix" id="matrix-body"></div>
-            <div class="fs-12 muted" style="margin-top:12px">深色 = 该线在本章达到高潮；浅色 = 本章推进该线；空格 = 本章未涉及</div>
+            <div class="chart-note" id="overview-note" style="margin-top:12px"></div>
           </div>
         </section>
 
@@ -221,10 +223,11 @@
         <section class="card" data-reveal>
           <div class="card-head">
             <h3>章节板</h3>
-            <span class="tag tag-quiet">20 章</span>
+            <div class="row" id="board-stat"></div>
           </div>
           <div class="card-body">
             <div class="board" id="board-cols" style="grid-template-columns:repeat(3,minmax(0,1fr))"></div>
+            <div class="chart-note" id="board-note" style="margin-top:16px"></div>
           </div>
         </section>
       </div>
@@ -240,7 +243,7 @@
           </div>
           <div class="card-body">
             <div class="plotline" id="plotline-body"></div>
-            <div class="fs-12 muted" style="margin-top:12px">方块 = 该线活跃章节；放大方块 = 该线高潮点；竖直细线为章节参考线</div>
+            <div class="chart-note" id="plotlines-note" style="margin-top:12px"></div>
           </div>
         </section>
       </div>
@@ -252,14 +255,13 @@
         <section class="card" data-reveal>
           <div class="card-head">
             <h3>全书内容生产流程</h3>
-            <span class="tag tag-info">8 个阶段 · 2 处回环</span>
+            <div class="row" id="pipeline-stat"></div>
           </div>
           <div class="card-body" style="padding:0">
             <div class="pflow-wrap">
               <svg id="bookpipe" viewBox="0 0 900 640" role="img" aria-label="全书生产流程"></svg>
             </div>
-            <div class="fs-12 muted" style="padding:14px 16px 0">实线为主流程，<strong>琥珀虚线为回环</strong>：判定「否」时回到「章纲」续写下一章；「全书组装」在有新定稿章时重跑。</div>
-            <div class="fs-12 muted" style="padding:8px 16px 16px">点「开始」到「完结」是一条不间断的闭环——长篇生产跨天跨周，任一节点中断后都可从该节点续跑。</div>
+            <div style="padding:14px 16px 16px"><div class="chart-note" id="pipeline-note"></div></div>
           </div>
         </section>
       </div>
@@ -288,6 +290,7 @@
                 <div class="legend-item"><span class="legend-swatch is-active"></span><span>当前选中</span></div>
                 <div class="legend-item"><span class="legend-swatch is-node-skeleton"></span><span>骨架弧</span></div>
               </div>
+              <div style="padding:14px 16px 0"><div class="chart-note" id="graph-note"></div></div>
               <div class="card-foot" style="padding:0">
                 <div class="rule-row">
                   <span class="rule-name fs-13">依赖清单</span>
@@ -349,6 +352,18 @@
   function trunc(s, n) {
     s = String(s == null ? '' : s);
     return s.length > n ? s.slice(0, n) + '…' : s;
+  }
+
+  /* 状态计数 / 计数 tag */
+  function countBy(list, keyFn) {
+    var m = {};
+    list.forEach(function (x) { var k = keyFn(x); m[k] = (m[k] || 0) + 1; });
+    return m;
+  }
+  function statusTags(items) {
+    return items.filter(function (t) { return t[1] > 0; }).map(function (t) {
+      return '<span class="tag ' + t[0] + '">' + t[1] + ' ' + t[2] + '</span>';
+    }).join('');
   }
 
   /* ================= 1 · 罗盘 ================= */
@@ -493,6 +508,13 @@
         renderDetail();
       });
     });
+
+    var graphNote = $('#graph-note');
+    if (graphNote) {
+      var pending = state.edges.filter(function (e) { return !e.confirmed; }).length;
+      graphNote.innerHTML = '<strong>' + state.nodes.length + ' 个节点 · ' + state.edges.length +
+        ' 条依赖边，其中 ' + pending + ' 条待确认</strong> · 点击节点高亮其边并联动右侧详情';
+    }
   }
 
   /* 边清单行 hover → 高亮对应 SVG 边 + 显示 halo */
@@ -839,6 +861,23 @@
         location.href = 'chapter.html#' + card.dataset.ch;
       });
     });
+
+    var bc = countBy(chapters, function (c) { return c.status; });
+    var statBox = $('#board-stat');
+    if (statBox) {
+      statBox.innerHTML = statusTags([
+        ['tag-ok', bc.done || 0, '已完成'],
+        ['tag-warn', bc.audit || 0, '待审计'],
+        ['tag-info', bc.draft || 0, '草稿'],
+        ['tag-quiet', bc.todo || 0, '未写']
+      ]);
+    }
+    var boardNote = $('#board-note');
+    if (boardNote) {
+      boardNote.innerHTML = '<strong>' + vols.length + ' 卷共 ' + chapters.length + ' 章：' +
+        (bc.done || 0) + ' 已写 · ' + (bc.audit || 0) + ' 待审计 · ' + (bc.draft || 0) + ' 草稿 · ' +
+        (bc.todo || 0) + ' 未写</strong> · 左侧色条为状态，点击章节卡进入详情';
+    }
   }
 
   /* ================= 8 · 章节 × 情节线矩阵 ================= */
@@ -863,6 +902,17 @@
     }).join('');
 
     $('#matrix-body').innerHTML = '<table><thead>' + thead + '</thead><tbody>' + tbody + '</tbody></table>';
+
+    var filled = 0;
+    mx.rows.forEach(function (r) {
+      r.cells.forEach(function (cell) { if (cell.level > 0) filled++; });
+    });
+    var overviewNote = $('#overview-note');
+    if (overviewNote) {
+      overviewNote.innerHTML = '<strong>' + mx.maxChapter + ' 章 × ' + mx.rows.length + ' 条线 = ' +
+        (mx.maxChapter * mx.rows.length) + ' 格，已填充 ' + filled + ' 格</strong> · ' +
+        '深色为该线在本章达到高潮、浅色为本章推进该线、空格为本章未涉及';
+    }
   }
 
   /* ================= 9 · 情节线地铁图 ================= */
@@ -915,6 +965,15 @@
     html += '<div class="pl-axis"><span></span><div class="pl-ticks">' + ticks + '</div></div>';
 
     $('#plotline-body').innerHTML = html;
+
+    var mainLines = list.filter(function (p) { return p.kind === 'main'; }).length;
+    var subLines = list.filter(function (p) { return p.kind === 'sub'; }).length;
+    var crosses = list.reduce(function (acc, p) { return acc + p.active.length; }, 0);
+    var plotNote = $('#plotlines-note');
+    if (plotNote) {
+      plotNote.innerHTML = '<strong>' + list.length + ' 条情节线：' + mainLines + ' 主线 + ' + subLines +
+        ' 支线，共覆盖 ' + crosses + ' 个「章 × 线」交点</strong> · 方块为活跃章、放大方块为高潮';
+    }
   }
 
   /* ================= 10 · 故事树（主干 + 支线分岔合流） ================= */
@@ -1028,6 +1087,24 @@
         location.href = 'chapter.html#' + g.dataset.ch;
       });
     });
+
+    var tc = countBy(chapters, function (c) { return c.status; });
+    var subCount = plotlines.filter(function (pl) { return pl.kind === 'sub'; }).length;
+    var treeStat = $('#tree-stat');
+    if (treeStat) {
+      treeStat.innerHTML = statusTags([
+        ['tag-ok', tc.done || 0, '已完成'],
+        ['tag-warn', tc.audit || 0, '待审计'],
+        ['tag-info', tc.draft || 0, '草稿'],
+        ['tag-quiet', tc.todo || 0, '未写']
+      ]);
+    }
+    var treeNote = $('#tree-note');
+    if (treeNote) {
+      treeNote.innerHTML = '<strong>主干 ' + chapters.length + ' 章：' + (tc.done || 0) + ' 已写 · ' +
+        (tc.audit || 0) + ' 待审计 · ' + (tc.draft || 0) + ' 草稿 · ' + (tc.todo || 0) + ' 未写</strong> · ' +
+        subCount + ' 条支线自分岔章长出、在收束章合流；点击章节可进入详情';
+    }
   }
 
   /* ================= 11 · 节奏曲线（按章张力） ================= */
@@ -1146,6 +1223,20 @@
       riskTag.classList.toggle('tag-warn', risks.length > 0);
       riskTag.classList.toggle('tag-ok', risks.length === 0);
     }
+
+    var curveNote = $('#curve-note');
+    if (curveNote) {
+      if (risks.length) {
+        curveNote.className = 'chart-note is-warn';
+        curveNote.innerHTML = '<strong>' + risks.length + ' 处节奏风险</strong> · ' +
+          risks.map(function (r) {
+            return '第 ' + r[0].n + '–' + r[1].n + ' 章强度连续 ≤3（共 ' + r[2] + ' 章）';
+          }).join('；') + '，建议插入推进事件';
+      } else {
+        curveNote.className = 'chart-note is-ok';
+        curveNote.innerHTML = '<strong>无节奏风险</strong> · 全书强度分布均匀，无明显拖沓段';
+      }
+    }
   }
 
   /* ================= 12 · 全书时间线（故事时间 × 叙述顺序 双轨） ================= */
@@ -1203,6 +1294,15 @@
     });
 
     svg.innerHTML = s;
+
+    var backstory = events.filter(function (e) { return e.kind === 'backstory'; }).length;
+    var flash = events.filter(function (e) { return e.kind === 'flashback' || e.kind === 'future'; }).length;
+    var tlNote = $('#timeline-note');
+    if (tlNote) {
+      tlNote.innerHTML = '<strong>' + events.length + ' 个时间锚点：' + backstory + ' 个背景设定 · ' +
+        flash + ' 个闪回/预叙</strong> · 上轨按故事内时间排序，下轨按叙述顺序（章节）排列；' +
+        '两点之间的斜虚线即「闪回/预叙」造成的错位；琥珀色为背景设定，灰色为预叙或尚未写入';
+    }
   }
 
   /* ================= 13 · 节拍骨架（幕 → 节拍 → 章节） ================= */
@@ -1254,12 +1354,29 @@
         if (b.from <= 17 && 17 <= b.to) { hitAct = a.act; hitBeat = b; }
       });
     });
-    var desc = $('#beats-desc');
-    if (desc) {
-      desc.textContent = hitBeat
-        ? '当前第 17 章位于「' + hitAct + '」的「' + hitBeat.name + '」节拍（第 ' +
-          hitBeat.from + '–' + hitBeat.to + ' 章）· ' + hitBeat.core
-        : '当前第 17 章未落在任何节拍区间内';
+
+    var allBeats = [];
+    acts.forEach(function (a) { (a.beats || []).forEach(function (b) { allBeats.push(b); }); });
+    var bc = countBy(allBeats, function (b) { return b.status; });
+
+    var beatsStat = $('#beats-stat');
+    if (beatsStat) {
+      beatsStat.innerHTML = statusTags([
+        ['tag-ok', bc.done || 0, '已完成'],
+        ['tag-warn', bc.audit || 0, '待审'],
+        ['tag-info', bc.draft || 0, '草稿'],
+        ['tag-quiet', bc.todo || 0, '未写']
+      ]);
+    }
+
+    var beatsNote = $('#beats-note');
+    if (beatsNote) {
+      beatsNote.innerHTML = '<strong>' + acts.length + ' 幕 ' + allBeats.length + ' 节拍：' +
+        (bc.done || 0) + ' 已成稿 · ' + (bc.audit || 0) + ' 待审 · ' + (bc.draft || 0) + ' 草稿 · ' +
+        (bc.todo || 0) + ' 未写</strong> · ' +
+        (hitBeat
+          ? '当前第 17 章位于「' + hitAct + '」的「' + hitBeat.name + '」节拍（第 ' + hitBeat.from + '–' + hitBeat.to + ' 章）'
+          : '当前第 17 章未落在任何节拍区间内');
     }
   }
 
@@ -1328,6 +1445,23 @@
       '<text class="pflow-pill-text" text-anchor="middle" x="750" y="597">完结</text>';
 
     svg.innerHTML = s;
+
+    var pc = countBy(stages, function (st) { return st.status; });
+    var pipeStat = $('#pipeline-stat');
+    if (pipeStat) {
+      pipeStat.innerHTML = statusTags([
+        ['tag-ok', pc.done || 0, '已完成'],
+        ['tag-warn', pc.active || 0, '进行中'],
+        ['tag-quiet', pc.todo || 0, '待开始']
+      ]);
+    }
+    var pipeNote = $('#pipeline-note');
+    if (pipeNote) {
+      pipeNote.innerHTML = '<strong>' + stages.length + ' 个阶段：' + (pc.done || 0) + ' 已完成 · ' +
+        (pc.active || 0) + ' 进行中 · ' + (pc.todo || 0) + ' 待开始</strong> · ' +
+        '实线为主流程，琥珀虚线为回环（判定「否」→ 续写下一章；有新定稿章 → 重跑逐章流水线）；' +
+        '点「开始」到「完结」是一条不间断的闭环，任一节点中断后可从该节点续跑';
+    }
   }
 
   /* ================= 刷新罗盘 ================= */

@@ -1094,3 +1094,111 @@ svg { display:block; }
   border-bottom:1px solid var(--line);
   margin-bottom:var(--sp-24);
 }
+
+/* ==========================================================================
+   批次九（v1.8）· 清晰度通修
+   --------------------------------------------------------------------------
+   起因：图表原用 tokens 的 *-soft 浅色底表达状态，实测对纸底仅 1.10–1.17:1
+   （WCAG 图形元素要求 ≥ 3:1），且「已完成 / 进行中 / 未写」两两之间只有
+   1.00–1.07:1 —— 数学上无法区分，这是「不够一目了然」的根因。
+   对策：统一为「2px 饱和描边 + 低饱和填充」，与页面卡片既有语言一致；
+        同时把 SVG 内最小字号从 10px 提到 11px（中文可读下限）。
+   ========================================================================== */
+
+/* ---------- 57.1 状态编码：饱和描边取代极浅底 ---------- */
+.beat-block,
+.flow-node rect,
+.pflow-node rect,
+.pipe-node,
+.tree-node rect { stroke-width:2; }
+
+/* 已定稿 / 通过 —— 苔绿 */
+.beat-block.is-done,
+.flow-node.is-resolve rect,
+.pflow-node.is-done rect,
+.pipe-node.is-done {
+  fill:color-mix(in srgb, var(--moss) 14%, var(--paper));
+  stroke:var(--moss);
+}
+
+/* 进行中 / 待处理 —— 琥珀（并以 3px 线宽作为第二辨识通道） */
+.beat-block.is-active,
+.flow-node.is-conflict rect,
+.flow-node.is-turn rect,
+.pflow-node.is-active rect,
+.pipe-node.is-active {
+  fill:color-mix(in srgb, var(--amber) 18%, var(--paper));
+  stroke:var(--amber);
+  stroke-width:3;
+}
+
+/* 修订 / 回退 —— 朱砂点线（线型作为第三通道，与「未开始」的虚线区分） */
+.pflow-node.is-revise rect {
+  fill:color-mix(in srgb, var(--crimson) 14%, var(--paper));
+  stroke:var(--crimson);
+  stroke-dasharray:2 3;
+}
+
+/* 未开始 —— 灰 + 虚线（一眼可辨的"空缺"） */
+.beat-block.is-todo,
+.pflow-node.is-todo rect,
+.pipe-node.is-todo {
+  fill:var(--paper-3);
+  stroke:var(--ink-4);
+  stroke-dasharray:5 4;
+}
+
+/* 可选步骤 —— 描边仍在，仅加虚线 */
+.pflow-node.is-optional rect { stroke-dasharray:5 4; }
+
+/* 故事树节点：状态 + 当前选中（选中优先级最高，必须置于最后） */
+.tree-node.is-audit rect { fill:color-mix(in srgb, var(--amber) 20%, var(--paper)); stroke:var(--amber); }
+.tree-node.is-draft rect { fill:color-mix(in srgb, var(--accent) 16%, var(--paper)); stroke:var(--accent); }
+.tree-node.is-todo rect  { fill:var(--paper-3); stroke:var(--ink-4); stroke-dasharray:5 4; }
+.tree-node.is-peak rect  { stroke-width:3; }
+.tree-node.is-selected rect { fill:var(--accent); stroke:var(--accent-ink); stroke-width:2; }
+
+/* 场景流程默认节点：默认态也要有可辨的边 */
+.flow-node rect { stroke:var(--ink-4); }
+
+/* ---------- 57.2 最小字号提升（中文可读下限） ----------
+   说明：本节是**图表字号的权威层**。下方各组件的原始字号声明（含若干 10px）
+   仍保留以记录初始值，但均被本节按同等或更高优先级覆盖；调整图表字号请只改本节。 */
+.tl-at, .tl2-at, .tl2-ch, .tl2-now-label,
+.beat-axis, .beat-core,
+.pflow-meta, .pflow-edge-label,
+.tree-axis, .fn-s, .tl-label-sub,
+.curve-axis, .pl-tick, .pl-kind,
+.struct-beat, .fish-cause,
+.chap-no, .pipe-meta, .actline-meta,
+.tree-node .tn-s { font-size:var(--fs-11); }
+
+.beat-name, .tree-branch-caption, .pflow-decision-text,
+.tl2-label, .tl-label, .curve-label, .beat-marker-label,
+.struct-label, .fish-cat, .tree-branch-label,
+.legend-item, .legend { font-size:var(--fs-12); }
+
+/* 图标题类：主标识再提一档 */
+.tree-vol-label, .beat-act-name, .struct-act-name,
+.pflow-name, .pl-name, .chap-name { font-size:var(--fs-13); }
+
+/* ---------- 57.3 强度条放大（原 3×10px 过小） ---------- */
+.intensity { gap:3px; }
+.intensity > i { width:4px; height:12px; border-radius:1px; }
+.intensity > i.on { background:var(--amber); }
+
+/* ---------- 57.4 结论文案条（把要解码的结论直接用文字给出） ---------- */
+/* 注意：必须是 block 而非 flex —— 若用 flex，则「<strong>结论</strong> · 读法」
+   这类含内联强调的单段文案会被拆成多个 flex 项并排成两栏。 */
+.chart-note {
+  padding:var(--sp-12) var(--sp-16);
+  font-size:var(--fs-13); line-height:1.7; color:var(--ink-2);
+  background:var(--paper-2);
+  border-left:3px solid var(--accent);
+  border-radius:var(--r-sm);
+}
+.chart-note strong { color:var(--ink); font-weight:600; }
+.chart-note em { font-style:normal; font-family:var(--font-mono); color:var(--ink); }
+.chart-note.is-ok { border-left-color:var(--moss); background:var(--moss-soft); }
+.chart-note.is-warn { border-left-color:var(--amber); background:var(--amber-soft); }
+.chart-note.is-danger { border-left-color:var(--crimson); background:var(--crimson-soft); }

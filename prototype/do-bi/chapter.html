@@ -132,12 +132,16 @@
         <section class="card" data-reveal>
           <div class="card-head">
             <h3>内容生产流程</h3>
-            <span class="tag tag-info" id="pipe-tag">—</span>
+            <div class="row">
+              <span class="tag tag-ok" id="pipe-done">—</span>
+              <span class="tag tag-warn" id="pipe-active">—</span>
+              <span class="tag tag-quiet" id="pipe-todo">—</span>
+            </div>
           </div>
           <div class="card-body">
             <div class="pipe" id="pipe-body"></div>
             <div class="divider"></div>
-            <div class="fs-12 muted" id="pipe-note1">—</div>
+            <div class="chart-note" id="pipe-note1"><span>—</span></div>
             <div class="fs-12 muted" style="margin-top:4px">耗时与 Token 为流水线典型值；真实计量以本地账本为准。</div>
           </div>
         </section>
@@ -153,7 +157,7 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="fs-12 muted">实线为顺序流程，<strong>琥珀虚线为回环</strong>：审计不通过走「修订」并回到「审计 L1+L2」重审，直到通过才进入后续工序。</div>
+            <div class="chart-note" id="chflow-note"><span>—</span></div>
           </div>
         </section>
       </div>
@@ -173,7 +177,7 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="fs-12 muted" id="flow-note">灰色为建置、靛蓝为转折、苔绿为收束。本章为线性推进，无分叉——若章纲给出多种走法，会在此处分出虚线支路。</div>
+            <div class="chart-note" id="flow-note"><span>—</span></div>
           </div>
         </section>
       </div>
@@ -193,7 +197,7 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="fs-12 muted" id="tl-note">—</div>
+            <div class="chart-note" id="tl-note"><span>—</span></div>
           </div>
         </section>
 
@@ -208,7 +212,7 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="fs-12 muted">虚线把本章事件连到它在全书时间轴上的锚点；琥珀色为背景设定。未连线的为本章独有事件。</div>
+            <div class="chart-note" id="tl2-note"><span>—</span></div>
           </div>
         </section>
       </div>
@@ -228,7 +232,7 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="fs-12 muted" id="struct-note">—</div>
+            <div class="chart-note" id="struct-note"><span>—</span></div>
           </div>
         </section>
 
@@ -241,7 +245,7 @@
             <div class="actline" id="actline"></div>
           </div>
           <div class="card-body">
-            <div class="fs-12 muted" id="act-note">—</div>
+            <div class="chart-note" id="act-note"><span>—</span></div>
           </div>
         </section>
       </div>
@@ -414,7 +418,13 @@
 
   /* ---------- 视图 1 · 生产流程 ---------- */
   function renderPipeline(steps, pipe) {
-    $('#pipe-tag').textContent = '已完成 ' + pipe.done + ' / ' + pipe.total + ' 步';
+    var done = pipe.done, total = pipe.total;
+    var running = pipe.active != null ? 1 : 0;
+    var todo = total - done - running;
+
+    $('#pipe-done').textContent = done + ' 已完成';
+    $('#pipe-active').textContent = running + ' 进行中';
+    $('#pipe-todo').textContent = todo + ' 待执行';
 
     var box = $('#pipe-body');
     box.innerHTML = '';
@@ -435,13 +445,17 @@
       box.appendChild(el);
     });
 
+    var note = $('#pipe-note1');
     if (pipe.active != null) {
       var cur = steps[pipe.active - 1] || { name: '—' };
-      var remain = pipe.total - pipe.active;
-      $('#pipe-note1').textContent = '本章推进到第 ' + pipe.active + ' 步「' + cur.name +
-        '」；后续 ' + remain + ' 步待执行。定稿前不会写入真相文件，中断后可从该步续跑。';
+      note.className = 'chart-note';
+      note.innerHTML = '<span><strong>' + total + ' 道工序：' + done + ' 已完成 · ' + running +
+        ' 进行中 · ' + todo + ' 待执行</strong> · 本章推进到第 ' + pipe.active + ' 步「' + cur.name +
+        '」；定稿前不写入真相文件，中断可从该步续跑</span>';
     } else {
-      $('#pipe-note1').textContent = '全流程已完成，状态已写入真相文件。';
+      note.className = 'chart-note is-ok';
+      note.innerHTML = '<span><strong>' + total +
+        ' 道工序全部完成</strong> · 状态已写入真相文件，可从任一历史版本回溯</span>';
     }
   }
 
@@ -509,6 +523,11 @@
       '</g>';
     });
 
+    var decisionCount = out.split('class="pflow-decision"').length - 1;
+    var loopCount = out.split('class="pflow-edge is-loop"').length - 1;
+    $('#chflow-note').innerHTML = '<span><strong>' + NODES.length + ' 个节点 · ' + decisionCount +
+      ' 处判定 · ' + loopCount + ' 处回环</strong> · 实线为顺序流程，琥珀虚线为回环：审计不通过走「修订」并回到「审计 L1+L2」重审</span>';
+
     $('#chflow').innerHTML = out;
   }
 
@@ -522,6 +541,7 @@
     if (!n) {
       svg.setAttribute('viewBox', '0 0 900 120');
       svg.innerHTML = '';
+      $('#flow-note').innerHTML = '<span><strong>本章无场景节拍</strong> · 场景流程在章纲生成后自动填充</span>';
       return;
     }
 
@@ -538,13 +558,14 @@
     out += '<text class="flow-pill-text" x="52" y="' + (y0 + NH / 2 + 4) + '" text-anchor="middle">起</text>';
     out += '<path class="flow-edge" d="M 84,' + (y0 + NH / 2) + ' H 140"/>';
 
+    var build = 0, turn = 0, resolve = 0;
     scenes.forEach(function (label, i) {
       var yi = y(i);
       var cls = '';
-      if (n === 1) cls = ' is-resolve';
-      else if (i === 0) cls = '';
-      else if (i === n - 1) cls = ' is-resolve';
-      else cls = ' is-turn';
+      if (n === 1) { cls = ' is-resolve'; resolve++; }
+      else if (i === 0) { cls = ''; build++; }
+      else if (i === n - 1) { cls = ' is-resolve'; resolve++; }
+      else { cls = ' is-turn'; turn++; }
 
       out += '<g class="flow-node' + cls + '">' +
         '<rect x="140" y="' + yi + '" width="340" height="' + NH + '" rx="8"/>' +
@@ -558,6 +579,9 @@
     });
 
     svg.innerHTML = out;
+
+    $('#flow-note').innerHTML = '<span><strong>本章 ' + n + ' 个场景：' + build + ' 建置 · ' +
+      turn + ' 转折 · ' + resolve + ' 收束</strong> · 灰色为建置、靛蓝为转折、苔绿为收束；线性推进，无分叉</span>';
   }
 
   /* ---------- 视图 3 · 时间线 ---------- */
@@ -569,7 +593,7 @@
 
     if (!n) {
       svg.innerHTML = '';
-      $('#tl-note').textContent = '本章无故事内时间事件。';
+      $('#tl-note').innerHTML = '<span><strong>本章无故事内时间事件</strong> · 时间线在正文生成后自动提取</span>';
       return;
     }
 
@@ -592,13 +616,13 @@
 
     svg.innerHTML = out;
 
-    var kinds = [];
-    tl.forEach(function (e) {
-      var k = e.kind || 'now';
-      if (kinds.indexOf(k) < 0) kinds.push(k);
-    });
-    var names = kinds.map(function (k) { return KIND_LABEL[k] || '顺叙'; });
-    $('#tl-note').textContent = '本章时间结构：' + names.join('、') + '。琥珀色为闪回、灰色为预叙。';
+    var flash = tl.filter(function (e) { return e.kind === 'flashback'; }).length;
+    var head = n === 1
+      ? ('本章 1 个事件：' + tl[0].at + '「' + tl[0].label + '」')
+      : ('本章 ' + n + ' 个事件横跨「' + tl[0].at + ' → ' + tl[n - 1].at + '」');
+    var flashClause = flash > 0 ? ('其中 <em>' + flash + '</em> 个为闪回；') : '';
+    $('#tl-note').innerHTML = '<span><strong>' + head + '</strong> · ' + flashClause +
+      '琥珀为闪回、灰为预叙</span>';
   }
 
   /* ---------- 视图 3 · 本章事件 ↔ 全书时间锚点（双轨） ---------- */
@@ -658,6 +682,8 @@
 
     $('#chtl2').innerHTML = out;
     $('#tl2-tag').textContent = matched + ' / ' + n + ' 个事件已定位';
+    $('#tl2-note').innerHTML = '<span><strong>本章 ' + n + ' 个事件中 ' + matched +
+      ' 个可对应到全书时间锚点</strong> · 虚线把本章事件连到它在全书时间轴上的位置，琥珀色为背景设定</span>';
   }
 
   /* ---------- 视图 4 · 结构位置 ---------- */
@@ -695,10 +721,15 @@
 
     $('#structure').innerHTML = out;
     $('#struct-tag').textContent = act ? act.name : '—';
-    $('#struct-note').textContent = act
-      ? ('本章位于「' + act.name + '」（第 ' + act.from + '–' + act.to + ' 章）· ' + act.note +
-         ' · 结构节拍：' + det.beat)
-      : ('结构节拍：' + det.beat);
+    var peak = Math.max.apply(null, chapters.map(function (c) { return c.intensity; }));
+    if (act) {
+      $('#struct-note').innerHTML = '<span><strong>本章处于「' + act.name + '」（' + act.from + '–' +
+        act.to + ' 章）· 节拍「' + det.beat + '」</strong> · 张力 <em>' + ch.intensity + '/5</em>' +
+        (ch.intensity >= peak ? '，为全书峰值区' : '') + '；朱砂虚线标记本章位置</span>';
+    } else {
+      $('#struct-note').innerHTML = '<span><strong>本章节拍「' + det.beat + '」</strong> · 张力 <em>' +
+        ch.intensity + '/5</em>；朱砂虚线标记本章位置</span>';
+    }
   }
 
   /* ---------- 视图 4 · 本幕节拍序列 ---------- */
@@ -708,7 +739,7 @@
     $('#act-tag').textContent = act ? act.name : '—';
 
     var cur = (sheet || []).filter(function (a) { return act && a.act === act.name; })[0];
-    if (!cur) { $('#act-note').textContent = '本幕暂无节拍数据。'; return; }
+    if (!cur) { $('#act-note').innerHTML = '<span><strong>本幕暂无节拍数据</strong></span>'; return; }
 
     var beats = cur.beats || [];
     beats.forEach(function (b, i) {
@@ -726,14 +757,25 @@
       }
     });
 
+    var past = 0, current = 0;
+    beats.forEach(function (b) {
+      if (b.to < n) past++;
+      else if (b.from <= n && n <= b.to) current++;
+    });
+    var future = beats.length - past - current;
+
     var curBeat = null;
     for (var j = 0; j < beats.length; j++) {
       if (beats[j].from <= n && n <= beats[j].to) { curBeat = beats[j]; break; }
     }
-    $('#act-note').textContent = curBeat
-      ? ('本幕共 ' + beats.length + ' 个节拍；当前第 ' + n + ' 章处于「' + curBeat.name + '」（第 ' +
-         curBeat.from + '–' + curBeat.to + ' 章）· ' + curBeat.core)
-      : ('本幕共 ' + beats.length + ' 个节拍。');
+    var actNote = '<span><strong>本幕 ' + beats.length + ' 个节拍：' + past + ' 已过 · ' +
+      current + ' 进行中' + (future > 0 ? ' · ' + future + ' 未到' : '') + '</strong>';
+    if (curBeat) {
+      actNote += ' · 当前第 ' + n + ' 章处于「' + curBeat.name + '」（' + curBeat.from + '–' +
+        curBeat.to + ' 章）';
+    }
+    actNote += '</span>';
+    $('#act-note').innerHTML = actNote;
   }
 
   /* ---------- 视图 5 · 问题鱼骨 ---------- */
@@ -748,7 +790,7 @@
           '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9"/><path d="M12 12v3"/></svg>' +
           '<span class="fs-12">本章未发现需要归因的问题</span>' +
         '</div>' +
-        '<div class="fs-12 muted">鱼骨图在审计发现 ≥1 项时自动生成；每条刺上的条目都对应一条可定位的审计证据。</div>';
+        '<div class="chart-note is-ok"><span><strong>本章未发现需要归因的问题</strong> · 鱼骨图在审计发现 ≥1 项时自动生成</span></div>';
       return;
     }
 
@@ -788,14 +830,19 @@
       '<text class="fish-head-text" text-anchor="middle" x="815" y="182" style="font-size:10px">待归因</text>' +
       parts;
 
+    var itemCount = 0;
+    causes.forEach(function (c) { itemCount += (c.items || []).length; });
+    var problemCount = problem ? 1 : 0;
     var extra = causes.length > 4 ? '另有 ' + (causes.length - 4) + ' 类未显示。' : '';
     box.innerHTML =
       '<div class="fs-13" style="margin-bottom:12px"><span class="tag tag-danger">问题</span> ' +
         problem.title + '</div>' +
       '<div class="fish-wrap"><svg id="fishbone" viewBox="0 0 900 340" role="img" aria-label="问题归因鱼骨图">' +
         svgInner + '</svg></div>' +
-      '<div class="fs-12 muted" style="margin-top:12px">鱼骨用于归因，不替代审计；每根刺上的条目都对应一条可定位的审计证据。' +
-        extra + '</div>';
+      '<div class="chart-note is-warn" style="margin-top:12px"><span><strong>' + problemCount +
+        ' 个问题 · ' + causes.length + ' 类成因 · ' + itemCount +
+        ' 条具体原因</strong> · 鱼骨用于归因：每根刺上的条目都对应一条可定位的审计证据' +
+        extra + '</span></div>';
   }
 
   /* ================= 事件绑定 ================= */
