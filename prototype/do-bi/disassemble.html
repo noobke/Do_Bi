@@ -87,7 +87,7 @@
       <!-- 1. 导入作品 -->
       <section class="card" data-reveal>
         <div class="card-head">
-          <h3>导入作品</h3>
+          <h2>导入作品</h2>
         </div>
         <div class="card-body stack">
           <div class="dropzone" id="dropzone">
@@ -108,10 +108,10 @@
 
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>反推流水线</h3>
+            <h2>反推流水线</h2>
             <div class="row">
               <span class="tag tag-info">6 阶段</span>
-              <button class="btn btn-primary btn-sm" id="btn-run">继续执行</button>
+              <button class="btn btn-primary btn-sm" id="btn-run">执行下一阶段</button>
             </div>
           </div>
           <div class="card-body">
@@ -121,7 +121,7 @@
 
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>抽取结果预览</h3>
+            <h2>抽取结果预览</h2>
             <span class="tag tag-quiet">4 类</span>
           </div>
           <div class="card-body">
@@ -143,7 +143,7 @@
       <!-- 4. 写入提案 -->
       <section class="card" data-reveal>
         <div class="card-head">
-          <h3>写入提案</h3>
+          <h2>写入提案</h2>
           <div class="row">
             <span class="tag tag-warn" id="prop-tag">待确认 — 项</span>
             <button class="btn btn-ghost btn-sm" id="btn-accept-all">全部接受</button>
@@ -168,6 +168,24 @@
   </div>
 </main>
 
+<!-- 批量决策二次确认 -->
+<div class="modal" id="modal-batch" hidden>
+  <div class="modal-veil"></div>
+  <div class="modal-card">
+    <div class="card-head">
+      <h2 id="batch-title">批量决策</h2>
+      <button class="btn btn-quiet btn-sm" data-close-modal>关闭</button>
+    </div>
+    <div class="card-body stack">
+      <p class="fs-13 muted" id="batch-desc">—</p>
+    </div>
+    <div class="card-foot row" style="justify-content:flex-end">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="btn-batch-confirm">确认</button>
+    </div>
+  </div>
+</div>
+
 <script src="assets/mock.js"></script>
 <script src="assets/api.js"></script>
 <script src="assets/app.js"></script>
@@ -177,7 +195,7 @@
   var $ = App.$, h = App.h;
   var state = { data: null };
 
-  var CONF_TAG = { high: 'tag-ok', medium: 'tag-warn', low: 'tag-danger' };
+  var CONF_TAG = { high: 'tag-ok', medium: 'tag-warn', low: 'tag-quiet' };
   var CHECK_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
 
   /* ---------- 已载入来源 ---------- */
@@ -249,7 +267,7 @@
     /* 伏笔 */
     var hooks = ex.hooks.map(function (hk) {
       var tag = hk.importance === 'major'
-        ? '<span class="tag tag-danger">主线</span>' : '<span class="tag tag-quiet">支线</span>';
+        ? '<span class="tag tag-info">主线</span>' : '<span class="tag tag-quiet">支线</span>';
       var when = '埋于第 ' + hk.plantedChapter + ' 章 · ' +
         (hk.matched ? '回收于第 ' + hk.matched + ' 章' : '未匹配到回收点');
       return '<div class="audit-item">' +
@@ -333,6 +351,36 @@
     });
   }
 
+  /* 流水线按钮状态：全部阶段已完成时禁用，并显示完成文案 */
+  function syncRunBtn() {
+    var btn = $('#btn-run');
+    if (!btn || !state.data) return;
+    var allDone = state.data.stages.every(function (s) { return s.status === 'done'; });
+    btn.disabled = allDone;
+    btn.textContent = allDone ? '流水线已完成' : '执行下一阶段';
+  }
+
+  /* 批量决策：先二次确认，确认后才执行 */
+  var pendingBatch = null;
+  function openBatch(action) {
+    if (!state.data) return;
+    pendingBatch = action;
+    var n = state.data.proposals.length;
+    var word = action === 'accept' ? '接受' : '拒绝';
+    $('#batch-title').textContent = action === 'accept' ? '全部接受提案' : '全部拒绝提案';
+    $('#batch-desc').textContent = '将' + word + '全部 ' + n + ' 条提案并写入真相文件，确认后立即生效。';
+    $('#modal-batch').hidden = false;
+  }
+
+  $('#btn-batch-confirm').addEventListener('click', function () {
+    if (!pendingBatch) return;
+    var action = pendingBatch;
+    var btn = this;
+    pendingBatch = null;
+    $('#modal-batch').hidden = true;
+    decideAll(action, btn);
+  });
+
   /* ---------- 导入投放区交互 ---------- */
   var dz = $('#dropzone');
   dz.addEventListener('dragover', function (e) { e.preventDefault(); dz.classList.add('is-over'); });
@@ -345,29 +393,39 @@
   $('#btn-pick').addEventListener('click', function () { App.toast('已载入样本（演示）'); });
 
   /* ---------- 载入并绑定动作 ---------- */
-  api.getDisassemble().then(function (d) {
-    state.data = d;
-    renderSource(d.source);
-    renderStats(d.stats);
-    renderStages(d.stages);
-    renderExtracted(d.extracted);
-    renderProposals(d.proposals);
+  var loadDisassemble = function () {
+    api.getDisassemble().then(function (d) {
+      state.data = d;
+      renderSource(d.source);
+      renderStats(d.stats);
+      renderStages(d.stages);
+      renderExtracted(d.extracted);
+      renderProposals(d.proposals);
+      syncRunBtn();
 
-    $('#btn-run').addEventListener('click', function () {
-      var btn = this;
-      App.loading(btn, true, '执行中…');
-      api.runDisassemble().then(function (next) {
-        App.loading(btn, false);
-        state.data.stages = next.stages;
-        renderStages(next.stages);
-        renderStats(next.stats);
-        App.toast('已推进 1 个阶段');
+      $('#btn-run').addEventListener('click', function () {
+        var btn = this;
+        App.loading(btn, true, '执行中…');
+        api.runDisassemble().then(function (next) {
+          App.loading(btn, false);
+          var before = state.data.stages.filter(function (s) { return s.status === 'done'; }).length;
+          state.data.stages = next.stages;
+          renderStages(next.stages);
+          renderStats(next.stats);
+          syncRunBtn();
+          var after = next.stages.filter(function (s) { return s.status === 'done'; }).length;
+          /* 仅在确实推进了阶段时才提示，避免「无阶段可推进」的虚假提示 */
+          if (after > before) App.toast('已推进 1 个阶段');
+        });
       });
-    });
 
-    $('#btn-accept-all').addEventListener('click', function () { decideAll('accept', this); });
-    $('#btn-reject-all').addEventListener('click', function () { decideAll('reject', this); });
-  });
+      $('#btn-accept-all').addEventListener('click', function () { openBatch('accept'); });
+      $('#btn-reject-all').addEventListener('click', function () { openBatch('reject'); });
+    }).catch(function (e) {
+      App.fail('#prop-list', e, loadDisassemble);
+    });
+  };
+  loadDisassemble();
 })();
 </script>
 </body>

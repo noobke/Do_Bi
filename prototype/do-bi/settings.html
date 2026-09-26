@@ -80,6 +80,7 @@
         <div class="topbar-sub">模型接入 · 全部通过 API 调用 · 不含本地模型</div>
       </div>
       <div class="topbar-actions">
+        <span class="fs-12 muted">开关与列表项改动即时生效；预算等数值项需点此保存</span>
         <button class="btn btn-primary btn-sm" id="btn-save">保存配置</button>
       </div>
     </header>
@@ -104,7 +105,7 @@
           <h2>模型角色映射</h2>
           <span class="tag tag-quiet">按环节分配</span>
         </div>
-        <div class="card-body">
+        <div class="card-body" id="role-card-body">
           <table class="table">
             <thead>
               <tr><th>环节</th><th>模型</th><th>温度</th><th>输出格式</th></tr>
@@ -135,8 +136,9 @@
         <div class="card-body">
           <div class="field" style="max-width:280px">
             <label class="field-label" for="budget-total">项目总预算（¥）</label>
-            <input class="input" id="budget-total" type="number" value="80" step="10">
+            <input class="input" id="budget-total" type="number" value="80" step="10" min="1">
             <span class="field-hint">达到阈值将暂停全自动模式并挂起检查点，不会静默消耗</span>
+            <span class="field-hint" id="budget-hint">累计已用 —，预算不得低于累计已用</span>
           </div>
 
           <div class="divider"></div>
@@ -157,7 +159,7 @@
       <!-- 5. MCP 扩展 -->
       <section class="card" id="mcp-card" data-reveal>
         <div class="card-head">
-          <h3>MCP 扩展</h3>
+          <h2>MCP 扩展</h2>
           <div class="row">
             <span class="tag tag-info">可关闭 · 不影响主流程</span>
             <button class="btn btn-ghost btn-sm" data-open-modal="modal-mcp">添加服务器</button>
@@ -180,7 +182,7 @@
   <div class="modal-veil"></div>
   <div class="modal-card">
     <div class="card-head">
-      <h3>添加 MCP 服务器</h3>
+      <h2>添加 MCP 服务器</h2>
       <button class="btn btn-quiet btn-sm" data-close-modal>关闭</button>
     </div>
     <div class="card-body stack">
@@ -214,7 +216,7 @@
   <div class="modal-veil"></div>
   <div class="modal-card">
     <div class="card-head">
-      <h3>添加 Provider</h3>
+      <h2>添加 Provider</h2>
       <button class="btn btn-quiet btn-sm" data-close-modal>关闭</button>
     </div>
     <div class="card-body stack">
@@ -250,91 +252,129 @@
 (function () {
   'use strict';
   var $ = App.$, h = App.h;
+  var budgetUsed = 0;   /* 项目累计已用（getProject），预算下限校验的唯一依据 */
+  var usageSum = 0;     /* 下方用量明细表的合计，仅供对照 */
+
+  function syncBudgetHint() {
+    var bh = $('#budget-hint');
+    if (!bh) return;
+    bh.textContent = '累计已用 ' + App.fmtMoney(budgetUsed) +
+      (usageSum ? '（本表明细 ' + App.fmtMoney(usageSum) + '）' : '') + '，预算不得低于累计已用';
+  }
+  api.getProject().then(function (p) { budgetUsed = p.budgetUsed; syncBudgetHint(); });
 
   /* ---------- 顶栏：保存配置 ---------- */
   $('#btn-save').addEventListener('click', function () {
     var btn = this;
+    var val = Number($('#budget-total').value);
+    if (!val || val < budgetUsed) {
+      App.toast('预算不得低于已用成本 ' + App.fmtMoney(budgetUsed), 'warn');
+      $('#budget-total').focus();
+      return;
+    }
     App.loading(btn, true, '保存中…');
     setTimeout(function () {
       App.loading(btn, false);
-      App.toast('配置已保存（演示）');
+      App.toast('配置已保存（演示）', 'ok');
     }, 600);
   });
 
   /* ---------- 1. Provider 列表 ---------- */
-  api.listProviders().then(function (list) {
-    var box = $('#provider-list');
-    list.forEach(function (p) {
-      var rowEl = h('div', { class: 'provider-card' });
-      rowEl.innerHTML =
-        '<div>' +
-          '<div class="provider-name">' + p.name + '</div>' +
-          '<div class="provider-url mono">' + p.baseUrl + '</div>' +
-        '</div>';
+  var loadProviders = function () {
+    api.listProviders().then(function (list) {
+      var box = $('#provider-list');
+      list.forEach(function (p) {
+        var rowEl = h('div', { class: 'provider-card' });
+        rowEl.innerHTML =
+          '<div>' +
+            '<div class="provider-name">' + p.name + '</div>' +
+            '<div class="provider-url mono">' + p.baseUrl + '</div>' +
+          '</div>';
 
-      var right = h('div', { class: 'row' });
-      right.innerHTML = p.configured
-        ? '<span class="tag tag-ok">已配置</span>'
-        : '<span class="tag tag-quiet">未配置</span>';
+        var right = h('div', { class: 'row' });
+        right.innerHTML = p.configured
+          ? '<span class="tag tag-ok">已配置</span>'
+          : '<span class="tag tag-quiet">未配置</span>';
 
-      var test = h('button', { class: 'btn btn-quiet btn-sm', text: '测试连接' });
-      if (!p.configured) test.disabled = true;
-      test.addEventListener('click', function () {
-        App.loading(test, true, '测试中…');
-        setTimeout(function () {
-          App.loading(test, false);
-          App.toast('连接正常：' + p.name + '（演示）');
-        }, 800);
+        var test = h('button', { class: 'btn btn-quiet btn-sm', text: '测试连接' });
+        if (!p.configured) test.disabled = true;
+        test.addEventListener('click', function () {
+          App.loading(test, true, '测试中…');
+          setTimeout(function () {
+            App.loading(test, false);
+            App.toast('连接正常：' + p.name + '（演示）', 'ok');
+          }, 800);
+        });
+        right.appendChild(test);
+
+        rowEl.appendChild(right);
+        box.appendChild(rowEl);
       });
-      right.appendChild(test);
-
-      rowEl.appendChild(right);
-      box.appendChild(rowEl);
+    }).catch(function (e) {
+      App.fail('#provider-list', e, loadProviders);
     });
-  });
+  };
+  loadProviders();
 
   /* ---------- 2. 模型角色映射 ---------- */
-  api.listModelRoles().then(function (list) {
-    var tb = $('#role-rows');
-    list.forEach(function (r) {
-      var tr = h('tr');
-      tr.innerHTML =
-        '<td>' + r.step + '</td>' +
-        '<td class="mono">' + r.model + '</td>' +
-        '<td class="mono">' + r.temperature + '</td>' +
-        '<td>' + r.format + '</td>';
-      tb.appendChild(tr);
+  var loadModelRoles = function () {
+    api.listModelRoles().then(function (list) {
+      var tb = $('#role-rows');
+      list.forEach(function (r) {
+        var tr = h('tr');
+        tr.innerHTML =
+          '<td>' + r.step + '</td>' +
+          '<td class="mono">' + r.model + '</td>' +
+          '<td class="mono">' + r.temperature + '</td>' +
+          '<td>' + r.format + '</td>';
+        tb.appendChild(tr);
+      });
+    }).catch(function (e) {
+      App.fail('#role-card-body', e, loadModelRoles);
     });
-  });
+  };
+  loadModelRoles();
 
   /* ---------- 3. 上下文预算分配 ---------- */
-  api.listBudgetSplit().then(function (list) {
-    var box = $('#budget-list');
-    list.forEach(function (b) {
-      var item = h('div');
-      item.innerHTML =
-        '<div class="row-between fs-13"><span>' + b.label + '</span><span class="mono">' + b.pct + '%</span></div>' +
-        '<div class="progress" style="margin-top:6px"><i style="width:' + b.pct + '%"></i></div>';
-      box.appendChild(item);
+  var loadBudgetSplit = function () {
+    api.listBudgetSplit().then(function (list) {
+      var box = $('#budget-list');
+      list.forEach(function (b) {
+        var item = h('div');
+        item.innerHTML =
+          '<div class="row-between fs-13"><span>' + b.label + '</span><span class="mono">' + b.pct + '%</span></div>' +
+          '<div class="progress" style="margin-top:6px"><i style="width:' + b.pct + '%"></i></div>';
+        box.appendChild(item);
+      });
+    }).catch(function (e) {
+      App.fail('#budget-list', e, loadBudgetSplit);
     });
-  });
+  };
+  loadBudgetSplit();
 
   /* ---------- 4. 成本统计 ---------- */
-  api.listUsage().then(function (rows) {
-    var tb = $('#usage-rows');
-    var total = 0;
-    rows.forEach(function (u) {
-      total += u.cost;
-      var tr = h('tr');
-      tr.innerHTML =
-        '<td>第 ' + u.chapter + ' 章</td>' +
-        '<td class="mono">' + App.fmtInt(u.promptTokens) + '</td>' +
-        '<td class="mono">' + App.fmtInt(u.completionTokens) + '</td>' +
-        '<td class="mono">' + App.fmtMoney(u.cost) + '</td>';
-      tb.appendChild(tr);
+  var loadUsage = function () {
+    api.listUsage().then(function (rows) {
+      var tb = $('#usage-rows');
+      var total = 0;
+      rows.forEach(function (u) {
+        total += u.cost;
+        var tr = h('tr');
+        tr.innerHTML =
+          '<td>第 ' + u.chapter + ' 章</td>' +
+          '<td class="mono">' + App.fmtInt(u.promptTokens) + '</td>' +
+          '<td class="mono">' + App.fmtInt(u.completionTokens) + '</td>' +
+          '<td class="mono">' + App.fmtMoney(u.cost) + '</td>';
+        tb.appendChild(tr);
+      });
+      $('#usage-total').textContent = App.fmtMoney(total);
+      usageSum = total;
+      syncBudgetHint();
+    }).catch(function (e) {
+      App.fail('#usage-rows', e, loadUsage);
     });
-    $('#usage-total').textContent = App.fmtMoney(total);
-  });
+  };
+  loadUsage();
 
   /* ---------- 模态：添加 Provider ---------- */
   $('#btn-add-provider').addEventListener('click', function () {
@@ -343,7 +383,7 @@
     setTimeout(function () {
       App.loading(btn, false);
       $('#modal-provider').hidden = true;
-      App.toast('已添加 Provider（演示）');
+      App.toast('已添加 Provider（演示）', 'ok');
     }, 500);
   });
 
@@ -375,7 +415,7 @@
         sw.addEventListener('click', function () {
           api.toggleMcp(s.name).then(function () {
             renderMcp();
-            App.toast((s.enabled ? '已停用：' : '已启用：') + s.name);
+            App.toast((s.enabled ? '已停用：' : '已启用：') + s.name, 'ok');
           });
         });
         right.appendChild(sw);
@@ -393,7 +433,7 @@
           App.loading(test, true, '测试中…');
           api.testMcp(s.name).then(function (r) {
             App.loading(test, false);
-            App.toast('连接正常：' + s.name + '（' + r.latency + 'ms，演示）');
+            App.toast('连接正常：' + s.name + '（' + r.latency + 'ms，演示）', 'ok');
           });
         });
         right.appendChild(test);
@@ -402,6 +442,8 @@
         rowEl.appendChild(right);
         box.appendChild(rowEl);
       });
+    }).catch(function (e) {
+      App.fail('#mcp-list', e, renderMcp);
     });
   }
   renderMcp();
@@ -412,7 +454,7 @@
     var name = $('#mcp-name').value.trim();
     var target = $('#mcp-target').value.trim();
     if (!name || !target) {
-      App.toast('先填写名称与命令/URL');
+      App.toast('先填写名称与命令/URL', 'warn');
       return;
     }
     App.loading(btn, true, '添加中…');
@@ -420,7 +462,7 @@
       $('#modal-mcp').hidden = true;
       $('#mcp-name').value = '';
       $('#mcp-target').value = '';
-      App.toast('已添加 MCP 服务器（演示）');
+      App.toast('已添加 MCP 服务器（演示）', 'ok');
       App.loading(btn, false);
     }, 500);
   });

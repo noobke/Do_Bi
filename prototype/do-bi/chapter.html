@@ -76,6 +76,11 @@
     <!-- topbar -->
     <header class="topbar" data-reveal>
       <div>
+        <nav class="crumb" aria-label="面包屑">
+          <a href="outline.html">结构</a>
+          <span aria-hidden="true">›</span>
+          <span id="crumb-current">第 17 章</span>
+        </nav>
         <h1 id="chap-title">第 17 章 · 雪落雁回</h1>
         <div class="topbar-sub" id="topbar-sub">— · — · — 字 · 张力 —/5 · — 视角</div>
       </div>
@@ -83,7 +88,6 @@
         <button class="btn btn-ghost btn-sm" id="btn-prev">← 上一章</button>
         <select class="select" id="chap-select" style="height:30px;padding:0 8px"></select>
         <button class="btn btn-ghost btn-sm" id="btn-next">下一章 →</button>
-        <a class="btn btn-ghost btn-sm" href="outline.html">在结构页查看</a>
       </div>
     </header>
 
@@ -93,7 +97,7 @@
     <!-- 本章梗概 -->
     <section class="card" data-reveal style="margin-bottom:24px">
       <div class="card-head">
-        <h3>本章梗概</h3>
+        <h2>本章梗概</h2>
         <span class="chip" id="sum-beat">—</span>
       </div>
       <div class="card-body" id="summary-body"></div>
@@ -126,30 +130,18 @@
       <span class="fs-12 muted" id="view-hint">一章要过的 8 道工序；中断可从当前步续跑</span>
     </div>
 
-    <!-- 视图 1 · 生产流程（HTML 流程图） -->
+    <!-- 视图 1 · 生产流程（执行流程图为主视图；工序卡收进其下方默认折叠的明细） -->
     <div id="view-pipeline">
       <div class="stack-24">
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>内容生产流程</h3>
+            <h2>执行流程图</h2>
             <div class="row">
+              <span class="tag tag-info">含判定与回环</span>
               <span class="tag tag-ok" id="pipe-done">—</span>
               <span class="tag tag-warn" id="pipe-active">—</span>
               <span class="tag tag-quiet" id="pipe-todo">—</span>
             </div>
-          </div>
-          <div class="card-body">
-            <div class="pipe" id="pipe-body"></div>
-            <div class="divider"></div>
-            <div class="chart-note" id="pipe-note1"><span>—</span></div>
-            <div class="fs-12 muted" style="margin-top:4px">耗时与 Token 为流水线典型值；真实计量以本地账本为准。</div>
-          </div>
-        </section>
-
-        <section class="card" data-reveal>
-          <div class="card-head">
-            <h3>执行流程图</h3>
-            <span class="tag tag-info">含判定与回环</span>
           </div>
           <div class="card-body" style="padding:0">
             <div class="pflow-wrap">
@@ -158,6 +150,13 @@
           </div>
           <div class="card-body">
             <div class="chart-note" id="chflow-note"><span>—</span></div>
+            <details style="margin-top:16px">
+              <summary style="cursor:pointer;font-size:var(--fs-13);color:var(--ink-2)">工序耗时明细（8 道工序 · 默认折叠）</summary>
+              <div class="pipe" id="pipe-body" style="margin-top:12px"></div>
+              <div class="divider"></div>
+              <div class="chart-note" id="pipe-note1"><span>—</span></div>
+              <div class="fs-12 muted" style="margin-top:4px">耗时与 Token 为流水线典型值；真实计量以本地账本为准。</div>
+            </details>
           </div>
         </section>
       </div>
@@ -168,7 +167,7 @@
       <div class="stack-24">
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>场景流程</h3>
+            <h2>场景流程</h2>
             <span class="tag tag-quiet" id="flow-tag">—</span>
           </div>
           <div class="card-body" style="padding:0">
@@ -188,7 +187,7 @@
       <div class="stack-24">
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>故事内时间线</h3>
+            <h2>故事内时间线</h2>
             <span class="tag tag-quiet" id="tl-tag">—</span>
           </div>
           <div class="card-body" style="padding:0">
@@ -203,7 +202,7 @@
 
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>本章事件 ↔ 全书时间锚点</h3>
+            <h2>本章事件 ↔ 全书时间锚点</h2>
             <span class="tag tag-quiet" id="tl2-tag">—</span>
           </div>
           <div class="card-body" style="padding:0">
@@ -223,7 +222,7 @@
       <div class="stack-24">
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>情节结构位置</h3>
+            <h2>情节结构位置</h2>
             <span class="tag tag-info" id="struct-tag">—</span>
           </div>
           <div class="card-body" style="padding:0">
@@ -238,7 +237,7 @@
 
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>本幕节拍序列</h3>
+            <h2>本幕节拍序列</h2>
             <span class="tag tag-info" id="act-tag">—</span>
           </div>
           <div class="card-body">
@@ -256,7 +255,7 @@
       <div class="stack-24">
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>问题归因（鱼骨）</h3>
+            <h2>问题归因（鱼骨）</h2>
             <span class="tag tag-warn" id="fish-tag">—</span>
           </div>
           <div class="card-body" id="fish-body"></div>
@@ -315,11 +314,14 @@
     var t = ++seq;
     Promise.all([
       api.getChapterDetail(n), api.getStructure(),
-      api.getBookTimeline(), api.getBeatSheet()
+      api.getBookTimeline(), api.getBeatSheet(), api.listUsage()
     ]).then(function (res) {
       if (t !== seq) return;
       state.n = n;
-      render(res[0], res[1], res[2], res[3]);
+      render(res[0], res[1], res[2], res[3], res[4]);
+    }).catch(function (e) {
+      if (t !== seq) return;   /* 与成功分支同样的防串号：过期请求的失败不再弹错误态 */
+      App.fail('#ch-stats', e, function () { load(parseHash()); });
     });
   }
   /* useHash：用户操作时同步地址栏；浏览器前进/后退走 hashchange */
@@ -334,13 +336,13 @@
   }
 
   /* ================= 渲染入口 ================= */
-  function render(data, s, bookTl, sheet) {
+  function render(data, s, bookTl, sheet, usage) {
     var ch = data.chapter, det = data.detail || {}, steps = data.steps || [];
     var pipe = data.pipeline || { done: 0, active: 1, total: steps.length };
     var acts = data.acts || [], act = data.act;
 
     renderTopbar(ch, det, s);
-    renderStats(ch);
+    renderStats(ch, usage);
     renderSummary(ch, det);
     renderPipeline(steps, pipe);
     renderChFlow(steps, pipe);
@@ -355,6 +357,7 @@
   /* ---------- topbar ---------- */
   function renderTopbar(ch, det, s) {
     $('#chap-title').textContent = '第 ' + ch.n + ' 章 · ' + ch.title;
+    $('#crumb-current').textContent = '第 ' + ch.n + ' 章';
     $('#topbar-sub').textContent =
       ch.volume + ' · ' + det.beat + ' · ' + App.fmtInt(ch.words) + ' 字 · 张力 ' +
       ch.intensity + '/5 · ' + ch.pov + ' 视角';
@@ -378,15 +381,18 @@
   }
 
   /* ---------- 统计 ---------- */
-  function renderStats(ch) {
+  /* 「本章成本」唯一来源：用量账本（api.listUsage）中该章的 cost；
+     只有该章没有用量记录时才回落到按字数估算，并在标签注明「（估算）」。 */
+  function renderStats(ch, usage) {
     var box = $('#ch-stats');
     box.innerHTML = '';
-    var cost = ch.words * 0.00036;
+    var u = (usage || []).filter(function (x) { return x.chapter === ch.n; })[0];
+    var cost = u ? u.cost : ch.words * 0.00036;
     [
       { label: '字数', value: App.fmtInt(ch.words), hint: '本章定稿字数' },
       { label: '张力', value: ch.intensity + ' / 5', hint: '与结构页节奏曲线同源' },
       { label: '状态', value: STATUS_LABEL[ch.status] || ch.status, hint: '状态决定流水线进度' },
-      { label: '本章成本', value: App.fmtMoney(cost), hint: '按字数估算' }
+      { label: '本章成本', value: App.fmtMoney(cost), hint: u ? '来自用量账本 · 本章实际成本' : '按字数估算（估算）' }
     ].forEach(function (d) {
       var el = document.createElement('div');
       el.className = 'stat';

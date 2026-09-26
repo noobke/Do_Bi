@@ -77,19 +77,19 @@
     <header class="topbar" data-reveal>
       <div>
         <h1>文风档案</h1>
-        <div class="topbar-sub" id="topbar-sub">当前文风：寒江独钓 · 从样本提取 · 已作为必选上下文注入全部生成</div>
+        <div class="topbar-sub" id="topbar-sub">当前文风：寒江独钓 · 从样本提取 · 每次生成都会带上这份文风</div>
       </div>
       <div class="topbar-actions">
         <button class="btn btn-ghost btn-sm" data-open-modal="modal-extract">提取文风</button>
         <button class="btn btn-primary btn-sm" id="btn-goto-selector">选择文风</button>
-        <button class="btn btn-ghost btn-sm" id="btn-export">导出 JSON</button>
+        <button class="btn btn-ghost btn-sm" id="btn-export">导出文风档案</button>
       </div>
     </header>
 
     <!-- 0 · 当前文风 -->
     <section class="card" data-reveal style="margin-bottom:24px">
       <div class="card-head">
-        <h3>当前文风</h3>
+        <h2>当前文风</h2>
         <div class="row">
           <span class="tag tag-ok" id="cur-state">已应用</span>
           <button class="btn btn-ghost btn-sm" data-open-modal="modal-extract">重新提取</button>
@@ -104,19 +104,20 @@
       <div class="grid-3">
 
         <div class="card" data-reveal>
-          <div class="card-head"><h3>句式特征</h3></div>
+          <div class="card-head"><h2>句式特征</h2></div>
           <div class="card-body">
             <div class="stack">
               <div class="stack-8">
                 <div class="row-between fs-13"><span class="muted">分析来源</span><span class="mono fs-12" id="sp-source">—</span></div>
                 <div class="row-between fs-13"><span class="muted">分析时间</span><span class="mono fs-12" id="sp-at">—</span></div>
-                <div class="row-between fs-13"><span class="muted">消耗 Token</span><span class="mono fs-12" id="sp-tokens">—</span></div>
+                <div class="row-between fs-13"><span class="muted">消耗额度</span><span class="mono fs-12" id="sp-tokens">—</span></div>
               </div>
               <div class="fs-12 muted">句长区间（80 字为满格）</div>
-              <div class="rangebar">
+              <div class="rangebar" id="sp-rangebar" title="p50 / p90 句长刻度">
                 <i id="sp-range" style="left:22.5%;width:35%"></i>
                 <b id="sp-mean" style="left:26.75%"></b>
               </div>
+              <div class="fs-12 muted" id="sp-length-legend" style="display:flex;justify-content:space-between;margin-top:2px"><span>偏短</span><span>中等</span><span>偏长</span></div>
               <div class="fs-12 muted" id="sp-sentence-line">—</div>
               <div class="divider"></div>
               <div class="fs-13">优先句式</div>
@@ -126,7 +127,7 @@
         </div>
 
         <div class="card" data-reveal>
-          <div class="card-head"><h3>叙述视角与词法</h3></div>
+          <div class="card-head"><h2>叙述视角与词法</h2></div>
           <div class="card-body">
             <div class="stack">
               <div class="wrap-row">
@@ -142,12 +143,12 @@
         </div>
 
         <div class="card" data-reveal>
-          <div class="card-head"><h3>描写 · 对话 · 动作 比例</h3></div>
+          <div class="card-head"><h2>描写 · 对话 · 动作 比例</h2></div>
           <div class="card-body">
             <div class="stack">
               <div class="stackbar" id="sp-ratio"></div>
               <div class="stackbar-legend" id="sp-ratio-legend"></div>
-              <div class="fs-12 muted">比例偏离档案区间时，触发 L1 第 13 条规则</div>
+              <div class="fs-12 muted" title="L1 第 13 条规则">描写与对话的比例偏离你的文风时会被提示</div>
             </div>
           </div>
         </div>
@@ -157,7 +158,7 @@
       <!-- 2 · 选择文风 -->
       <section class="card" id="style-selector" data-reveal style="margin-bottom:24px">
         <div class="card-head">
-          <h3>选择文风</h3>
+          <h2>选择文风</h2>
           <div class="seg" data-seg="style-cat" id="style-cat"></div>
         </div>
         <div class="card-body">
@@ -169,12 +170,12 @@
       <!-- 3 · 禁用表达 -->
       <div class="card" data-reveal>
         <div class="card-head">
-          <h3>禁用表达</h3>
-          <span class="tag tag-danger" id="banned-tag">0 条</span>
+          <h2>禁用表达</h2>
+          <span class="tag tag-quiet" id="banned-tag">—</span>
         </div>
         <div class="card-body">
           <div class="stack">
-            <div class="fs-12 muted">命中即触发 L1 第 4 条「禁用句式命中」，并进入 spot-fix 定点修复</div>
+            <div class="fs-12 muted" title="L1 第 4 条「禁用句式命中」· spot-fix 定点修复">命中后只定点改写有问题的句子</div>
             <div class="wrap-row" id="banned-list"></div>
             <div class="row">
               <input class="input" id="banned-input" placeholder="新增一条禁用表达，回车确认" style="max-width:320px">
@@ -187,12 +188,12 @@
       <!-- 4 · 注入预览 -->
       <div class="card" data-reveal>
         <div class="card-head">
-          <h3>注入预览</h3>
-          <span class="tag tag-info" id="inject-tag">确定性必选 · 0 tokens</span>
+          <h2>注入预览</h2>
+          <span class="tag tag-info" id="inject-tag">必选 · 不消耗额度</span>
         </div>
         <div class="card-body">
           <div class="stack">
-            <div class="fs-13 muted">每次 Writer 调用都会带上这段上下文；因体量小，不占用检索配额，也不参与相关性竞争</div>
+            <div class="fs-13 muted">每次生成都会带上这段上下文；因体量小，不占用检索配额，也不参与相关性竞争</div>
             <div class="mono-block" id="inject-text"></div>
             <div class="divider"></div>
             <div class="fs-13">试写对比</div>
@@ -206,7 +207,7 @@
                 <div class="ms-text" id="sample-styled"></div>
               </div>
             </div>
-            <div class="fs-12 muted">同时作为 L2「文风偏移」审计与 L1 第 13 条的对照基准</div>
+            <div class="fs-12 muted" title="L2 模型审查 · L1 规则校验">同时作为 模型审查「文风偏移」与 规则校验第 13 条的对照基准</div>
           </div>
         </div>
       </div>
@@ -220,11 +221,11 @@
   <div class="modal-veil"></div>
   <div class="modal-card">
     <div class="card-head">
-      <h3>提取文风</h3>
+      <h2>提取文风</h2>
       <button class="btn btn-quiet btn-sm" data-close-modal>关闭</button>
     </div>
     <div class="card-body stack">
-      <p class="fs-13 muted">提取会读样本的行文特征（句长分布、叙述视角、描写与对话比例、高频句式、套语），产出一份 style_profile.json，作为每次生成的必选上下文。</p>
+      <p class="fs-13 muted">提取会读样本的行文特征（句长分布、叙述视角、描写与对话比例、高频句式、套语），生成一份文风档案（可导出），作为每次生成的必选上下文。</p>
       <div class="fs-13">选择提取来源</div>
       <div class="src-list" id="src-list"></div>
       <div class="field">
@@ -265,8 +266,9 @@
     range.style.width = (p90 - p50) + '%';
     $('#sp-mean').style.left = mean + '%';
 
+    $('#sp-rangebar').title = 'p50 ' + s.p50 + ' 字 · p90 ' + s.p90 + ' 字';
     $('#sp-sentence-line').textContent =
-      'p50 ' + s.p50 + ' 字 · p90 ' + s.p90 + ' 字 · 均值 ' + s.mean + ' 字';
+      '一半句子短于 ' + s.p50 + ' 字 · 九成句子短于 ' + s.p90 + ' 字 · 平均 ' + s.mean + ' 字';
 
     var box = $('#sp-patterns');
     box.innerHTML = '';
@@ -327,7 +329,7 @@
       var x = h('button', { class: 'chip-x', 'aria-label': '移除', text: '×' });
       x.addEventListener('click', function () {
         api.removeBanned(expr).then(function (next) {
-          App.toast('已移除：' + expr);
+          App.toast('已移除：' + expr, 'ok');
           renderBanned(next);
         });
       });
@@ -344,13 +346,13 @@
     api.addBanned(v).then(function (list) {
       input.value = '';
       renderBanned(list);
-      App.toast('已新增禁用表达：' + v);
+      App.toast('已新增禁用表达：' + v, 'ok');
     });
   }
 
   /* ---------- 注入预览 ---------- */
   function renderInjection(p) {
-    $('#inject-tag').textContent = '确定性必选 · ' + p.injection.tokens + ' tokens';
+    $('#inject-tag').textContent = '必选 · 不消耗额度';
     $('#inject-text').textContent = p.injection.text;
     $('#sample-plain').textContent = p.sample.plain;
     $('#sample-styled').textContent = p.sample.styled;
@@ -370,11 +372,13 @@
       setTopbarSub();
       renderCategories();
       renderPresetGrid('全部');
+    }).catch(function (e) {
+      App.fail('#preset-grid', e, load);
     });
   }
 
   $('#btn-export').addEventListener('click', function () {
-    App.toast('已导出 style_profile.json（演示）');
+    App.toast('已导出 style_profile.json（演示）', 'ok');
   });
 
   $('#btn-add-banned').addEventListener('click', addBanned);
@@ -394,8 +398,8 @@
     if (!sub) return;
     var p = appliedPreset();
     sub.textContent = p
-      ? '当前文风：' + p.name + ' · 已作为必选上下文注入全部生成'
-      : '尚未选择文风 · 提取或选择一份档案后自动注入全部生成';
+      ? '当前文风：' + p.name + ' · 每次生成都会带上这份文风'
+      : '尚未选择文风 · 提取或选择一份档案后，每次生成都会自动带上它';
   }
 
   function gotoSelector() {
@@ -437,7 +441,7 @@
         App.loading(btn, false);
         return load();
       }).then(function () {
-        App.toast('已重新分析当前文风样本');
+        App.toast('已重新分析当前文风样本', 'ok');
       });
     });
   }
@@ -496,7 +500,7 @@
           App.loading(btn, false);
           return refreshSelection();
         }).then(function () {
-          App.toast('已应用文风：' + (p ? p.name : ''));
+          App.toast('已应用文风：' + (p ? p.name : ''), 'ok');
         });
       });
     });
@@ -527,13 +531,15 @@
           '<div class="row-sub">' + s.hint + '</div>'));
         box.appendChild(row);
       });
+    }).catch(function (e) {
+      App.fail('#src-list', e, renderSources);
     });
   }
 
   /* ---------- 新按钮绑定 ---------- */
   $('#btn-goto-selector').addEventListener('click', function () {
     gotoSelector();
-    App.toast('已定位到文风选择器');
+    App.toast('已定位到文风选择器', 'ok');
   });
 
   /* #style-cat 的点击与 seg:change 派发统一由 app.js 的事件委托处理（支持动态注入的按钮） */
@@ -548,7 +554,7 @@
       .map(function (c) { return c.dataset.id; });
     var paste = $('#src-paste').value.trim();
     if (!ids.length && !paste) {
-      App.toast('至少选择一个来源，或粘贴一段样本');
+      App.toast('至少选择一个来源，或粘贴一段样本', 'warn');
       return;
     }
     App.loading(btn, true, '提取中…');
@@ -556,7 +562,7 @@
       $('#modal-extract').hidden = true;
       return refreshSelection();
     }).then(function () {
-      App.toast('提取完成，文风档案已更新' + (paste ? '（已包含粘贴样本）' : ''));
+      App.toast('提取完成，文风档案已更新' + (paste ? '（已包含粘贴样本）' : ''), 'ok');
       App.loading(btn, false);
     });
   });

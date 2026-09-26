@@ -77,7 +77,7 @@
     <header class="topbar" data-reveal>
       <div>
         <h1>世界观</h1>
-        <div class="topbar-sub" id="topbar-sub">9 条设定 · 6 条硬约束 · 1 处冲突待裁定</div>
+        <div class="topbar-sub" id="topbar-sub">— 条设定 · — 条硬约束 · — 处冲突待裁定</div>
       </div>
       <div class="topbar-actions">
         <div class="seg" data-seg="world-cat" id="world-cat">
@@ -100,7 +100,7 @@
       <!-- 2 · 冲突待裁定 -->
       <section class="card" id="conflict-card" data-reveal hidden>
         <div class="card-head">
-          <h3>冲突待裁定</h3>
+          <h2>冲突待裁定</h2>
           <span class="tag tag-danger" id="conflict-count">1 处</span>
         </div>
         <div class="card-body">
@@ -114,7 +114,7 @@
         <!-- 左：设定清单 -->
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>设定清单</h3>
+            <h2>设定清单</h2>
             <span class="tag tag-quiet" id="rule-count">—</span>
           </div>
           <div class="card-body">
@@ -127,7 +127,7 @@
 
           <div class="card">
             <div class="card-head">
-              <h3>设定 × 情节线对齐</h3>
+              <h2>设定 × 情节线对齐</h2>
               <span class="tag tag-quiet">交叉视图</span>
             </div>
             <div class="card-body" style="padding:0">
@@ -137,27 +137,15 @@
 
           <div class="card">
             <div class="card-head">
-              <h3>写作用约束提示</h3>
+              <h2>写作约束提示</h2>
             </div>
             <div class="card-body">
               <div class="stack-8">
-                <div class="fs-13 muted">硬约束不可被 AI 修改；生成内容与硬约束冲突时会阻塞定稿，需先裁定</div>
-                <div class="fs-13 muted">软设定为倾向性约定，冲突只提示不阻塞</div>
-                <div class="fs-13 muted">新增或修改设定走 Proposal → Validate → Commit，不会静默覆盖</div>
-              </div>
-            </div>
-          </div>
-
-        </aside>
-      </div>
-
-      <!-- 4 · 真相文件说明 -->
-      <section class="card" data-reveal>
-        <div class="card-body">
-          <div class="stack-8">
-            <div class="fs-13">本页对应真相文件 world.md</div>
-            <div class="fs-12 muted">设定按分类归入 world.md；硬约束会被注入生成上下文，软设定仅在审计时提示。修改一律走提案流程，不静默覆盖。</div>
-            <div class="mono-block"># world.md  ·  北境文脉
+                <div class="fs-12 muted">本页对应真相文件 world.md；设定按分类归入其中。</div>
+                <div class="fs-13 muted">硬约束不可被 AI 修改，会被注入生成上下文；生成内容与硬约束冲突时会阻塞定稿，需先裁定</div>
+                <div class="fs-13 muted">软设定为倾向性约定，仅在审计时提示，冲突不阻塞</div>
+                <div class="fs-13 muted">新增或修改设定走 Proposal → Validate → Commit 提案流程，不会静默覆盖</div>
+                <div class="mono-block"># world.md  ·  北境文脉
 
 ## 器物
 [hard] 铜灯须以血引方燃          # refs: 4, 17  &lt;冲突&gt;
@@ -165,10 +153,12 @@
 ## 体系
 [hard] 文脉以「名」为薪           # refs: 3, 19
 [soft] 刀法分沉、滞、断三境        # 未使用</div>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
 
+        </aside>
+      </div>
     </div>
   </div>
 </main>
@@ -267,10 +257,14 @@
     var row = h('div', { class: 'row', style: 'margin-top:12px' });
     var bText = h('button', { class: 'btn btn-primary btn-sm', text: '保留正文，改写规则' });
     var bRule = h('button', { class: 'btn btn-ghost btn-sm', text: '按规则修改正文' });
+    /* 「改为软设定」原本只出现在下方清单行；裁定入口统一收在本卡片，避免同一冲突有两套入口 */
+    var bSoft = h('button', { class: 'btn btn-quiet btn-sm', text: '改为软设定' });
     bText.addEventListener('click', function () { resolve(w.id, true, bText); });
     bRule.addEventListener('click', function () { resolve(w.id, false, bRule); });
+    bSoft.addEventListener('click', function () { setKind(w, bSoft); });
     row.appendChild(bText);
     row.appendChild(bRule);
+    row.appendChild(bSoft);
     rc.appendChild(row);
     return rc;
   }
@@ -308,6 +302,16 @@
       (w.status === 'unused' ? ' is-unused' : '');
 
     var rc = h('div', { class: cls });
+
+    /* 冲突项的证据与建议已在上方「冲突待裁定」卡片中完整呈现（含裁定入口），
+       此处降级为一行：仅标题 + 锚点，不再重复输出证据（note）与建议文本 */
+    if (w.status === 'conflict') {
+      rc.innerHTML =
+        '<div class="rule-text">' + w.rule + '</div>' +
+        '<div style="margin-top:8px"><a class="btn btn-quiet btn-sm" href="#conflict-card">见上方待裁定</a></div>';
+      return rc;
+    }
+
     rc.innerHTML =
       '<div class="rule-text">' + w.rule + '</div>' +
       '<div class="rule-meta">' +
@@ -399,7 +403,7 @@
           '<div class="row-sub"><span class="mono">第 ' + w.refs.join('、') + ' 章</span></div>' +
         '</div>' +
         '<div class="wrap-row">' + chips + '</div>';
-      row.addEventListener('click', function () {
+      App.clickable(row, function () {
         App.toast('规则与线的交叉关系（演示）');
       });
       box.appendChild(row);
@@ -426,11 +430,16 @@
   });
 
   /* ---------- 载入 ---------- */
-  Promise.all([api.listWorldSettings(), api.getPlotlines()]).then(function (r) {
-    state.settings = r[0];
-    state.plots = r[1];
-    renderAll();
-  });
+  var loadWorld = function () {
+    Promise.all([api.listWorldSettings(), api.getPlotlines()]).then(function (r) {
+      state.settings = r[0];
+      state.plots = r[1];
+      renderAll();
+    }).catch(function (e) {
+      App.fail('#world-list', e, loadWorld);
+    });
+  };
+  loadWorld();
 })();
 </script>
 </body>

@@ -97,7 +97,7 @@
     <!-- 继续创作 -->
     <section class="card" data-reveal style="margin-bottom:24px">
       <div class="card-head">
-        <h3>继续创作</h3>
+        <h2>继续创作</h2>
         <span class="tag tag-info">当前作品</span>
       </div>
       <div class="card-body" id="current-body"></div>
@@ -113,7 +113,7 @@
     <!-- 全部作品 -->
     <section class="card" data-reveal style="margin-bottom:24px">
       <div class="card-head">
-        <h3>全部作品</h3>
+        <h2>全部作品</h2>
         <span class="tag tag-quiet" id="proj-count">—</span>
       </div>
       <div class="card-body">
@@ -124,7 +124,7 @@
     <!-- 最近生成记录 -->
     <section class="card" data-reveal>
       <div class="card-head">
-        <h3>最近生成记录</h3>
+        <h2>最近生成记录</h2>
         <span class="tag tag-quiet">本会话</span>
       </div>
       <div class="card-body" style="padding:0">
@@ -140,7 +140,7 @@
   <div class="modal-veil"></div>
   <div class="modal-card">
     <div class="card-head">
-      <h3>新建作品</h3>
+      <h2>新建作品</h2>
       <button class="btn btn-quiet btn-sm" data-close-modal>关闭</button>
     </div>
     <div class="card-body stack">
@@ -227,7 +227,21 @@
   /* ---------- 继续创作 ---------- */
   function renderCurrent(list) {
     var p = list.filter(function (x) { return x.isCurrent; })[0] || list[0];
-    if (!p) { $('#current-body').innerHTML = ''; return; }
+    if (!p) {
+      /* 0 个作品：给出引导卡，而不是空白 */
+      var empty = h('div', { class: 'empty' },
+        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>' +
+        '<div class="fs-16 serif">还没有作品</div>' +
+        '<div class="fs-13">从一个名字和一句话灵感开始</div>');
+      var newBtn = h('button', { class: 'btn btn-primary btn-sm', text: '新建作品' });
+      newBtn.addEventListener('click', function () { $('#modal-new-proj').hidden = false; });
+      empty.appendChild(newBtn);
+      var curBody = $('#current-body');
+      curBody.innerHTML = '';
+      curBody.appendChild(empty);
+      $('#current-updated').textContent = '—';
+      return;
+    }
     $('#current-updated').textContent = '最后更新 ' + p.updatedAt;
 
     var body = $('#current-body');
@@ -301,19 +315,37 @@
 
   /* ---------- 最近生成记录 ---------- */
   function renderRecent() {
-    api.listUsage().then(function (rows) {
+    Promise.all([api.listUsage(), api.listChapters()]).then(function (res) {
+      var rows = res[0];
+      var chapters = res[1];
+      var dateOf = {};
+      chapters.forEach(function (c) { dateOf[c.n] = c.updated; });
+
       var box = $('#recent-list');
       box.innerHTML = '';
-      rows.slice().reverse().forEach(function (u) {
+
+      var list = rows.slice().reverse();
+      if (!list.length) {
+        box.appendChild(h('div', { class: 'empty' },
+          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>' +
+          '<div class="fs-13">本会话还没有生成记录</div>'));
+        return;
+      }
+
+      list.forEach(function (u, i) {
         var r = h('div', { class: 'list-row' });
         r.innerHTML =
-          '<span class="mono fs-12 muted" style="width:64px;flex:none">09-24</span>' +
+          /* 日期取自章节数据的 updated 字段；缺失时留空占位 */
+          '<span class="mono fs-12 muted" style="width:64px;flex:none">' + (dateOf[u.chapter] || '—') + '</span>' +
           '<span class="row-main"><span class="row-title">第 ' + u.chapter + ' 章 · 生成 + 审计</span>' +
           '<span class="row-sub mono">输入 ' + App.fmtInt(u.promptTokens) + ' tok · 输出 ' + App.fmtInt(u.completionTokens) + ' tok</span></span>' +
-          '<span class="tag tag-info">雁回关</span>' +
+          /* 同属当前作品，标签只在首行出现一次，避免逐行重复 */
+          (i === 0 ? '<span class="tag tag-info">雁回关</span>' : '') +
           '<span class="mono fs-13" style="width:56px;text-align:right">' + App.fmtMoney(u.cost) + '</span>';
         box.appendChild(r);
       });
+    }).catch(function (e) {
+      App.fail('#recent-list', e, renderRecent);
     });
   }
 
@@ -324,6 +356,8 @@
       renderSummary(list);
       renderCurrent(list);
       renderProjects(list);
+    }).catch(function (e) {
+      App.fail('#proj-grid', e, load);
     });
   }
   load();
@@ -337,7 +371,7 @@
   $('#btn-create').addEventListener('click', function () {
     var btn = this;
     var title = $('#np-title').value.trim();
-    if (!title) { App.toast('先给作品起个名字'); return; }
+    if (!title) { App.toast('先给作品起个名字', 'warn'); return; }
     App.loading(btn, true, '创建中…');
     api.createProject(title).then(function () {
       App.loading(btn, false);
@@ -345,7 +379,7 @@
       $('#np-title').value = '';
       $('#np-idea').value = '';
       load();
-      App.toast('已创建《' + title + '》，前往共创对话开始立项');
+      App.toast('已创建《' + title + '》，前往共创对话开始立项', 'ok');
     });
   });
 })();

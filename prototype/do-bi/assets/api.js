@@ -7,13 +7,26 @@ window.api = (function () {
   'use strict';
   var M = window.MOCK;
 
+  /* 失败注入：原型默认 0（永不失败）；用于验证错误态 ——
+     控制台执行 api.setFailRate(1)，或在地址后加 ?fail=1 让全部接口失败。 */
+  var failRate = /[?&]fail=1/.test(window.location.search) ? 1 : 0;
+
   function delay(data, ms) {
-    return new Promise(function (resolve) {
-      setTimeout(function () { resolve(JSON.parse(JSON.stringify(data))); }, ms == null ? 320 : ms);
+    return new Promise(function (resolve, reject) {
+      setTimeout(function () {
+        if (failRate > 0 && Math.random() < failRate) {
+          reject(new Error('接口未返回数据'));
+          return;
+        }
+        resolve(JSON.parse(JSON.stringify(data)));
+      }, ms == null ? 320 : ms);
     });
   }
 
   return {
+    /* 仅供原型演示错误态使用 */
+    setFailRate: function (r) { failRate = Number(r) || 0; },
+    getFailRate: function () { return failRate; },
     /* ---------- 项目 ---------- */
     getProject: function () { return delay(M.project); },
 
@@ -25,23 +38,34 @@ window.api = (function () {
     /* ---------- 章节 ---------- */
     listChapters: function () { return delay(M.chapters); },
 
-    getManuscript: function (n) { return delay(M.manuscript); },
+    /* 只有第 17 章有正文；其余章节返回空正文，由页面渲染「尚未生成」空态 */
+    getManuscript: function (n) {
+      if (M.manuscript && M.manuscript.n === n) return delay(M.manuscript);
+      var c = M.chapters.filter(function (x) { return x.n === n; })[0] || {};
+      return delay({ n: n, title: c.title || '', status: c.status || 'todo', words: 0, paragraphs: [] });
+    },
 
-    /* 生成正文（模拟流式：onChunk 逐段回传） */
+    /* 生成正文（模拟流式：onChunk 逐段回传）。返回的 Promise 带 cancel()，可中途停止 */
     generateChapter: function (n, onChunk) {
       var paras = M.manuscript.paragraphs;
-      return new Promise(function (resolve) {
-        var i = 0;
-        var timer = setInterval(function () {
-          if (i >= paras.length) {
-            clearInterval(timer);
-            resolve({ ok: true, chapter: n });
-            return;
-          }
-          if (onChunk) onChunk(paras[i], i);
-          i++;
-        }, 300);
-      });
+      var i = 0, timer = null, stop = null;
+      var p = new Promise(function (resolve) { stop = resolve; });
+      timer = setInterval(function () {
+        if (i >= paras.length) {
+          clearInterval(timer);
+          stop({ ok: true, chapter: n, done: i, cancelled: false });
+          return;
+        }
+        if (onChunk) onChunk(paras[i], i);
+        i++;
+      }, 300);
+      p.cancel = function () {
+        if (!timer) return;
+        clearInterval(timer);
+        timer = null;
+        stop({ ok: false, chapter: n, done: i, cancelled: true });
+      };
+      return p;
     },
 
     /* ---------- 审计 ---------- */
@@ -49,10 +73,14 @@ window.api = (function () {
 
     runAudit: function (n) { return delay(M.audit, 900); },
 
-    resolveAuditItem: function (chapter, dim, accepted) {
+    /* 对某条发现做出决策：'accept'（接受修订）/ 'ignore'（忽略并保留原文） */
+    resolveAuditItem: function (chapter, dim, decision) {
       var hit = M.audit.items.filter(function (x) { return x.dim === dim; })[0];
-      if (hit) hit.fixed = !!accepted;
-      return delay({ ok: true, dim: dim, fixed: !!accepted }, 260);
+      if (hit) {
+        hit.decision = decision;
+        hit.fixed = decision === 'accept';
+      }
+      return delay({ ok: true, dim: dim, decision: decision }, 260);
     },
 
     listRules: function () { return delay(M.rules); },

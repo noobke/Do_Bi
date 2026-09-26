@@ -78,7 +78,7 @@
         <div class="topbar-sub">《雁回关》· 立项阶段 · 已沉淀 4 条设定</div>
       </div>
       <div class="topbar-actions">
-        <a class="btn btn-ghost btn-sm" href="index.html">进入工作台</a>
+        <a class="btn btn-ghost btn-sm" href="workbench.html">进入工作台</a>
       </div>
     </header>
 
@@ -111,7 +111,7 @@
 
         <div class="card" data-reveal>
           <div class="card-head">
-            <h3>设定沉淀</h3>
+            <h2>设定沉淀</h2>
             <span class="tag tag-quiet">实时</span>
           </div>
           <div class="card-body">
@@ -127,7 +127,7 @@
 
         <div class="card" data-reveal>
           <div class="card-head">
-            <h3>写作提示</h3>
+            <h2>写作提示</h2>
             <span class="tag tag-quiet">提示</span>
           </div>
           <div class="card-body">
@@ -240,16 +240,21 @@
     ['coreConflict', '核心冲突'],
     ['tone', '语调']
   ];
-  api.getChatSeed().then(function (seed) {
-    var box = $('#seed-list');
-    seedFields.forEach(function (f) {
-      var item = h('div', { class: 'sink-item' });
-      item.innerHTML =
-        '<div class="sink-key">' + f[1] + '</div>' +
-        '<div class="sink-val">' + (seed[f[0]] || '—') + '</div>';
-      box.appendChild(item);
+  var loadSeed = function () {
+    api.getChatSeed().then(function (seed) {
+      var box = $('#seed-list');
+      seedFields.forEach(function (f) {
+        var item = h('div', { class: 'sink-item' });
+        item.innerHTML =
+          '<div class="sink-key">' + f[1] + '</div>' +
+          '<div class="sink-val">' + (seed[f[0]] || '—') + '</div>';
+        box.appendChild(item);
+      });
+    }).catch(function (e) {
+      App.fail('#seed-list', e, loadSeed);
     });
-  });
+  };
+  loadSeed();
 
   /* ---------- 生成世界观与大纲 ---------- */
   $('#btn-gen-world').addEventListener('click', function () {

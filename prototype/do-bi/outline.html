@@ -98,7 +98,7 @@
       <div class="stack-24">
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>故事树</h3>
+            <h2>故事树</h2>
             <div class="row" id="tree-stat"></div>
           </div>
           <div class="card-body" style="padding:0">
@@ -128,7 +128,7 @@
       <div class="stack-24">
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>节拍骨架</h3>
+            <h2>节拍骨架</h2>
             <div class="row" id="beats-stat"></div>
           </div>
           <div class="card-body" style="padding:0">
@@ -146,7 +146,7 @@
       <div class="stack-24">
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>节奏曲线</h3>
+            <h2>节奏曲线</h2>
             <span class="tag tag-info">按章张力 1–5</span>
           </div>
           <div class="card-body" style="padding:0">
@@ -159,7 +159,7 @@
 
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>节奏诊断</h3>
+            <h2>节奏诊断</h2>
             <span class="tag tag-warn" id="curve-risk-tag">—</span>
           </div>
           <div class="card-body">
@@ -174,7 +174,7 @@
       <div class="stack-24">
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>剧情走向树（故事时间 → 章节落点）</h3>
+            <h2>剧情走向树（故事时间 → 章节落点）</h2>
             <span class="tag tag-info">10 个锚点 · 4 个阶段</span>
           </div>
           <div class="card-body" style="padding:0">
@@ -194,7 +194,7 @@
         <!-- 1 · 罗盘 -->
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>罗盘 Compass</h3>
+            <h2>罗盘 Compass</h2>
             <span class="tag tag-info">滚动规划</span>
           </div>
           <div class="card-body">
@@ -205,7 +205,7 @@
         <!-- 1b · 章节 × 情节线矩阵 -->
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>章节 × 情节线矩阵</h3>
+            <h2>章节 × 情节线矩阵</h2>
             <span class="tag tag-quiet">20 章 · 6 条线</span>
           </div>
           <div class="card-body">
@@ -222,7 +222,7 @@
       <div class="stack-24">
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>章节板</h3>
+            <h2>章节板</h2>
             <div class="row" id="board-stat"></div>
           </div>
           <div class="card-body">
@@ -238,7 +238,7 @@
       <div class="stack-24">
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>情节线地铁图</h3>
+            <h2>情节线地铁图</h2>
             <span class="tag tag-info">2 主线 · 4 支线</span>
           </div>
           <div class="card-body">
@@ -254,7 +254,7 @@
       <div class="stack-24">
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>全书内容生产流程</h3>
+            <h2>全书内容生产流程</h2>
             <div class="row" id="pipeline-stat"></div>
           </div>
           <div class="card-body" style="padding:0">
@@ -277,7 +277,7 @@
           <!-- 左：依赖图 -->
           <section class="card" data-reveal>
             <div class="card-head">
-              <h3>依赖图</h3>
+              <h2>依赖图</h2>
               <span class="tag tag-quiet">6 条边</span>
             </div>
             <div class="card-body" style="padding:0">
@@ -313,8 +313,8 @@
 
             <div class="card">
               <div class="card-head">
-                <h3>未展开的骨架弧</h3>
-                <span class="tag tag-quiet" id="skeleton-count">0</span>
+                <h2>未展开的骨架弧</h2>
+                <span class="tag tag-quiet" id="skeleton-count">—</span>
               </div>
               <div class="card-body">
                 <div class="list" id="skeleton-list"></div>
@@ -502,7 +502,7 @@
     svg.innerHTML = defs + halos + edges + nodesSvg;
 
     $$('.gnode', svg).forEach(function (g) {
-      g.addEventListener('click', function () {
+      App.clickable(g, function () {
         state.selected = Number(g.dataset.ch);
         renderGraph();
         renderDetail();
@@ -551,7 +551,7 @@
 
     if (!n) {
       box.innerHTML =
-        '<div class="card-head"><h3>节点详情</h3></div>' +
+        '<div class="card-head"><h2>节点详情</h2></div>' +
         '<div class="card-body"><div class="empty"><span class="fs-12">未选择节点</span></div></div>';
       return;
     }
@@ -588,7 +588,7 @@
 
     box.innerHTML =
       '<div class="card-head">' +
-        '<h3>节点详情</h3>' +
+        '<h2>节点详情</h2>' +
         '<span class="tag tag-quiet mono">第 ' + n.chapter + ' 章</span>' +
       '</div>' +
       '<div class="card-body"><div class="stack">' +
@@ -674,11 +674,12 @@
 
       tr.addEventListener('mouseenter', function () { hoverEdge(e.from, e.to, true); });
       tr.addEventListener('mouseleave', function () { hoverEdge(e.from, e.to, false); });
-      tr.addEventListener('click', function () {
+      /* 表格行：只补键盘能力，不覆盖 tr 的原生 row 语义 */
+      App.clickable(tr, function () {
         state.selected = e.to;
         renderGraph();
         renderDetail();
-      });
+      }, false);
 
       tb.appendChild(tr);
     });
@@ -785,6 +786,12 @@
       if (el) el.hidden = (v !== name);
     });
 
+    /* 「刷新罗盘」只属于「总纲」视图：其它视图隐藏（[hidden] 的强制隐藏已在 styles.css §2 统一处理） */
+    var compassBtn = $('#btn-refresh-compass');
+    if (compassBtn) {
+      compassBtn.hidden = (name !== 'overview');
+    }
+
     var tabs = $('#view-tabs');
     if (changed || !tabs || !tabs.children.length) {
       renderGroups();
@@ -857,7 +864,7 @@
     }).join('');
 
     $$('.chap-card', box).forEach(function (card) {
-      card.addEventListener('click', function () {
+      App.clickable(card, function () {
         location.href = 'chapter.html#' + card.dataset.ch;
       });
     });
@@ -1083,7 +1090,7 @@
     svg.innerHTML = bandSvg + labelSvg + splitSvg + trunk + branchSvg + axisSvg + nodeSvg;
 
     $$('.tree-node', svg).forEach(function (g) {
-      g.addEventListener('click', function () {
+      App.clickable(g, function () {
         location.href = 'chapter.html#' + g.dataset.ch;
       });
     });
@@ -1371,7 +1378,7 @@
     svg.innerHTML = s;
 
     $$('.vtr-leaf-g', svg).forEach(function (g2) {
-      g2.addEventListener('click', function () { location.href = 'chapter.html#' + g2.dataset.ch; });
+      App.clickable(g2, function () { location.href = 'chapter.html#' + g2.dataset.ch; });
     });
 
     var backstory = events.filter(function (e) { return e.kind === 'backstory'; }).length;
@@ -1451,7 +1458,7 @@
     if (beatsStat) {
       beatsStat.innerHTML = statusTags([
         ['tag-ok', bc.done || 0, '已完成'],
-        ['tag-warn', bc.audit || 0, '待审'],
+        ['tag-warn', bc.audit || 0, '待审计'],
         ['tag-info', bc.draft || 0, '草稿'],
         ['tag-quiet', bc.todo || 0, '未写']
       ]);
@@ -1460,7 +1467,7 @@
     var beatsNote = $('#beats-note');
     if (beatsNote) {
       beatsNote.innerHTML = '<strong>' + acts.length + ' 幕 ' + allBeats.length + ' 节拍：' +
-        (bc.done || 0) + ' 已成稿 · ' + (bc.audit || 0) + ' 待审 · ' + (bc.draft || 0) + ' 草稿 · ' +
+        (bc.done || 0) + ' 已成稿 · ' + (bc.audit || 0) + ' 待审计 · ' + (bc.draft || 0) + ' 草稿 · ' +
         (bc.todo || 0) + ' 未写</strong> · ' +
         (hitBeat
           ? '当前第 17 章位于「' + hitAct + '」的「' + hitBeat.name + '」节拍（第 ' + hitBeat.from + '–' + hitBeat.to + ' 章）'
@@ -1548,7 +1555,7 @@
       pipeNote.innerHTML = '<strong>' + stages.length + ' 个阶段：' + (pc.done || 0) + ' 已完成 · ' +
         (pc.active || 0) + ' 进行中 · ' + (pc.todo || 0) + ' 待开始</strong> · ' +
         '实线为主流程，琥珀虚线为回环（判定「否」→ 续写下一章；有新定稿章 → 重跑逐章流水线）；' +
-        '点「开始」到「完结」是一条不间断的闭环，任一节点中断后可从该节点续跑';
+        '从「开始」到「完结」是一条不间断的闭环，任一节点中断后可从该节点续跑';
     }
   }
 
@@ -1565,30 +1572,65 @@
   });
 
   /* ================= 载入 ================= */
-  api.getOutlineGraph().then(function (g) {
-    state.compass = g.compass;
-    state.volumes = g.volumes;
-    state.nodes = g.nodes;
-    state.edges = g.edges;
+  var loadOutlineGraph = function () {
+    api.getOutlineGraph().then(function (g) {
+      state.compass = g.compass;
+      state.volumes = g.volumes;
+      state.nodes = g.nodes;
+      state.edges = g.edges;
 
-    renderCompass();
-    renderGraph();
-    renderDetail();
-    renderSkeleton();
-    renderEdges();
-  });
+      renderCompass();
+      renderGraph();
+      renderDetail();
+      renderSkeleton();
+      renderEdges();
+    }).catch(function (e) {
+      App.fail('#compass-body', e, loadOutlineGraph);
+    });
+  };
+  loadOutlineGraph();
 
-  api.getStructure().then(function (s) {
-    renderBoard(s);
-    renderTree(s);
-    renderCurve(s);
-  });
-  api.getMatrix().then(function (mx) { renderMatrix(mx); });
-  api.getPlotlines().then(function (pl) { renderPlotlines(pl); });
+  var loadStructure = function () {
+    api.getStructure().then(function (s) {
+      renderBoard(s);
+      renderTree(s);
+      renderCurve(s);
+    }).catch(function (e) {
+      App.fail('#board-cols', e, loadStructure);
+    });
+  };
+  loadStructure();
+  var loadMatrix = function () {
+    api.getMatrix().then(function (mx) { renderMatrix(mx); }).catch(function (e) {
+      App.fail('#matrix-body', e, loadMatrix);
+    });
+  };
+  loadMatrix();
+  var loadPlotlines = function () {
+    api.getPlotlines().then(function (pl) { renderPlotlines(pl); }).catch(function (e) {
+      App.fail('#plotline-body', e, loadPlotlines);
+    });
+  };
+  loadPlotlines();
 
-  api.getBookTimeline().then(function (t) { renderBookTimeline(t); });
-  api.getBeatSheet().then(function (b) { renderBeatSheet(b); });
-  api.getBookPipeline().then(function (p) { renderBookPipeline(p); });
+  var loadBookTimeline = function () {
+    api.getBookTimeline().then(function (t) { renderBookTimeline(t); }).catch(function (e) {
+      App.fail('.vtr-wrap', e, loadBookTimeline);
+    });
+  };
+  loadBookTimeline();
+  var loadBeatSheet = function () {
+    api.getBeatSheet().then(function (b) { renderBeatSheet(b); }).catch(function (e) {
+      App.fail('.beat-wrap', e, loadBeatSheet);
+    });
+  };
+  loadBeatSheet();
+  var loadBookPipeline = function () {
+    api.getBookPipeline().then(function (p) { renderBookPipeline(p); }).catch(function (e) {
+      App.fail('.pflow-wrap', e, loadBookPipeline);
+    });
+  };
+  loadBookPipeline();
 
   /* 视图标签为动态渲染，点击事件在创建时绑定，此处只需设置初始视图 */
   setView('tree');

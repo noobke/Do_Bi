@@ -10,11 +10,12 @@
   --paper-3:     #EDE7DA;
   --line:        #E3DCCB;
   --line-strong: #D6CCB6;
+  --line-ctl:    #948871;   /* 控件边界专用：paper 上 3.32:1（WCAG 1.4.11 非文本对比度 ≥3:1） */
 
   --ink:         #211E19;
   --ink-2:       #4A4438;
-  --ink-3:       #857D6D;
-  --ink-4:       #A79F8E;
+  --ink-3:       #6B6455;   /* 次级文字层：paper 5.58 / paper-2 5.21 / paper-3 4.76 —— 均达 AA */
+  --ink-4:       #8F8778;   /* 图形层（边框/轴线/箭头/图标，≥3:1）；**不得用于文字**，文字请用 --ink-3 */
 
   --accent:      #2C4A63;
   --accent-hover:#22394D;
@@ -23,10 +24,12 @@
 
   --moss:        #4F6B4A;
   --moss-soft:   #E9EFE6;
-  --amber:       #B0791F;
+  --amber:       #8A5C12;   /* 加深：amber-soft 上 5.03:1（原 #B0791F 仅 3.25:1，警示文字不达 AA） */
   --amber-soft:  #F7EEDC;
-  --crimson:     #A6392E;
+  --crimson:     #A6392E;   /* 朱砂：仅用于品牌印 · 伏笔标记 · 本章位置 —— 不再承担「错误」 */
   --crimson-soft:#F7E8E5;
+  --error:       #7E2A33;   /* 错误 / 阻塞专色：比朱砂更冷更深的墨红，与 --crimson 色距 43 */
+  --error-soft:  #F2E2E2;
   --seal:        #A6392E;
 
   --font-display: "Noto Serif SC","Source Han Serif SC","Songti SC","STSong",Georgia,"Times New Roman",serif;
@@ -57,6 +60,9 @@
 
 /* ---------- 2. Reset / base ---------- */
 *,*::before,*::after { box-sizing:border-box; }
+/* [hidden] 必须真正生效：组件上的 display:inline-flex / flex 会覆盖 UA 的 [hidden]{display:none}，
+   导致 JS 里 `el.hidden = true` 静默失效（本项目已两次踩到）。 */
+[hidden] { display:none !important; }
 html,body { margin:0; padding:0; }
 body {
   font-family:var(--font-body);
@@ -163,6 +169,10 @@ svg { display:block; }
 .btn:active:not(:disabled) { transform:translateY(1px); }
 .btn:disabled { opacity:.4; cursor:not-allowed; }
 .btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+/* 全局焦点环：键盘用户必须能看见焦点落在哪（WCAG 2.4.7） */
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+/* 表单控件用 box-shadow 焦点环，避免两个焦点指示叠加 */
+.input:focus-visible, .select:focus-visible, .textarea:focus-visible { outline:none; }
 .btn-primary { background:var(--accent); color:var(--paper); }
 .btn-primary:hover:not(:disabled) { background:var(--accent-hover); }
 .btn-ghost { background:transparent; border-color:var(--line-strong); color:var(--ink-2); }
@@ -177,19 +187,31 @@ svg { display:block; }
 .field { display:flex; flex-direction:column; gap:var(--sp-8); }
 .field-label { font-size:var(--fs-13); color:var(--ink-2); font-weight:500; }
 .field-hint { font-size:var(--fs-12); color:var(--ink-3); }
+/* 面包屑：子页必须能看出自己挂在哪一栏下（配合侧栏 active） */
+.crumb { display:flex; align-items:center; gap:var(--sp-8); font-size:var(--fs-12); color:var(--ink-3); margin-bottom:var(--sp-4); }
+.crumb a { color:var(--ink-3); }
+.crumb a:hover { color:var(--accent); text-decoration:underline; }
+.crumb span[aria-hidden] { color:var(--ink-3); }
 .input, .select, .textarea {
   width:100%; font:inherit; font-size:var(--fs-14); color:var(--ink);
-  background:var(--paper); border:1px solid var(--line-strong);
+  background:var(--paper); border:1px solid var(--line-ctl);
   border-radius:var(--r-sm); padding:var(--sp-8) var(--sp-12); height:34px;
   transition:border-color 120ms var(--ease), box-shadow 120ms var(--ease);
 }
 .textarea { height:auto; min-height:88px; resize:vertical; line-height:1.7; }
-.input::placeholder, .textarea::placeholder { color:var(--ink-4); }
+.input::placeholder, .textarea::placeholder { color:var(--ink-3); }
 .input:focus, .select:focus, .textarea:focus {
   outline:none; border-color:var(--accent);
   box-shadow:0 0 0 3px rgba(44,74,99,.12);
 }
-.select { appearance:none; background-image:none; cursor:pointer; }
+/* 原生箭头被移除，用内联 caret 补回「可点开」的线索；描边色 = --ink-3 #6B6455
+   （data URI 无法引用 CSS 变量，故此处写死，改动令牌时需同步） */
+.select {
+  appearance:none; cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B6455' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right var(--sp-8) center; background-size:12px 12px;
+  padding-right:var(--sp-32);
+}
 
 /* ---------- 9. Cards / panels ---------- */
 .card {
@@ -213,10 +235,10 @@ svg { display:block; }
 }
 .tag-ok      { background:var(--moss-soft);    color:var(--moss); }
 .tag-warn    { background:var(--amber-soft);   color:var(--amber); }
-.tag-danger  { background:var(--crimson-soft); color:var(--crimson); }
+.tag-danger  { background:var(--error-soft);   color:var(--error); }
 .tag-info    { background:var(--accent-soft);  color:var(--accent-ink); }
 .tag-quiet   { background:var(--paper-3);      color:var(--ink-3); }
-.tag-seal    { background:var(--crimson-soft); color:var(--crimson); border:1px solid rgba(166,57,46,.25); }
+.tag-seal    { background:var(--crimson-soft); color:var(--crimson); border:1px solid color-mix(in srgb, var(--crimson) 25%, transparent); }
 
 /* ---------- 11. Lists / tables ---------- */
 .list { display:flex; flex-direction:column; }
@@ -318,6 +340,12 @@ svg { display:block; }
   padding:var(--sp-48) var(--sp-24); text-align:center; color:var(--ink-3);
 }
 .empty svg { color:var(--ink-4); }
+/* 加载失败态：图标用错误专色，文案保持墨色可读 */
+.state-error svg { color:var(--error); }
+/* toast 语义分型：成功 / 警示 / 失败（对应 App.toast(msg, type)） */
+.toast-ok { border-left:3px solid var(--moss); }
+.toast-warn { border-left:3px solid var(--amber); }
+.toast-error { border-left:3px solid var(--error); }
 .kbd {
   font-family:var(--font-mono); font-size:var(--fs-12);
   background:var(--paper-3); border:1px solid var(--line);
@@ -350,7 +378,7 @@ svg { display:block; }
   gap:var(--sp-16); padding:var(--sp-12) 0;
 }
 .ms-gutter {
-  font-family:var(--font-mono); font-size:var(--fs-11); color:var(--ink-4);
+  font-family:var(--font-mono); font-size:var(--fs-11); color:var(--ink-3);
   text-align:right; padding-top:6px; border-right:1px solid var(--line);
   padding-right:var(--sp-8);
 }
@@ -374,7 +402,7 @@ svg { display:block; }
   padding:var(--sp-12); border-radius:var(--r-sm);
   background:var(--paper); border:1px solid var(--line); border-left-width:2px;
 }
-.audit-item.sev-blocker { border-left-color:var(--crimson); }
+.audit-item.sev-blocker { border-left-color:var(--error); }
 .audit-item.sev-major   { border-left-color:var(--amber); }
 .audit-item.sev-minor   { border-left-color:var(--ink-4); }
 .audit-evidence {
@@ -524,7 +552,7 @@ svg { display:block; }
   border-radius:var(--r-sm); overflow:hidden;
 }
 .graph-wrap svg { display:block; width:100%; height:auto; }
-.gnode rect { fill:var(--paper-2); stroke:var(--line-strong); stroke-width:1; }
+.gnode rect { fill:var(--paper-2); stroke:var(--line-ctl); stroke-width:1; }
 .gnode.is-selected rect { fill:var(--accent-soft); stroke:var(--accent); stroke-width:1.5; }
 .gnode.is-skeleton rect { fill:var(--paper-3); stroke:var(--line-strong); stroke-dasharray:4 3; }
 .gnode { cursor:pointer; }
@@ -571,7 +599,7 @@ svg { display:block; }
   font-family:var(--font-read); font-size:var(--fs-14); line-height:1.75;
 }
 .diff-line:last-child { border-bottom:none; }
-.diff-gutter { font-family:var(--font-mono); font-size:var(--fs-11); color:var(--ink-4); text-align:right; padding-top:4px; }
+.diff-gutter { font-family:var(--font-mono); font-size:var(--fs-11); color:var(--ink-3); text-align:right; padding-top:4px; }
 .diff-line.is-del { background:var(--crimson-soft); }
 .diff-line.is-add { background:var(--moss-soft); }
 .diff-text { color:var(--ink-2); }
@@ -611,7 +639,7 @@ svg { display:block; }
 }
 .chip-x {
   width:20px; height:20px; border:none; background:transparent;
-  color:var(--ink-4); cursor:pointer; border-radius:4px; line-height:1; font-size:var(--fs-12);
+  color:var(--ink-3); cursor:pointer; border-radius:4px; line-height:1; font-size:var(--fs-12);
 }
 .chip-x:hover { background:var(--crimson-soft); color:var(--crimson); }
 
@@ -792,14 +820,14 @@ svg { display:block; }
 .pl-row { display:grid; grid-template-columns:150px minmax(0,1fr); gap:var(--sp-16); align-items:center; }
 .pl-name { display:flex; align-items:center; gap:var(--sp-8); font-size:var(--fs-13); color:var(--ink-2); }
 .pl-name .dot { width:10px; height:10px; border-radius:3px; flex:none; }
-.pl-kind { font-size:var(--fs-11); color:var(--ink-4); }
+.pl-kind { font-size:var(--fs-11); color:var(--ink-3); }
 .pl-track { position:relative; height:30px; }
 .pl-track::before { content:""; position:absolute; left:0; right:0; top:14px; height:2px; background:var(--paper-3); border-radius:2px; }
 .pl-seg { position:absolute; top:14px; height:2px; border-radius:2px; }
 .pl-node { position:absolute; top:9px; width:12px; height:12px; border-radius:3px; border:2px solid var(--paper); }
 .pl-axis { display:grid; grid-template-columns:150px minmax(0,1fr); gap:var(--sp-16); }
 .pl-ticks { position:relative; height:20px; }
-.pl-tick { position:absolute; top:0; transform:translateX(-50%); font-family:var(--font-mono); font-size:var(--fs-11); color:var(--ink-4); }
+.pl-tick { position:absolute; top:0; transform:translateX(-50%); font-family:var(--font-mono); font-size:var(--fs-11); color:var(--ink-3); }
 .pl-cross { position:absolute; top:0; width:1px; background:var(--line); }
 
 /* ---------- 41. 结构矩阵（章节 × 情节线） ---------- */
@@ -813,7 +841,7 @@ svg { display:block; }
 .matrix .cell > span {
   display:inline-flex; width:20px; height:20px; border-radius:var(--r-sm);
   align-items:center; justify-content:center; font-size:var(--fs-11);
-  background:var(--paper-3); color:var(--ink-4);
+  background:var(--paper-3); color:var(--ink-3);
 }
 .matrix .cell.is-on > span { background:var(--accent); color:var(--paper); }
 .matrix .cell.is-peak > span { background:var(--accent-ink); color:var(--paper); font-weight:600; }
@@ -897,13 +925,13 @@ svg { display:block; }
 .tree-node .tn-n { font-family:var(--font-mono); font-size:11px; fill:var(--ink-2); }
 .tree-node.is-selected .tn-n { fill:var(--paper); }
 .tree-node .tn-t { font-family:var(--font-body); font-size:12px; font-weight:500; fill:var(--ink); }
-.tree-node .tn-s { font-family:var(--font-mono); font-size:10px; fill:var(--ink-4); }
+.tree-node .tn-s { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
 
 .tree-branch { fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .tree-branch-dot { stroke:var(--paper); stroke-width:1.5; }
 .tree-branch-label { font-family:var(--font-body); font-size:11px; font-weight:500; }
 .tree-branch-caption { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
-.tree-axis { font-family:var(--font-mono); font-size:10px; fill:var(--ink-4); }
+.tree-axis { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
 .tree-axis-line { stroke:var(--line); stroke-width:1; }
 
 /* ---------- 46. 节奏曲线 ---------- */
@@ -920,7 +948,7 @@ svg { display:block; }
 .curve-dot { fill:var(--paper); stroke:var(--accent); stroke-width:2; }
 .curve-dot.is-peak { fill:var(--accent-ink); stroke:var(--accent-ink); }
 .curve-dot.is-low { fill:var(--paper-3); stroke:var(--ink-4); }
-.curve-axis { font-family:var(--font-mono); font-size:10px; fill:var(--ink-4); }
+.curve-axis { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
 .curve-label { font-family:var(--font-body); font-size:11px; fill:var(--ink-2); }
 .curve-peak-label { font-family:var(--font-body); font-size:11px; font-weight:500; fill:var(--accent-ink); }
 
@@ -979,7 +1007,7 @@ svg { display:block; }
 .tl-dot.is-future { fill:var(--ink-4); }
 .tl-at { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
 .tl-label { font-family:var(--font-body); font-size:12px; fill:var(--ink); }
-.tl-label-sub { font-family:var(--font-mono); font-size:10px; fill:var(--ink-4); }
+.tl-label-sub { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
 
 /* ---------- 50. 情节结构图 ---------- */
 .struct-act { fill:var(--paper-2); }
@@ -1018,7 +1046,7 @@ svg { display:block; }
 .tl2-link.is-backstory { stroke:var(--amber); }
 .tl2-at { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
 .tl2-label { font-family:var(--font-body); font-size:12px; fill:var(--ink); }
-.tl2-ch { font-family:var(--font-mono); font-size:10px; fill:var(--ink-4); }
+.tl2-ch { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
 .tl2-now { stroke:var(--crimson); stroke-width:1.5; stroke-dasharray:4 3; fill:none; }
 .tl2-now-label { font-family:var(--font-mono); font-size:10px; fill:var(--crimson); }
 
@@ -1034,7 +1062,7 @@ svg { display:block; }
 .beat-name { font-family:var(--font-body); font-size:11px; font-weight:500; fill:var(--ink); }
 .beat-core { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
 .beat-link { stroke:var(--line); stroke-width:1; fill:none; }
-.beat-axis { font-family:var(--font-mono); font-size:10px; fill:var(--ink-4); }
+.beat-axis { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
 .beat-axis-line { stroke:var(--line); stroke-width:1; }
 .beat-marker { stroke:var(--crimson); stroke-width:1.5; stroke-dasharray:3 3; fill:none; }
 .beat-marker-dot { fill:var(--crimson); stroke:var(--paper); stroke-width:2; }
@@ -1167,7 +1195,7 @@ svg { display:block; }
 .tl-at, .tl2-at, .tl2-ch, .tl2-now-label,
 .beat-axis, .beat-core,
 .pflow-meta, .pflow-edge-label,
-.tree-axis, .fn-s, .tl-label-sub,
+.tree-axis, .flow-node .fn-s, .tl-label-sub,
 .curve-axis, .pl-tick, .pl-kind,
 .struct-beat, .fish-cause,
 .chap-no, .pipe-meta, .actline-meta,
@@ -1237,7 +1265,7 @@ svg { display:block; }
 .vtr-dot.is-planned { fill:var(--paper); stroke:var(--ink-4); stroke-width:2; stroke-dasharray:2 2; }
 .vtr-at { font-family:var(--font-mono); font-size:var(--fs-11); fill:var(--ink-3); }
 .vtr-label { font-family:var(--font-body); font-size:var(--fs-13); fill:var(--ink); }
-.vtr-note { font-family:var(--font-mono); font-size:var(--fs-11); fill:var(--ink-4); }
+.vtr-note { font-family:var(--font-mono); font-size:var(--fs-11); fill:var(--ink-3); }
 .vtr-leaf { fill:var(--paper); stroke:var(--line-strong); stroke-width:1.5; }
 .vtr-leaf.is-todo { fill:var(--paper-3); stroke:var(--ink-4); stroke-dasharray:4 3; }
 .vtr-leaf.is-now { fill:var(--accent-soft); stroke:var(--accent); stroke-width:2; }
@@ -1248,3 +1276,19 @@ svg { display:block; }
 .vtr-leaf-g:hover .vtr-leaf { stroke:var(--accent); stroke-width:2; }
 .vtr-now { stroke:var(--crimson); stroke-width:1.5; stroke-dasharray:4 3; fill:none; }
 .vtr-now-t { font-family:var(--font-body); font-size:var(--fs-11); font-weight:500; fill:var(--crimson); }
+
+/* ---------- 59. 图表渲染契约（保证「声明字号 = 渲染字号」） ----------
+   问题：所有图表用固定 viewBox（720/760/900/980）× `width:100%`，在 1082px 视口下
+   内容区仅 755px，于是 980 宽的图被缩到 0.77×、900 宽的缩到 0.84× —— 声明 11px 的
+   图表文字实际只渲染 8.5–9.2px，契约 §57.2 设定的 11px 下限形同虚设。
+   对策：图表永不缩放到低于 1:1；容器空间不足时**横向滚动**，而不是把字缩小。
+   （桌面优先的作者工具，横滚优于 4–8px 的不可读文字。） */
+.tree-wrap, .beat-wrap, .curve-wrap, .vtr-wrap, .pflow-wrap, .graph-wrap,
+.flow-wrap, .tl-wrap, .tl2-wrap, .struct-wrap, .fish-wrap {
+  overflow-x:auto; overflow-y:hidden; scrollbar-width:thin;
+}
+.tree-wrap > svg, .curve-wrap > svg { min-width:980px; }
+.beat-wrap > svg, .pflow-wrap > svg, .flow-wrap > svg, .tl-wrap > svg,
+.tl2-wrap > svg, .struct-wrap > svg, .fish-wrap > svg { min-width:900px; }
+.vtr-wrap > svg { min-width:740px; }
+.graph-wrap > svg { min-width:720px; }

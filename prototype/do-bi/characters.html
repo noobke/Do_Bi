@@ -129,7 +129,7 @@
           '<div class="row-sub">' + c.role + ' · ' + c.state.location + '</div>' +
         '</div>';
       row.appendChild(item);
-      row.addEventListener('click', function () { select(c.id); });
+      App.clickable(row, function () { select(c.id); });
       box.appendChild(row);
     });
     markActive();
@@ -170,7 +170,7 @@
       /* 1. 角色档案 */
       '<div class="card">' +
         '<div class="card-head">' +
-          '<h3>角色档案</h3>' +
+          '<h2>角色档案</h2>' +
           '<span class="tag tag-quiet mono">' + c.id + '</span>' +
         '</div>' +
         '<div class="card-body stack">' +
@@ -214,7 +214,7 @@
       /* 2. 关系 */
       '<div class="card">' +
         '<div class="card-head">' +
-          '<h3>关系</h3>' +
+          '<h2>关系</h2>' +
           '<span class="tag tag-quiet">' + c.relations.length + ' 条</span>' +
         '</div>' +
         '<div class="card-body" style="padding:0">' +
@@ -224,22 +224,27 @@
 
       /* 3. 写作约束提示 */
       '<div class="card">' +
-        '<div class="card-head"><h3>写作约束提示</h3></div>' +
+        '<div class="card-head"><h2>写作约束提示</h2></div>' +
         '<div class="card-body stack-8">' +
           '<p class="fs-13 muted">不可变特征会被审计规则 3（不可变特征被违背）逐章校验，一旦触发即阻塞定稿。</p>' +
-          '<p class="fs-13 muted">角色状态变更需经 Proposal → Validate → Commit 三步写入，冲突项会降级为待人工确认。</p>' +
-          '<p class="fs-13 muted">OOC 由 L2 审计第 1 维检查，对照 personality 与 speechStyle 判断是否符合人设。</p>' +
+          '<p class="fs-13 muted" title="Proposal → Validate → Commit 三步写入">改动角色状态会先给出提案，经你确认后才会写进设定；与已有设定冲突的部分会先标出来等你确认。</p>' +
+          '<p class="fs-13 muted" title="OOC · 对应 L2 审计第 1 维，对照 personality 与 speechStyle">AI 会逐章检查角色是否符合既定性格与说话方式，偏离人设时会标出来。</p>' +
         '</div>' +
       '</div>';
   }
 
   /* ---------- 初始化 ---------- */
-  api.listCharacters().then(function (list) {
-    chars = list;
-    $('#char-count').textContent = list.length;
-    renderList();
-    renderDetail();
-  });
+  var loadCharacters = function () {
+    api.listCharacters().then(function (list) {
+      chars = list;
+      $('#char-count').textContent = list.length;
+      renderList();
+      renderDetail();
+    }).catch(function (e) {
+      App.fail('#char-list', e, loadCharacters);
+    });
+  };
+  loadCharacters();
 
   $('#btn-new-char').addEventListener('click', function () {
     App.toast('新建角色（演示）');

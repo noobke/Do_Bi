@@ -77,13 +77,13 @@
     <header class="topbar" data-reveal>
       <div>
         <h1>审计报告</h1>
-        <div class="topbar-sub">第 17 章 · 雪落雁回 · 1 处 major 待裁定</div>
+        <div class="topbar-sub"><a href="chapter.html#17" id="audit-sub-link">第 17 章 · 雪落雁回</a> · 1 处重点待裁定</div>
       </div>
       <div class="topbar-actions">
         <div class="seg" data-seg="severity" id="severity-seg">
           <button data-value="all" class="active">全部</button>
-          <button data-value="major">仅 major</button>
-          <button data-value="minor">仅 minor</button>
+          <button data-value="major">仅重点</button>
+          <button data-value="minor">仅建议</button>
         </div>
         <button class="btn btn-ghost btn-sm" id="btn-reaudit">重新审计</button>
       </div>
@@ -94,14 +94,14 @@
       <!-- 统计条 -->
       <div class="grid-4">
         <div class="stat" data-reveal>
-          <div class="stat-label">L1 违规</div>
+          <div class="stat-label" title="L1 确定性规则">规则校验违规</div>
           <div class="stat-value" id="stat-l1">3</div>
           <div class="fs-12 muted" id="stat-l1-sub">13 条规则中命中</div>
         </div>
         <div class="stat" data-reveal>
-          <div class="stat-label">L2 发现</div>
+          <div class="stat-label" title="L2 模型审查">模型审查发现</div>
           <div class="stat-value" id="stat-l2">5</div>
-          <div class="fs-12 muted" id="stat-l2-sub">含 2 处 major</div>
+          <div class="fs-12 muted" id="stat-l2-sub">含 2 处重点</div>
         </div>
         <div class="stat" data-reveal>
           <div class="stat-label">已修订</div>
@@ -123,21 +123,21 @@
           <!-- L1 确定性规则 -->
           <div class="card" id="l1-card">
             <div class="card-head">
-              <h3>L1 确定性规则 · 13 条</h3>
+              <h2 title="L1 确定性规则">规则校验 · 13 条</h2>
               <span class="tag tag-warn" id="l1-tag">命中 3 条</span>
             </div>
             <div class="card-body" style="padding:0">
               <div id="l1-list"></div>
             </div>
             <div class="card-foot">
-              <div class="fs-12 muted">L1 为零成本确定性规则，命中即触发 spot-fix 定点修复（只改违规句，不整段重写）</div>
+              <div class="fs-12 muted" title="L1 确定性规则 · spot-fix 定点修复">规则校验为零成本确定性规则，命中后只定点改写违规句，不整段重写</div>
             </div>
           </div>
 
           <!-- L2 维度审计 -->
           <div class="card" id="finding-card">
             <div class="card-head">
-              <h3>L2 维度审计</h3>
+              <h2 title="L2 维度审计">模型审查</h2>
               <span class="tag tag-quiet" id="finding-tag">5 条</span>
             </div>
             <div class="card-body">
@@ -148,12 +148,12 @@
           <!-- 反 AIGC -->
           <div class="card" id="deai-card">
             <div class="card-head">
-              <h3>反 AIGC · 去 AI 味</h3>
+              <h2>反 AIGC · 去 AI 味</h2>
               <span class="tag tag-warn">3 项待处理</span>
             </div>
             <div class="card-body">
               <div class="stack">
-                <div class="fs-13 muted">P0 走确定性规则（零 LLM 成本）；改写后必须重跑 L1，确认没有引入新问题</div>
+                <div class="fs-13 muted" title="L1 规则校验">先跑不需模型判断的规则校验（零成本）；改写后必须重跑规则校验，确认没有引入新问题</div>
                 <div>
                   <div class="rule-row is-hit"><span class="rule-name">禁用句式命中</span><span class="rule-count">心中一凛</span></div>
                   <div class="rule-row is-hit"><span class="rule-name">连续「了／的」字句</span><span class="rule-count">2/2</span></div>
@@ -174,7 +174,7 @@
           <!-- 可举证质量评审 -->
           <div class="card" id="review-card">
             <div class="card-head">
-              <h3>可举证质量评审</h3>
+              <h2>可举证质量评审</h2>
               <span class="tag tag-info">7 维 · 均引原文</span>
             </div>
             <div class="card-body">
@@ -187,7 +187,7 @@
           <!-- 修订补丁预览 -->
           <div class="card" id="diff-card">
             <div class="card-head">
-              <h3>修订补丁预览</h3>
+              <h2>修订补丁预览</h2>
               <span class="tag tag-quiet">2 个补丁</span>
             </div>
             <div class="card-body">
@@ -211,7 +211,7 @@
   var report = null;
   var sevFilter = 'all';
   var openDiffs = {};
-  var sevTag = { blocker: ['tag-danger', 'blocker'], major: ['tag-warn', 'major'], minor: ['tag-quiet', 'minor'] };
+  var sevTag = { blocker: ['tag-danger', '阻塞定稿'], major: ['tag-warn', '重点'], minor: ['tag-quiet', '建议'] };
 
   function findDiff(dim, diffs) {
     return diffs.filter(function (d) { return d.dim === dim; })[0];
@@ -220,7 +220,7 @@
   function diffEl(d) {
     var el = h('div', { class: 'diff' });
     var head = h('div', { class: 'diff-head' });
-    head.innerHTML = '<span class="mono fs-12">' + d.dim + '</span><span class="tag tag-quiet">JSON Patch</span>';
+    head.innerHTML = '<span class="mono fs-12">' + d.dim + '</span><span class="tag tag-quiet">改写补丁</span>';
     el.appendChild(head);
     d.before.forEach(function (line) {
       var l = h('div', { class: 'diff-line is-del' });
@@ -241,7 +241,7 @@
     $('#stat-l1').textContent = r.stats.l1;
     $('#stat-l1-sub').textContent = r.l1.length + ' 条规则中命中';
     $('#stat-l2').textContent = r.stats.l2;
-    $('#stat-l2-sub').textContent = '含 ' + major + ' 处 major';
+    $('#stat-l2-sub').textContent = '含 ' + major + ' 处重点';
     $('#stat-fixed').textContent = r.stats.fixed;
     $('#stat-rate').textContent = r.stats.passRate + '%';
   }
@@ -284,7 +284,9 @@
       item.innerHTML =
         '<div class="row-between">' +
           '<span class="fs-13" style="font-weight:500">' + f.dim + '</span>' +
-          (f.fixed ? '<span class="tag tag-ok">已修订</span>' : '<span class="tag ' + t[0] + '">' + t[1] + '</span>') +
+          (f.decision === 'accept' ? '<span class="tag tag-ok">已修订</span>'
+            : f.decision === 'ignore' ? '<span class="tag tag-quiet">已忽略</span>'
+            : '<span class="tag ' + t[0] + '">' + t[1] + '</span>') +
         '</div>' +
         '<div class="audit-evidence">' + f.evidence + '</div>' +
         '<div class="audit-fix">' + f.suggestion + '</div>';
@@ -381,6 +383,14 @@
       renderFindings(r);
       renderReview(r);
       renderDiffs(r);
+      /* topbar 副标题链回被审章节（章号取自数据，不写死） */
+      var subLink = $('#audit-sub-link');
+      if (subLink) {
+        subLink.href = 'chapter.html#' + r.chapter;
+        subLink.textContent = '第 ' + r.chapter + ' 章 · ' + r.title;
+      }
+    }).catch(function (e) {
+      App.fail('#finding-list', e, load);
     });
   }
 
@@ -396,7 +406,7 @@
       App.loading(btn, false);
       return load();
     }).then(function () {
-      App.toast('审计完成：3 项 L1 命中，5 条 L2 发现');
+      App.toast('审计完成：3 项规则校验命中，5 条模型审查发现');
     });
   });
 
@@ -405,7 +415,7 @@
     App.loading(btn, true, '修复中…');
     setTimeout(function () {
       App.loading(btn, false);
-      App.toast('已完成 3 处定点修复，正在重跑 L1 …');
+      App.toast('已完成 3 处定点修复，正在重跑规则校验 …');
     }, 900);
   });
 

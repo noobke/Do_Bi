@@ -102,15 +102,15 @@
         <div class="card-body">
           <div class="grid-3">
             <div class="lane">
-              <div class="lane-head"><span>待回收</span><span class="mono" id="lane-count-planted">0</span></div>
+              <div class="lane-head"><span>待回收</span><span class="mono" id="lane-count-planted">—</span></div>
               <div class="lane-body" id="lane-planted"></div>
             </div>
             <div class="lane">
-              <div class="lane-head"><span>已回收</span><span class="mono" id="lane-count-resolved">0</span></div>
+              <div class="lane-head"><span>已回收</span><span class="mono" id="lane-count-resolved">—</span></div>
               <div class="lane-body" id="lane-resolved"></div>
             </div>
             <div class="lane">
-              <div class="lane-head"><span>超期告警</span><span class="mono" id="lane-count-overdue">0</span></div>
+              <div class="lane-head"><span>超期告警</span><span class="mono" id="lane-count-overdue">—</span></div>
               <div class="lane-body" id="lane-overdue"></div>
             </div>
           </div>
@@ -230,7 +230,9 @@
   function renderTimeline() {
     var byCh = {};
     hooks.forEach(function (hk) {
-      (byCh[hk.plantedChapter] = byCh[hk.plantedChapter] || []).push(hk.status);
+      /* 埋设章固定用 planted 语义色；仅 resolvedChapter 才用 resolved 语义色。
+         同一章既是埋设又是回收时，两个色点叠加显示（下方 offsets 逻辑保证可辨）。 */
+      (byCh[hk.plantedChapter] = byCh[hk.plantedChapter] || []).push('planted');
       if (hk.status === 'resolved' && hk.resolvedChapter) {
         (byCh[hk.resolvedChapter] = byCh[hk.resolvedChapter] || []).push('resolved');
       }
@@ -270,12 +272,17 @@
   });
 
   /* ---------- 载入 ---------- */
-  Promise.all([api.hookStats(), api.listHooks()]).then(function (res) {
-    hooks = res[1];
-    renderStats(res[0]);
-    renderLanes();
-    renderTimeline();
-  });
+  var loadHooks = function () {
+    Promise.all([api.hookStats(), api.listHooks()]).then(function (res) {
+      hooks = res[1];
+      renderStats(res[0]);
+      renderLanes();
+      renderTimeline();
+    }).catch(function (e) {
+      App.fail('#hook-stats', e, loadHooks);
+    });
+  };
+  loadHooks();
 })();
 </script>
 </body>
