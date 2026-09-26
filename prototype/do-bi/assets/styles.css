@@ -1203,25 +1203,48 @@ svg { display:block; }
 .chart-note.is-warn { border-left-color:var(--amber); background:var(--amber-soft); }
 .chart-note.is-danger { border-left-color:var(--crimson); background:var(--crimson-soft); }
 
-/* ---------- 58. 竖向时间线（大纲页全书时间线：主干 + 左右分支） ---------- */
-.vtl-wrap { position:relative; width:100%; overflow:hidden; background:var(--paper); border:1px solid var(--line); border-radius:var(--r-sm); }
-.vtl-wrap svg { display:block; width:100%; height:auto; }
-.vtl-axis { stroke:var(--ink-4); stroke-width:3; fill:none; stroke-linecap:round; }
-.vtl-axis-arrow { fill:var(--ink-4); }
-.vtl-band { fill:var(--paper-2); }
-.vtl-band-label { font-family:var(--font-display); font-size:var(--fs-12); font-weight:600; fill:var(--ink-3); }
-.vtl-tick { stroke:var(--line-strong); stroke-width:1; fill:none; }
-.vtl-dot { fill:var(--accent); stroke:var(--paper); stroke-width:2.5; }
-.vtl-dot.is-backstory { fill:var(--amber); }
-.vtl-dot.is-flashback { fill:var(--crimson); }
-.vtl-dot.is-future { fill:var(--ink-4); }
-.vtl-dot.is-planned { fill:var(--paper); stroke:var(--ink-4); stroke-width:2; stroke-dasharray:2 2; }
-.vtl-at { font-family:var(--font-mono); font-size:var(--fs-11); fill:var(--ink-3); }
-.vtl-label { font-family:var(--font-body); font-size:var(--fs-13); fill:var(--ink); }
-.vtl-note { font-family:var(--font-mono); font-size:var(--fs-11); fill:var(--ink-4); }
-.vtl-chip { fill:var(--paper-2); stroke:var(--line-strong); stroke-width:1; }
-.vtl-chip.is-now { fill:var(--accent-soft); stroke:var(--accent); stroke-width:2; }
-.vtl-chip-t { font-family:var(--font-mono); font-size:var(--fs-11); fill:var(--ink-2); }
-.vtl-chip-t.is-now { fill:var(--accent-ink); font-weight:600; }
-.vtl-now { stroke:var(--crimson); stroke-width:1.5; stroke-dasharray:4 3; fill:none; }
-.vtl-now-label { font-family:var(--font-body); font-size:var(--fs-11); font-weight:500; fill:var(--crimson); }
+/* ---------- 58. 剧情走向树（大纲页全书时间线 → 树状图） ---------- */
+.vtr-wrap { position:relative; width:100%; overflow:hidden; background:var(--paper); border:1px solid var(--line); border-radius:var(--r-sm); }
+.vtr-wrap svg { display:block; width:100%; height:auto; }
+/* 阶段 → 描边色（主干 / 分枝 / 细枝共用） */
+.vtr-s-backstory { stroke:var(--amber); }
+.vtr-s-flashback { stroke:var(--crimson); }
+.vtr-s-now { stroke:var(--accent); }
+.vtr-s-future { stroke:var(--ink-4); }
+/* 阶段 → 填充色（分段带圆点） */
+.vtr-f-backstory { fill:var(--amber); }
+.vtr-f-flashback { fill:var(--crimson); }
+.vtr-f-now { fill:var(--accent); }
+.vtr-f-future { fill:var(--ink-4); }
+.vtr-trunk { stroke-width:3; fill:none; stroke-linecap:round; }
+.vtr-branch { stroke-width:1.8; fill:none; stroke-linecap:round; }
+.vtr-twig { stroke-width:1.2; fill:none; stroke-linecap:round; opacity:.6; }
+.vtr-arrow { fill:var(--ink-4); }
+.vtr-root { fill:var(--accent); stroke:var(--paper); stroke-width:2.5; }
+.vtr-head { font-family:var(--font-display); font-size:var(--fs-12); font-weight:600; fill:var(--ink-3); }
+.vtr-band { fill:var(--paper-2); }
+.vtr-band.is-backstory { fill:color-mix(in srgb, var(--amber) 12%, var(--paper)); }
+.vtr-band.is-flashback { fill:color-mix(in srgb, var(--crimson) 10%, var(--paper)); }
+.vtr-band.is-now { fill:color-mix(in srgb, var(--accent) 9%, var(--paper)); }
+.vtr-band.is-future { fill:var(--paper-3); }
+.vtr-band-dot { stroke:none; }
+.vtr-band-t { font-family:var(--font-display); font-size:var(--fs-12); font-weight:600; fill:var(--ink-2); }
+.vtr-dot { stroke:var(--paper); stroke-width:2.5; }
+.vtr-dot.is-backstory { fill:var(--amber); }
+.vtr-dot.is-flashback { fill:var(--crimson); }
+.vtr-dot.is-now { fill:var(--accent); }
+.vtr-dot.is-future { fill:var(--ink-4); }
+.vtr-dot.is-planned { fill:var(--paper); stroke:var(--ink-4); stroke-width:2; stroke-dasharray:2 2; }
+.vtr-at { font-family:var(--font-mono); font-size:var(--fs-11); fill:var(--ink-3); }
+.vtr-label { font-family:var(--font-body); font-size:var(--fs-13); fill:var(--ink); }
+.vtr-note { font-family:var(--font-mono); font-size:var(--fs-11); fill:var(--ink-4); }
+.vtr-leaf { fill:var(--paper); stroke:var(--line-strong); stroke-width:1.5; }
+.vtr-leaf.is-todo { fill:var(--paper-3); stroke:var(--ink-4); stroke-dasharray:4 3; }
+.vtr-leaf.is-now { fill:var(--accent-soft); stroke:var(--accent); stroke-width:2; }
+.vtr-leaf-t { font-family:var(--font-mono); font-size:var(--fs-11); fill:var(--ink-2); }
+.vtr-leaf-t.is-todo { fill:var(--ink-3); }
+.vtr-leaf-t.is-now { fill:var(--accent-ink); font-weight:600; }
+.vtr-leaf-g { cursor:pointer; }
+.vtr-leaf-g:hover .vtr-leaf { stroke:var(--accent); stroke-width:2; }
+.vtr-now { stroke:var(--crimson); stroke-width:1.5; stroke-dasharray:4 3; fill:none; }
+.vtr-now-t { font-family:var(--font-body); font-size:var(--fs-11); font-weight:500; fill:var(--crimson); }
