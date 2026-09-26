@@ -1000,3 +1000,75 @@ svg { display:block; }
 .fish-cat { font-family:var(--font-display); font-size:12px; font-weight:600; fill:var(--ink-2); }
 .fish-cause-dot { fill:var(--ink-4); }
 .fish-cause { font-family:var(--font-body); font-size:11px; fill:var(--ink-2); }
+
+/* ==========================================================================
+   批次七（v1.6 新增）· 双轨时间线 / 节拍骨架 / 生产流程图 / 幕内节拍序列
+   ========================================================================== */
+
+/* ---------- 52. 双轨时间线（故事时间 × 叙述顺序，大纲页与章节页共用） ---------- */
+.tl2-wrap { position:relative; width:100%; overflow:hidden; background:var(--paper); border:1px solid var(--line); border-radius:var(--r-sm); }
+.tl2-wrap svg { display:block; width:100%; height:auto; }
+.tl2-rail { stroke:var(--ink-3); stroke-width:2; fill:none; stroke-linecap:round; }
+.tl2-rail-label { font-family:var(--font-display); font-size:12px; font-weight:600; fill:var(--ink-2); }
+.tl2-dot { fill:var(--accent); stroke:var(--paper); stroke-width:2; }
+.tl2-dot.is-backstory { fill:var(--amber); }
+.tl2-dot.is-future { fill:var(--ink-4); }
+.tl2-dot.is-planned { fill:var(--paper-3); stroke:var(--line-strong); }
+.tl2-link { stroke:var(--line-strong); stroke-width:1; fill:none; stroke-dasharray:3 3; }
+.tl2-link.is-backstory { stroke:var(--amber); }
+.tl2-at { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.tl2-label { font-family:var(--font-body); font-size:12px; fill:var(--ink); }
+.tl2-ch { font-family:var(--font-mono); font-size:10px; fill:var(--ink-4); }
+.tl2-now { stroke:var(--crimson); stroke-width:1.5; stroke-dasharray:4 3; fill:none; }
+.tl2-now-label { font-family:var(--font-mono); font-size:10px; fill:var(--crimson); }
+
+/* ---------- 53. 节拍骨架（幕 → 节拍 → 章节 三层） ---------- */
+.beat-wrap { position:relative; width:100%; overflow:hidden; background:var(--paper); border:1px solid var(--line); border-radius:var(--r-sm); }
+.beat-wrap svg { display:block; width:100%; height:auto; }
+.beat-act { fill:var(--paper-2); stroke:var(--line-strong); stroke-width:1; }
+.beat-act-name { font-family:var(--font-display); font-size:12px; font-weight:600; fill:var(--ink-2); }
+.beat-block { stroke-width:1; }
+.beat-block.is-done { fill:var(--moss-soft); stroke:var(--moss); }
+.beat-block.is-active { fill:var(--amber-soft); stroke:var(--amber); }
+.beat-block.is-todo { fill:var(--paper-3); stroke:var(--line-strong); stroke-dasharray:4 3; }
+.beat-name { font-family:var(--font-body); font-size:11px; font-weight:500; fill:var(--ink); }
+.beat-core { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.beat-link { stroke:var(--line); stroke-width:1; fill:none; }
+.beat-axis { font-family:var(--font-mono); font-size:10px; fill:var(--ink-4); }
+.beat-axis-line { stroke:var(--line); stroke-width:1; }
+.beat-marker { stroke:var(--crimson); stroke-width:1.5; stroke-dasharray:3 3; fill:none; }
+.beat-marker-dot { fill:var(--crimson); stroke:var(--paper); stroke-width:2; }
+.beat-marker-label { font-family:var(--font-body); font-size:11px; font-weight:500; fill:var(--crimson); }
+
+/* ---------- 54. 生产流程图（判定 + 回环，大纲页与章节页共用） ---------- */
+.pflow-wrap { position:relative; width:100%; overflow:hidden; background:var(--paper); border:1px solid var(--line); border-radius:var(--r-sm); }
+.pflow-wrap svg { display:block; width:100%; height:auto; }
+.pflow-node rect { fill:var(--paper-2); stroke:var(--line-strong); }
+.pflow-node.is-done rect { fill:var(--moss-soft); stroke:var(--moss); }
+.pflow-node.is-active rect { fill:var(--accent-soft); stroke:var(--accent); }
+.pflow-node.is-todo rect { fill:var(--paper-3); stroke:var(--line-strong); stroke-dasharray:4 3; }
+.pflow-node.is-optional rect { stroke-dasharray:4 3; }
+.pflow-node.is-revise rect { fill:var(--amber-soft); stroke:var(--amber); }
+.pflow-name { font-family:var(--font-body); font-size:12px; font-weight:500; fill:var(--ink); }
+.pflow-meta { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.pflow-edge { stroke:var(--ink-4); stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+.pflow-edge.is-loop { stroke:var(--amber); stroke-dasharray:5 4; }
+.pflow-edge-label { font-family:var(--font-body); font-size:11px; fill:var(--ink-3); }
+.pflow-decision { fill:var(--amber-soft); stroke:var(--amber); }
+.pflow-decision-text { font-family:var(--font-body); font-size:11px; font-weight:500; fill:var(--ink); }
+.pflow-pill { fill:var(--accent); }
+.pflow-pill-text { font-family:var(--font-body); font-size:11px; font-weight:500; fill:var(--paper); }
+
+/* ---------- 55. 幕内节拍序列（横向排列的节拍卡） ---------- */
+.actline { display:flex; align-items:stretch; gap:var(--sp-8); overflow-x:auto; padding:var(--sp-4) 0; }
+.actline-beat {
+  flex:none; min-width:152px; padding:var(--sp-8) var(--sp-12);
+  display:flex; flex-direction:column; gap:2px;
+  background:var(--paper-2); border:1px solid var(--line);
+  border-left:3px solid var(--line-strong); border-radius:var(--r-sm);
+}
+.actline-beat.is-past { border-left-color:var(--moss); }
+.actline-beat.is-current { border-color:var(--accent); border-left-color:var(--accent); background:var(--accent-soft); }
+.actline-name { font-size:var(--fs-13); color:var(--ink); }
+.actline-meta { font-family:var(--font-mono); font-size:var(--fs-11); color:var(--ink-3); }
+.actline-arrow { align-self:center; flex:none; color:var(--ink-4); }

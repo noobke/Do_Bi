@@ -521,7 +521,7 @@ window.MOCK = (function () {
       refs: [], note: '已写入但尚未在任何章节使用' }
   ];
 
-  /* ====================== 批次五新增数据（章节详情可视化） ====================== */
+  /* ====================== 批次六新增数据（章节详情可视化） ====================== */
 
   /* 内容生产流水线的 8 个环节（典型耗时与 Token，供流程图标注） */
   const pipelineSteps = [
@@ -566,13 +566,13 @@ window.MOCK = (function () {
     8:  { beat: '中点', scenes: ['生面孔入城', '暗中跟随', '跟丢'],
           timeline: [{ at: '夜', label: '城门', kind: 'now' }] },
     9:  { beat: '中点', scenes: ['崔十九的断指', '师门旧账', '交换情报'],
-          timeline: [{ at: '十二年前', label: '断指之因', kind: 'flashback' }, { at: '夜', label: '烛龙巷外', kind: 'now' }] },
+          timeline: [{ at: '十二年前', label: '崔十九断指', kind: 'flashback' }, { at: '夜', label: '烛龙巷外', kind: 'now' }] },
     10: { beat: '中点', scenes: ['调阅空印文书', '同一批人反复出现', '锁定文脉司'],
           timeline: [{ at: '次日', label: '档房', kind: 'now' }] },
     11: { beat: '一切尽失', scenes: ['夜巡遇袭', '证人被杀', '线索断了一半'],
           timeline: [{ at: '子时', label: '遇袭', kind: 'now' }] },
     12: { beat: '一切尽失', scenes: ['周崇视角', '溃口真相', '决定灭口'],
-          timeline: [{ at: '二十年前', label: '溃口真凶', kind: 'flashback' }, { at: '夜', label: '中军帐密议', kind: 'now' }],
+          timeline: [{ at: '二十年前', label: '黑水营溃口', kind: 'flashback' }, { at: '夜', label: '中军帐密议', kind: 'now' }],
           problem: { title: '视角切到反派，缺少回切的锚点', causes: [
             { category: '结构', items: ['主线连续两章离开主角视角'] },
             { category: '角色', items: ['周崇动机充分，但沈砚线断开'] },
@@ -602,12 +602,65 @@ window.MOCK = (function () {
           timeline: [{ at: '同月', label: '铜牌再现', kind: 'now' }] }
   };
 
+  /* ====================== 批次七新增数据（大纲级：双轨时间线 / 节拍骨架 / 生产流程） ====================== */
+
+  /* 全书故事时间锚点（供双轨时间线：故事时间 × 叙述顺序） */
+  const bookTimeline = [
+    { id: 'bt1',  storyAt: '二十年前', label: '黑水营溃口',        kind: 'backstory', chapters: [2, 12], note: '真相分两处揭示' },
+    { id: 'bt2',  storyAt: '十二年前', label: '崔十九断指',        kind: 'backstory', chapters: [9],     note: '' },
+    { id: 'bt3',  storyAt: '十年前',   label: '父亲下葬',          kind: 'backstory', chapters: [3],     note: '沈定山之死另有隐情' },
+    { id: 'bt4',  storyAt: '三日前',   label: '驿馆火起',          kind: 'flashback', chapters: [4, 5, 17], note: '全书第一个闪回' },
+    { id: 'bt5',  storyAt: '当夜',     label: '巡城遇驿卒',        kind: 'now',       chapters: [1],     note: '开篇' },
+    { id: 'bt6',  storyAt: '次日',     label: '查档 · 车辙',       kind: 'now',       chapters: [2, 5],  note: '' },
+    { id: 'bt7',  storyAt: '第九日夜', label: '断指 · 空印',       kind: 'now',       chapters: [9, 10], note: '' },
+    { id: 'bt8',  storyAt: '第十六日', label: '雪落雁回 · 铜灯初亮', kind: 'now',       chapters: [16, 17], note: '全书张力峰值' },
+    { id: 'bt9',  storyAt: '三日后',   label: '文脉司传令',        kind: 'future',    chapters: [18],    note: '预叙' },
+    { id: 'bt10', storyAt: '第二卷',   label: '第二枚铜牌',        kind: 'planned',   chapters: [20],    note: '尚未写入' }
+  ];
+
+  /* 节拍骨架（幕 → 节拍 → 章节区间） */
+  const beatSheet = [
+    { act: '第一幕 · 建置', from: 1, to: 6, beats: [
+      { name: '开场画面',   from: 1, to: 1, core: '雪夜换防，冻毙的驿卒',              status: 'done' },
+      { name: '激励事件',   from: 2, to: 3, core: '溃口记载矛盾 · 父亲之死另有隐情',    status: 'done' },
+      { name: '第一次尝试', from: 4, to: 5, core: '驿馆火起 · 车辙疑点',              status: 'done' },
+      { name: '转折点一',   from: 6, to: 6, core: '初见周崇，被警告不要多事',          status: 'done' }
+    ]},
+    { act: '第二幕 · 上升', from: 7, to: 13, beats: [
+      { name: '支线交汇',   from: 7,  to: 8,  core: '酒肆闲话 · 生面孔入城',          status: 'done' },
+      { name: '中点',       from: 9,  to: 10, core: '崔十九断指 · 空印文书锁定文脉司',  status: 'done' },
+      { name: '一切尽失',   from: 11, to: 13, core: '证人被杀 · 父亲之死另有隐情',      status: 'done' }
+    ]},
+    { act: '第二幕 · 崩塌', from: 14, to: 18, beats: [
+      { name: '转折点二',   from: 14, to: 15, core: '铜牌对上 · 夜访烛龙巷',          status: 'done' },
+      { name: '高潮',       from: 16, to: 17, core: '靴印合链 · 雪夜放走旧友，铜灯初亮', status: 'audit' },
+      { name: '收束',       from: 18, to: 18, core: '灯自亮 · 接文脉司传令',          status: 'draft' }
+    ]},
+    { act: '第三幕 · 重启', from: 19, to: 20, beats: [
+      { name: '第二幕重启', from: 19, to: 19, core: '文脉司来人 · 传召入京',          status: 'todo' },
+      { name: '赌注升级',   from: 20, to: 20, core: '第二枚铜牌现身',                status: 'todo' }
+    ]}
+  ];
+
+  /* 全书内容生产流程（供大纲级生产流程图：含判定与回环） */
+  const bookPipeline = [
+    { key: 'init',     name: '立项',         meta: '共创对话定题材与灵感',      status: 'done' },
+    { key: 'world',    name: '设定与世界观', meta: 'world.md · 硬约束 5 条',    status: 'done' },
+    { key: 'disasm',   name: '拆书（可选）', meta: '参考作品反推结构',          status: 'todo', optional: true },
+    { key: 'volume',   name: '卷纲规划',     meta: '已展开 2 卷 / 共 4 卷',     status: 'active' },
+    { key: 'outline',  name: '章纲',         meta: '第 1–20 章已立项',          status: 'done' },
+    { key: 'chapter',  name: '逐章流水线',   meta: '草稿 → 审计 → 评审 → 定稿',  status: 'active' },
+    { key: 'assemble', name: '全书组装',     meta: '仅在有新定稿章时重跑',      status: 'todo' },
+    { key: 'final',    name: '完结校验',     meta: '伏笔回收 + 一致性总检',     status: 'todo' }
+  ];
+
   return {
     project, chapters, manuscript, modes, characters, hooks, audit,
     chatSeed, chatScript, providers, modelRoles, budgetSplit, usage, rules,
     outlineGraph, auditReport, styleProfile,
     projects, disassemble, mcpServers,
     structureChapters, plotlines, stylePresets, styleSources, worldSettings,
-    pipelineSteps, structureActs, chapterDetails
+    pipelineSteps, structureActs, chapterDetails,
+    bookTimeline, beatSheet, bookPipeline
   };
 })();

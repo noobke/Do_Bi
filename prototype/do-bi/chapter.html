@@ -141,6 +141,21 @@
             <div class="fs-12 muted" style="margin-top:4px">耗时与 Token 为流水线典型值；真实计量以本地账本为准。</div>
           </div>
         </section>
+
+        <section class="card" data-reveal>
+          <div class="card-head">
+            <h3>执行流程图</h3>
+            <span class="tag tag-info">含判定与回环</span>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="pflow-wrap">
+              <svg id="chflow" viewBox="0 0 900 620" role="img" aria-label="章节执行流程"></svg>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="fs-12 muted">实线为顺序流程，<strong>琥珀虚线为回环</strong>：审计不通过走「修订」并回到「审计 L1+L2」重审，直到通过才进入后续工序。</div>
+          </div>
+        </section>
       </div>
     </div>
 
@@ -181,6 +196,21 @@
             <div class="fs-12 muted" id="tl-note">—</div>
           </div>
         </section>
+
+        <section class="card" data-reveal>
+          <div class="card-head">
+            <h3>本章事件 ↔ 全书时间锚点</h3>
+            <span class="tag tag-quiet" id="tl2-tag">—</span>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="tl2-wrap">
+              <svg id="chtl2" viewBox="0 0 900 300" role="img" aria-label="本章事件与全书时间锚点对照"></svg>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="fs-12 muted">虚线把本章事件连到它在全书时间轴上的锚点；琥珀色为背景设定。未连线的为本章独有事件。</div>
+          </div>
+        </section>
       </div>
     </div>
 
@@ -199,6 +229,19 @@
           </div>
           <div class="card-body">
             <div class="fs-12 muted" id="struct-note">—</div>
+          </div>
+        </section>
+
+        <section class="card" data-reveal>
+          <div class="card-head">
+            <h3>本幕节拍序列</h3>
+            <span class="tag tag-info" id="act-tag">—</span>
+          </div>
+          <div class="card-body">
+            <div class="actline" id="actline"></div>
+          </div>
+          <div class="card-body">
+            <div class="fs-12 muted" id="act-note">—</div>
           </div>
         </section>
       </div>
@@ -226,7 +269,7 @@
 <script>
 (function () {
   'use strict';
-  var $ = App.$, $$ = App.$$;
+  var $ = App.$, $$ = App.$$, h = App.h;
 
   var VIEWS = ['pipeline', 'flow', 'timeline', 'structure', 'fishbone'];
   var VIEW_HINT = {
@@ -266,10 +309,13 @@
   }
   function load(n) {
     var t = ++seq;
-    Promise.all([api.getChapterDetail(n), api.getStructure()]).then(function (res) {
+    Promise.all([
+      api.getChapterDetail(n), api.getStructure(),
+      api.getBookTimeline(), api.getBeatSheet()
+    ]).then(function (res) {
       if (t !== seq) return;
       state.n = n;
-      render(res[0], res[1]);
+      render(res[0], res[1], res[2], res[3]);
     });
   }
   /* useHash：用户操作时同步地址栏；浏览器前进/后退走 hashchange */
@@ -284,7 +330,7 @@
   }
 
   /* ================= 渲染入口 ================= */
-  function render(data, s) {
+  function render(data, s, bookTl, sheet) {
     var ch = data.chapter, det = data.detail || {}, steps = data.steps || [];
     var pipe = data.pipeline || { done: 0, active: 1, total: steps.length };
     var acts = data.acts || [], act = data.act;
@@ -293,9 +339,12 @@
     renderStats(ch);
     renderSummary(ch, det);
     renderPipeline(steps, pipe);
+    renderChFlow(steps, pipe);
     renderFlow(det);
     renderTimeline(det);
+    renderChTimeline2(det, bookTl);
     renderStructure(ch, det, s, act, acts);
+    renderActLine(act, ch.n, sheet);
     renderFishbone(det);
   }
 
@@ -396,6 +445,73 @@
     }
   }
 
+  /* ---------- 视图 1 · 执行流程图（判定 + 回环） ---------- */
+  function renderChFlow(steps, pipe) {
+    var NODES = [
+      { name: '章纲',       x: 90,  y: 76,  meta: '典型 1.2 min · 3.2k tok' },
+      { name: '上下文组装', x: 90,  y: 152, meta: '0.1 min · 0 tok' },
+      { name: '草稿',       x: 90,  y: 228, meta: '4.8 min · 9.6k tok' },
+      { name: '审计 L1+L2', x: 90,  y: 304, meta: '1.6 min · 5.4k tok' },
+      { name: '定稿',       x: 90,  y: 530, meta: '0.2 min · 0.9k tok' },
+      { name: '修订',       x: 630, y: 326, meta: '1.1 min · 3.4k tok' },
+      { name: '可举证评审', x: 630, y: 402, meta: '1.4 min · 4.8k tok' },
+      { name: '去 AI 味',   x: 630, y: 478, meta: '0.9 min · 2.6k tok' }
+    ];
+
+    function stepNo(name) {
+      for (var i = 0; i < steps.length; i++) {
+        if (steps[i].name === name) return i + 1;
+      }
+      return 0;
+    }
+    function statusCls(k) {
+      if (!k) return 'is-todo';
+      if (k <= pipe.done) return 'is-done';
+      if (pipe.active != null && k === pipe.active) return 'is-active';
+      return 'is-todo';
+    }
+
+    var out = '';
+
+    /* 边（先画，节点压在其上） */
+    out += '<path class="pflow-edge" d="M 210,50 V 76"/>';
+    out += '<path class="pflow-edge" d="M 210,122 V 152"/>';
+    out += '<path class="pflow-edge" d="M 210,198 V 228"/>';
+    out += '<path class="pflow-edge" d="M 210,274 V 304"/>';
+    out += '<path class="pflow-edge" d="M 330,327 H 355 V 350 H 380"/>';
+    out += '<path class="pflow-edge" d="M 580,350 H 630"/>';
+    out += '<text class="pflow-edge-label" x="592" y="342">不通过</text>';
+    out += '<path class="pflow-edge is-loop" d="M 750,326 V 286 H 210 V 304"/>';
+    out += '<text class="pflow-edge-label" text-anchor="middle" x="480" y="280">修订后重审</text>';
+    out += '<path class="pflow-edge" d="M 480,390 V 425 H 630"/>';
+    out += '<text class="pflow-edge-label" x="492" y="412">通过</text>';
+    out += '<path class="pflow-edge" d="M 750,448 V 478"/>';
+    out += '<path class="pflow-edge" d="M 750,524 V 553 H 330"/>';
+    out += '<text class="pflow-edge-label" text-anchor="middle" x="540" y="547">全流程通过</text>';
+
+    /* 起点 */
+    out += '<rect class="pflow-pill" x="90" y="22" width="120" height="28" rx="14"/>';
+    out += '<text class="pflow-pill-text" text-anchor="middle" x="150" y="41">开始</text>';
+
+    /* 判定菱形 */
+    out += '<polygon class="pflow-decision" points="380,350 480,310 580,350 480,390"/>';
+    out += '<text class="pflow-decision-text" text-anchor="middle" x="480" y="354">审计通过？</text>';
+
+    /* 节点 */
+    NODES.forEach(function (nd) {
+      var k = stepNo(nd.name);
+      var cls = statusCls(k);
+      if (nd.name === '修订' && pipe.done < 4) cls += ' is-revise';
+      out += '<g class="pflow-node ' + cls + '">' +
+        '<rect x="' + nd.x + '" y="' + nd.y + '" width="240" height="46" rx="8"/>' +
+        '<text class="pflow-name" x="' + (nd.x + 16) + '" y="' + (nd.y + 20) + '">' + nd.name + '</text>' +
+        '<text class="pflow-meta" x="' + (nd.x + 16) + '" y="' + (nd.y + 36) + '">' + nd.meta + '</text>' +
+      '</g>';
+    });
+
+    $('#chflow').innerHTML = out;
+  }
+
   /* ---------- 视图 2 · 场景流程 ---------- */
   function renderFlow(det) {
     var scenes = det.scenes || [];
@@ -485,6 +601,65 @@
     $('#tl-note').textContent = '本章时间结构：' + names.join('、') + '。琥珀色为闪回、灰色为预叙。';
   }
 
+  /* ---------- 视图 3 · 本章事件 ↔ 全书时间锚点（双轨） ---------- */
+  function renderChTimeline2(det, bookTl) {
+    var tl = det.timeline || [];
+    var events = (bookTl && bookTl.events) || [];
+    var n = tl.length, m = events.length;
+
+    function upperX(i) { return n === 1 ? 500 : 140 + i * (680 / Math.max(1, n - 1)); }
+    function lowerX(j) { return 130 + j * (720 / Math.max(1, m - 1)); }
+
+    var out = '';
+    /* 轨线与左标签 */
+    out += '<path class="tl2-rail" d="M 120,80 H 860"/>';
+    out += '<path class="tl2-rail" d="M 120,220 H 860"/>';
+    out += '<text class="tl2-rail-label" x="108" y="84" text-anchor="end">本章事件</text>';
+    out += '<text class="tl2-rail-label" x="108" y="224" text-anchor="end">全书时间锚点</text>';
+
+    /* 连线：本章事件 → 第一个命中的全书锚点 */
+    var matched = 0;
+    tl.forEach(function (ev, i) {
+      var xi = upperX(i);
+      var anchor = null, ax = 0;
+      for (var j = 0; j < m; j++) {
+        var e = events[j];
+        if (e.label.indexOf(ev.label) >= 0 || ev.label.indexOf(e.label) >= 0) {
+          anchor = e; ax = lowerX(j); break;
+        }
+      }
+      if (!anchor) return;
+      matched++;
+      out += '<path class="tl2-link' + (anchor.kind === 'backstory' ? ' is-backstory' : '') +
+        '" d="M ' + xi + ',86 C ' + xi + ',150 ' + ax + ',150 ' + ax + ',214"/>';
+    });
+
+    /* 上轨 · 本章事件 */
+    tl.forEach(function (ev, i) {
+      var xi = upperX(i);
+      var kc = ev.kind === 'flashback' ? ' is-backstory' : (ev.kind === 'future' ? ' is-future' : '');
+      out += '<circle class="tl2-dot' + kc + '" cx="' + xi + '" cy="80" r="6">' +
+        '<title>' + ev.at + ' · ' + ev.label + '</title></circle>';
+      out += '<text class="tl2-label" text-anchor="middle" x="' + xi + '" y="58">' + ev.label + '</text>';
+      out += '<text class="tl2-at" text-anchor="middle" x="' + xi + '" y="102">' + ev.at + '</text>';
+    });
+
+    /* 下轨 · 全书锚点 */
+    events.forEach(function (e, j) {
+      var xj = lowerX(j);
+      var kc = e.kind === 'backstory' ? ' is-backstory'
+             : (e.kind === 'future' ? ' is-future'
+             : (e.kind === 'planned' ? ' is-planned' : ''));
+      out += '<circle class="tl2-dot' + kc + '" cx="' + xj + '" cy="220" r="5">' +
+        '<title>' + e.storyAt + ' · ' + e.label + '</title></circle>';
+      out += '<text class="tl2-at" text-anchor="middle" x="' + xj + '" y="198">' + e.storyAt + '</text>';
+      out += '<text class="tl2-label" text-anchor="middle" x="' + xj + '" y="242">' + e.label + '</text>';
+    });
+
+    $('#chtl2').innerHTML = out;
+    $('#tl2-tag').textContent = matched + ' / ' + n + ' 个事件已定位';
+  }
+
   /* ---------- 视图 4 · 结构位置 ---------- */
   function renderStructure(ch, det, s, act, acts) {
     var chapters = s.chapters || [];
@@ -524,6 +699,41 @@
       ? ('本章位于「' + act.name + '」（第 ' + act.from + '–' + act.to + ' 章）· ' + act.note +
          ' · 结构节拍：' + det.beat)
       : ('结构节拍：' + det.beat);
+  }
+
+  /* ---------- 视图 4 · 本幕节拍序列 ---------- */
+  function renderActLine(act, n, sheet) {
+    var box = $('#actline');
+    box.innerHTML = '';
+    $('#act-tag').textContent = act ? act.name : '—';
+
+    var cur = (sheet || []).filter(function (a) { return act && a.act === act.name; })[0];
+    if (!cur) { $('#act-note').textContent = '本幕暂无节拍数据。'; return; }
+
+    var beats = cur.beats || [];
+    beats.forEach(function (b, i) {
+      var cls = b.to < n ? ' is-past' : (b.from <= n && n <= b.to ? ' is-current' : '');
+      var el = h('div', { class: 'actline-beat' + cls, title: b.core });
+      el.innerHTML =
+        '<div class="actline-name">' + b.name + '</div>' +
+        '<div class="actline-meta">第 ' + b.from + '–' + b.to + ' 章</div>';
+      box.appendChild(el);
+
+      if (i < beats.length - 1) {
+        var arrow = h('span', { class: 'actline-arrow' });
+        arrow.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>';
+        box.appendChild(arrow);
+      }
+    });
+
+    var curBeat = null;
+    for (var j = 0; j < beats.length; j++) {
+      if (beats[j].from <= n && n <= beats[j].to) { curBeat = beats[j]; break; }
+    }
+    $('#act-note').textContent = curBeat
+      ? ('本幕共 ' + beats.length + ' 个节拍；当前第 ' + n + ' 章处于「' + curBeat.name + '」（第 ' +
+         curBeat.from + '–' + curBeat.to + ' 章）· ' + curBeat.core)
+      : ('本幕共 ' + beats.length + ' 个节拍。');
   }
 
   /* ---------- 视图 5 · 问题鱼骨 ---------- */

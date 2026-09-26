@@ -1,12 +1,13 @@
 # Design Contract · Do_Bi 小说创作台原型
 
-> 版本 **v1.5（批次六 · 章节内容生产可视化）** · 单一真相源。所有页面必须逐字引用本契约，不得自创颜色 / 字号 / 圆角。
+> 版本 **v1.6（批次七 · 流程图 / 时间线 / 情节结构图补齐）** · 单一真相源。所有页面必须逐字引用本契约，不得自创颜色 / 字号 / 圆角。
 > 批次一：工作台 · 共创 · 角色 · 伏笔 · 设置
 > 批次二：章纲与依赖图 · 审计报告 · 文风档案
 > 批次三：项目列表（首页）· 拆书 · 设置页 MCP 面板
 > 批次四：结构页多视图改造 · 文风页「提取 / 选择」双入口 · 新增世界观页
 > 批次五：结构页新增故事树与节奏曲线，故事树设为默认视图
-> 批次六（本次）：**新增章节详情页**，用生产流程 / 场景流程 / 时间线 / 结构位置 / 问题鱼骨五图呈现「一章怎么生产出来」
+> 批次六：新增章节详情页，用五图呈现「一章怎么生产出来」
+> 批次七（本次）：大纲页新增**节拍骨架 / 全书时间线 / 生产流程图**（9 视图）；章节页三处升级（执行流程图含判定回环、双轨时间线、本幕节拍序列）
 > **入口页：`index.html`（我的作品）** · 共 12 页
 
 ## Tech stack & delivery
@@ -155,6 +156,17 @@ bg-texture: 极淡纸纹 = 暖色 radial 光晕 + 极低不透明度纤维纹（
 
 > **注意**：`.fs-11` **不是**本契约的工具类（不存在）；可用的字号工具类仅 `.fs-12 / .fs-13 / .fs-14 / .fs-16 / .fs-20`。需要更小时用 `.pipe-meta`、`.tl-at` 这类自带字号的组件类。
 
+### 批次七新增组件类（已写入 styles.css §52–55）
+
+- **双轨时间线**（大纲页全书时间线 + 章节页对照图共用）：`.tl2-wrap` · `.tl2-rail` · `.tl2-rail-label` · `.tl2-dot`（`.is-backstory` / `.is-future` / `.is-planned`）· `.tl2-link`（`.is-backstory`）· `.tl2-at` · `.tl2-label` · `.tl2-ch` · `.tl2-now` · `.tl2-now-label`
+  > ⚠️ **`.tl2-dot` 没有 `is-flashback` 类**。闪回必须复用 `.is-backstory`，预叙用 `.is-future`，尚未写入用 `.is-planned`，顺叙不加类。
+- **节拍骨架**（大纲页）：`.beat-wrap` · `.beat-act` · `.beat-act-name` · `.beat-block`（`.is-done` / `.is-active` / `.is-todo`）· `.beat-name` · `.beat-core` · `.beat-link` · `.beat-axis` · `.beat-axis-line` · `.beat-marker` · `.beat-marker-dot` · `.beat-marker-label`
+- **生产流程图**（大纲页全书流程 + 章节页执行流程共用）：`.pflow-wrap` · `.pflow-node`（`.is-done` / `.is-active` / `.is-todo` / `.is-optional` / `.is-revise`）· `.pflow-name` · `.pflow-meta` · `.pflow-edge`（`.is-loop`）· `.pflow-edge-label` · `.pflow-decision` · `.pflow-decision-text` · `.pflow-pill` · `.pflow-pill-text`
+- **幕内节拍序列**（章节页）：`.actline` · `.actline-beat`（`.is-past` / `.is-current`）· `.actline-name` · `.actline-meta` · `.actline-arrow`
+
+> **绘图顺序约定**：SVG 中「边先于节点绘制」——先画 `.pflow-edge` / `.beat-link` 等连线，再画节点矩形，节点压线可避免连线穿过文字。
+> **回环约定**：回环边一律 `.pflow-edge.is-loop`（琥珀虚线）并配 `.pflow-edge-label` 说明触发条件（如「否 · 续写下一章」「修订后重审」）。
+
 > **框架约定（v1.3 修订）**：`.seg` 的分段控件改用**事件委托**（见 app.js `initSegs`），因此**页面载入后动态注入的 `.seg` 按钮同样生效**；页面不得再自行派发 `seg:change`，只监听即可。
 
 ## App Shell + Canonical Nav（多页必须逐字一致）
@@ -202,8 +214,8 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
 | 3 | chat.html | 共创对话 | 一 | Chat-first 立项 | 对话流、选项卡、设定沉淀 |
 | 4 | characters.html | 角色与关系 | 一 | 角色卡与关系 | 角色列表、详情、不可变特征 |
 | 5 | hooks.html | 伏笔看板 | 一 | 伏笔追踪与回收率 | 统计条、状态泳道、时间线 |
-| 6 | outline.html | **结构与大纲** | 二/四/五 | **六视图**：故事树（默认）/ 节奏曲线 / 情节线 / 总纲 / 章节板 / 依赖图 | **故事树**（主干 + 支线分岔合流）、**节奏曲线**（张力折线 + 自动诊断）、情节线地铁图、罗盘卡 + 章节×情节线矩阵、章节板（按卷分列）、依赖图 SVG + 边清单 + 节点详情 |
-| 7 | **chapter.html** | **章节详情** | **六** | 五视图：生产流程 / 场景流程 / 时间线 / 结构位置 / 问题鱼骨 | **生产流程图**（8 环节状态机）、**场景流程图**、**故事内时间线**、**情节结构位置图**、**问题归因鱼骨图** |
+| 6 | outline.html | **结构与大纲** | 二/四/五/七 | **九视图**：故事树（默认）/ 节拍骨架 / 节奏曲线 / 全书时间线 / 情节线 / 生产流程 / 总纲 / 章节板 / 依赖图 | **故事树** + **节拍骨架**（幕→节拍→章节三层）+ **全书时间线**（双轨）+ **生产流程图**（判定 + 2 处回环）、节奏曲线（张力折线 + 自动诊断）、情节线地铁图、罗盘卡 + 章节×情节线矩阵、章节板、依赖图 SVG |
+| 7 | chapter.html | **章节详情** | 六/七 | 五视图：生产流程 / 场景流程 / 时间线 / 结构位置 / 问题鱼骨 | 生产流程（步骤条 + **执行流程图含判定与回环**）、场景流程图、故事内时间线（**+ 与全书时间锚点双轨对照**）、情节结构位置图（**+ 本幕节拍序列**）、问题归因鱼骨图 |
 | 8 | world.html | 世界观 | 四 | 设定清单、冲突裁定、与情节线对齐 | 统计条、冲突裁定卡、分类规则卡、引用章 chips、`world.md` 片段 |
 | 9 | audit.html | 审计报告 | 二 | L1 规则 + L2 维度 + 可举证评审 + diff | 统计条、规则行、发现卡、评分行、diff 预览 |
 | 10 | style.html | 文风档案 | 二/四 | 当前文风 + 提取入口 + 选择入口 + 分析结果 | 当前文风卡、文风选择器网格（含样段）、提取模态、句式/视角/比例卡、禁用 chip、注入对比 |
@@ -254,6 +266,13 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
 - **`chapterDetails{}`**：键为章号（1–20），值 `{ beat, scenes:[string], timeline:[{at,label,kind:'now'|'flashback'|'future'}], problem?:{title, causes:[{category, items:[string]}]} }`
 - `api.getChapterDetail(n)` 返回 `{ chapter, detail, steps, acts, act, pipeline:{done, active, total} }`；`done` 由章节状态映射（done→8 / audit→3 / draft→2 / todo→0），`active = done < total ? done + 1 : null`
 
+批次七新增（全部为大纲级）：
+- **`bookTimeline[]`**：`{ id, storyAt, label, kind:'backstory'|'flashback'|'now'|'future'|'planned', chapters:[章号], note }` —— **数组顺序即故事时间顺序**，共 10 条
+- **`beatSheet[]`**：`{ act, from, to, beats:[{ name, from, to, core, status:'done'|'audit'|'draft'|'todo' }] }` —— 4 幕 12 节拍
+- **`bookPipeline[]`**：`{ key, name, meta, status, optional? }` —— 全书生产 8 阶段
+- `api.getBookTimeline()` → `{ events, chapters }`；`api.getBeatSheet()` → 数组；`api.getBookPipeline()` → `{ stages, project }`
+- **章节事件 ↔ 全书锚点匹配规则**：对本章每个事件，在 `bookTimeline` 中取第一个满足「`e.label.indexOf(ev.label) >= 0 || ev.label.indexOf(e.label) >= 0`」的锚点（双向包含匹配），匹配不到则不画连线
+
 ## 交互约定（stub，不调真模型）
 
 - 所有「生成 / 审计 / 分析 / 刷新」按钮：显示 loading → `setTimeout` 模拟 → 写回 mock 并重渲染
@@ -273,3 +292,9 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
   - **结构页 → 章节详情**：故事树节点、章节板卡片的点击均改为 `location.href = 'chapter.html#' + n`（不再是 toast）；依赖图节点详情卡在选中节点存在 `chapter` 字段时追加「打开第 N 章详情 →」按钮
   - **章节详情页 hash 路由**：从 `location.hash` 解析章号（非法或缺省回退 **17**）；切换时写 hash 并用标记位抑制自触发的 `hashchange`，同时监听 `hashchange` 以支持浏览器前进/后退；渲染用 `Promise.all([getChapterDetail(n), getStructure()])` 并配 `seq` 序号防止乱序覆盖
   - **章节详情页五视图**：顺序 `pipeline · flow · timeline · structure · fishbone`，默认 `pipeline`；上一章/下一章按钮在边界章 `disabled`；章号 `select` 可直达
+- 批次七新增交互：
+  - **大纲页九视图**：顺序 `tree · beats · curve · timeline · plotlines · pipeline · overview · board · graph`，默认 `tree`；与原六视图同一套 `setView` 机制
+  - **大纲页生产流程图**：判定「全书定稿？」分出两条边——「是」→ 全书组装 → 完结校验；**回环 1**「否 · 续写下一章」回到「章纲」，**回环 2**「有新定稿章 · 重跑」从「全书组装」回到「逐章流水线」
+  - **章节页执行流程图**：判定「审计通过？」——「不通过」→ 修订 → **回环**回到「审计 L1+L2」重审；「通过」→ 可举证评审 → 去 AI 味 → 定稿；节点状态映射须与页面既有 `.pipe` 步骤条**保持一致**（按步骤**名称**在 `steps` 中查序号）
+  - **章节页双轨时间线**：上轨本章事件、下轨全书锚点，连线按「双向包含匹配」规则；`#tl2-tag` 显示「N / M 个事件已定位」，匹配不到的事件不画线
+  - **章节页本幕节拍序列**：从 `beatSheet` 取与当前 `act` 同名的一幕，按 beats 顺序渲染；`beat.to < 当前章` → `.is-past`，覆盖当前章 → `.is-current`

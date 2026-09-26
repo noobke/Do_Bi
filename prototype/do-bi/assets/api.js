@@ -72,6 +72,17 @@ window.api = (function () {
     listBudgetSplit: function () { return delay(M.budgetSplit); },
     listUsage: function () { return delay(M.usage); },
 
+    /* ---------- 批次七：大纲级可视化（双轨时间线 / 节拍骨架 / 全书生产流程） ---------- */
+    getBookTimeline: function () {
+      return delay({ events: M.bookTimeline, chapters: M.structureChapters });
+    },
+
+    getBeatSheet: function () { return delay(M.beatSheet); },
+
+    getBookPipeline: function () {
+      return delay({ stages: M.bookPipeline, project: M.project });
+    },
+
     /* ---------- 批次五：章节详情（生产流程 / 场景 / 时间线 / 结构 / 鱼骨） ---------- */
     getPipelineSteps: function () { return delay(M.pipelineSteps); },
     getStructureActs: function () { return delay(M.structureActs); },

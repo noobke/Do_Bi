@@ -77,7 +77,7 @@
     <header class="topbar" data-reveal>
       <div>
         <h1>结构与大纲</h1>
-        <div class="topbar-sub">4 卷 · 已展开 2 卷 · 20 章 · 6 条情节线 · 6 个视图</div>
+        <div class="topbar-sub">4 卷 · 已展开 2 卷 · 20 章 · 6 条情节线 · 9 个视图</div>
       </div>
       <div class="topbar-actions">
         <button class="btn btn-ghost btn-sm" id="btn-refresh-compass">刷新罗盘</button>
@@ -91,13 +91,25 @@
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></svg>
           故事树
         </button>
+        <button class="vtab" data-view="beats">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m6.08 9.5-3.5 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59"/><path d="m6.08 14.5-3.5 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59"/></svg>
+          节拍骨架
+        </button>
         <button class="vtab" data-view="curve">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
           节奏曲线
         </button>
+        <button class="vtab" data-view="timeline">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          全书时间线
+        </button>
         <button class="vtab" data-view="plotlines">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg>
           情节线
+        </button>
+        <button class="vtab" data-view="pipeline">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></svg>
+          生产流程
         </button>
         <button class="vtab" data-view="overview">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
@@ -144,6 +156,24 @@
       </div>
     </div>
 
+    <!-- 视图 · 节拍骨架 -->
+    <div id="view-beats" hidden>
+      <div class="stack-24">
+        <section class="card" data-reveal>
+          <div class="card-head">
+            <h3>节拍骨架</h3>
+            <span class="tag tag-quiet">4 幕 · 12 个节拍</span>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="beat-wrap">
+              <svg id="beatsheet" viewBox="0 0 900 230" role="img" aria-label="节拍骨架"></svg>
+            </div>
+            <div class="fs-12 muted" id="beats-desc" style="padding:14px 16px 16px"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
     <!-- 视图 · 节奏曲线 -->
     <div id="view-curve" hidden>
       <div class="stack-24">
@@ -166,6 +196,24 @@
           </div>
           <div class="card-body">
             <div class="stack-8" id="curve-diag"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- 视图 · 全书时间线（双轨） -->
+    <div id="view-timeline" hidden>
+      <div class="stack-24">
+        <section class="card" data-reveal>
+          <div class="card-head">
+            <h3>全书时间线（故事时间 × 叙述顺序）</h3>
+            <span class="tag tag-info">10 个时间锚点</span>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="tl2-wrap">
+              <svg id="booktl" viewBox="0 0 900 320" role="img" aria-label="全书时间线"></svg>
+            </div>
+            <div class="fs-12 muted" style="padding:14px 16px 16px">上轨按故事内时间排序，下轨按叙述顺序（章节）排列；两点之间的斜虚线即「闪回/预叙」造成的错位。琥珀色为背景设定，灰色为预叙或尚未写入。</div>
           </div>
         </section>
       </div>
@@ -227,6 +275,25 @@
           <div class="card-body">
             <div class="plotline" id="plotline-body"></div>
             <div class="fs-12 muted" style="margin-top:12px">方块 = 该线活跃章节；放大方块 = 该线高潮点；竖直细线为章节参考线</div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- 视图 · 全书生产流程 -->
+    <div id="view-pipeline" hidden>
+      <div class="stack-24">
+        <section class="card" data-reveal>
+          <div class="card-head">
+            <h3>全书内容生产流程</h3>
+            <span class="tag tag-info">8 个阶段 · 2 处回环</span>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="pflow-wrap">
+              <svg id="bookpipe" viewBox="0 0 900 640" role="img" aria-label="全书生产流程"></svg>
+            </div>
+            <div class="fs-12 muted" style="padding:14px 16px 0">实线为主流程，<strong>琥珀虚线为回环</strong>：判定「否」时回到「章纲」续写下一章；「全书组装」在有新定稿章时重跑。</div>
+            <div class="fs-12 muted" style="padding:8px 16px 16px">点「开始」到「完结」是一条不间断的闭环——长篇生产跨天跨周，任一节点中断后都可从该节点续跑。</div>
           </div>
         </section>
       </div>
@@ -630,11 +697,14 @@
   }
 
   /* ================= 6 · 视图切换 ================= */
-  var VIEWS = ['tree', 'curve', 'plotlines', 'overview', 'board', 'graph'];
+  var VIEWS = ['tree', 'beats', 'curve', 'timeline', 'plotlines', 'pipeline', 'overview', 'board', 'graph'];
   var VIEW_HINT = {
     tree: '主干向右推进即剧情走向；支线自分岔章长出、在收束章合流 · 点击章节可进入章节详情',
+    beats: '幕 → 节拍 → 章节 三层骨架；朱砂虚线为当前进度',
     curve: '按章张力起伏；连续低强度段会被标记为节奏风险',
+    timeline: '上轨故事时间、下轨叙述顺序；斜虚线即闪回错位',
     plotlines: '每行一条线，方块为该线活跃章节，深色为高潮',
+    pipeline: '全书内容生产流程；琥珀虚线为回环，判定不通过走修订',
     overview: '罗盘 + 章节×情节线矩阵',
     board: '按卷分列，左侧色条为状态 · 点击章节卡进入章节详情',
     graph: '章节间因果依赖，可点击节点看思维链'
@@ -1021,6 +1091,188 @@
     }
   }
 
+  /* ================= 12 · 全书时间线（故事时间 × 叙述顺序 双轨） ================= */
+  function renderBookTimeline(t) {
+    var svg = $('#booktl');
+    if (!svg) return;
+    var events = (t && t.events) || [];
+    if (!events.length) return;
+
+    var n = events.length;
+    var total = (t.chapters && t.chapters.length) || 20;
+    function chX(c) { return 130 + (c - 1) * (720 / (total - 1)); }
+    function evX(i) { return 130 + i * (720 / (n - 1)); }
+
+    /* 两条轨线 + 左侧标签 */
+    var s = '<path class="tl2-rail" d="M 120,90 H 860"/>' +
+      '<path class="tl2-rail" d="M 120,250 H 860"/>' +
+      '<text class="tl2-rail-label" x="108" y="94" text-anchor="end">故事时间</text>' +
+      '<text class="tl2-rail-label" x="108" y="254" text-anchor="end">叙述顺序</text>';
+
+    /* 上轨事件点：奇偶交替两档标签高度，避免长标签重叠 */
+    events.forEach(function (e, i) {
+      var xi = evX(i);
+      var kindCls = e.kind === 'backstory' ? ' is-backstory'
+                  : e.kind === 'future' ? ' is-future'
+                  : e.kind === 'planned' ? ' is-planned' : '';
+      var tip = e.storyAt + ' · ' + e.label + (e.note ? ' · ' + e.note : '');
+      s += '<circle class="tl2-dot' + kindCls + '" cx="' + xi + '" cy="90" r="6"><title>' + tip + '</title></circle>' +
+        '<text class="tl2-at" text-anchor="middle" x="' + xi + '" y="68">' + e.storyAt + '</text>' +
+        '<text class="tl2-label" text-anchor="middle" x="' + xi + '" y="' + (i % 2 === 0 ? 118 : 136) + '">' +
+          trunc(e.label, 8) + '</text>';
+    });
+
+    /* 下轨章节刻度：全部画刻度，仅关键章号标注 */
+    var c;
+    for (c = 1; c <= total; c++) {
+      s += '<path class="tl-tick" d="M ' + chX(c) + ',242 V 258"/>';
+    }
+    [1, 5, 10, 15, 20].forEach(function (k) {
+      s += '<text class="tl2-ch" text-anchor="middle" x="' + chX(k) + '" y="276">' + k + '</text>';
+    });
+
+    /* 写作进度参照线（第 17 章） */
+    s += '<path class="tl2-now" d="M ' + chX(17) + ',56 V 292"/>' +
+      '<text class="tl2-now-label" text-anchor="middle" x="' + chX(17) + '" y="50">写作进度 · 第 17 章</text>';
+
+    /* 事件 → 所属章节的斜连线（背景设定为琥珀虚线） */
+    events.forEach(function (e, i) {
+      var xi = evX(i);
+      var linkCls = e.kind === 'backstory' ? ' is-backstory' : '';
+      (e.chapters || []).forEach(function (ch) {
+        s += '<path class="tl2-link' + linkCls + '" d="M ' + xi + ',96 C ' + xi + ',170 ' +
+          chX(ch) + ',170 ' + chX(ch) + ',244"/>';
+      });
+    });
+
+    svg.innerHTML = s;
+  }
+
+  /* ================= 13 · 节拍骨架（幕 → 节拍 → 章节） ================= */
+  var BEAT_STATUS = { done: 'is-done', audit: 'is-active', draft: 'is-active', todo: 'is-todo' };
+
+  function renderBeatSheet(sheet) {
+    var svg = $('#beatsheet');
+    if (!svg) return;
+    var acts = sheet || [];
+    if (!acts.length) return;
+
+    function bx(ch) { return 60 + (ch - 1) * 42; }
+
+    var actSvg = '', linkSvg = '', beatSvg = '';
+    acts.forEach(function (a) {
+      var xa = bx(a.from), xb = bx(a.to);
+      var ax = bx((a.from + a.to) / 2);
+      actSvg += '<rect class="beat-act" x="' + (xa - 16) + '" y="30" width="' + (xb - xa + 32) + '" height="42" rx="6"/>' +
+        '<text class="beat-act-name" text-anchor="middle" x="' + ax + '" y="56">' + a.act + '</text>';
+
+      (a.beats || []).forEach(function (b) {
+        var b1 = bx(b.from), b2 = bx(b.to);
+        var mid = bx((b.from + b.to) / 2);
+        linkSvg += '<path class="beat-link" d="M ' + ax + ',72 V 88 H ' + mid + ' V 104"/>';
+        beatSvg += '<rect class="beat-block ' + (BEAT_STATUS[b.status] || 'is-todo') +
+            '" x="' + (b1 - 10) + '" y="104" width="' + (b2 - b1 + 20) + '" height="40" rx="6">' +
+            '<title>' + b.name + ' · 第 ' + b.from + '–' + b.to + ' 章 · ' + b.core + '</title></rect>' +
+          '<text class="beat-name" text-anchor="middle" x="' + mid + '" y="128">' + b.name + '</text>';
+      });
+    });
+
+    /* 章节轴 */
+    var axis = '<path class="beat-axis-line" d="M 40,180 H 880"/>';
+    [1, 5, 10, 15, 20].forEach(function (c) {
+      axis += '<text class="beat-axis" text-anchor="middle" x="' + bx(c) + '" y="196">' + c + '</text>';
+    });
+
+    /* 当前进度标记（第 17 章） */
+    var marker = '<path class="beat-marker" d="M ' + bx(17) + ',16 V 186"/>' +
+      '<circle class="beat-marker-dot" cx="' + bx(17) + '" cy="180" r="5"/>' +
+      '<text class="beat-marker-label" text-anchor="middle" x="' + bx(17) + '" y="12">当前 · 第 17 章</text>';
+
+    svg.innerHTML = actSvg + linkSvg + beatSvg + axis + marker;
+
+    /* 说明行：定位第 17 章所在节拍 */
+    var hitAct = null, hitBeat = null;
+    acts.forEach(function (a) {
+      (a.beats || []).forEach(function (b) {
+        if (b.from <= 17 && 17 <= b.to) { hitAct = a.act; hitBeat = b; }
+      });
+    });
+    var desc = $('#beats-desc');
+    if (desc) {
+      desc.textContent = hitBeat
+        ? '当前第 17 章位于「' + hitAct + '」的「' + hitBeat.name + '」节拍（第 ' +
+          hitBeat.from + '–' + hitBeat.to + ' 章）· ' + hitBeat.core
+        : '当前第 17 章未落在任何节拍区间内';
+    }
+  }
+
+  /* ================= 14 · 全书内容生产流程（含判定与回环） ================= */
+  function renderBookPipeline(d) {
+    var svg = $('#bookpipe');
+    if (!svg) return;
+    var stages = (d && d.stages) || [];
+    if (!stages.length) return;
+    var project = (d && d.project) || {};
+
+    var LEFT_Y = [76, 152, 228, 304, 380, 456];
+
+    function node(x, y, st, tx2) {
+      var cls = 'pflow-node';
+      if (st.status === 'done') cls += ' is-done';
+      else if (st.status === 'active') cls += ' is-active';
+      else cls += ' is-todo';
+      if (st.optional === true) cls += ' is-optional';
+      return '<g class="' + cls + '">' +
+        '<rect x="' + x + '" y="' + y + '" width="240" height="46" rx="8"/>' +
+        '<text class="pflow-name" x="' + tx2 + '" y="' + (y + 20) + '">' + st.name + '</text>' +
+        '<text class="pflow-meta" x="' + tx2 + '" y="' + (y + 36) + '">' + st.meta + '</text>' +
+      '</g>';
+    }
+
+    var s = '';
+
+    /* 起点 pill */
+    s += '<rect class="pflow-pill" x="90" y="22" width="120" height="28" rx="14"/>' +
+      '<text class="pflow-pill-text" text-anchor="middle" x="150" y="41">开始</text>';
+
+    /* 边：先画边，节点后画以覆盖端点 */
+    s += '<path class="pflow-edge" d="M 210,50 V 76"/>';
+    for (var i = 0; i < 5; i++) {
+      s += '<path class="pflow-edge" d="M 210,' + (LEFT_Y[i] + 46) + ' V ' + LEFT_Y[i + 1] + '"/>';
+    }
+    s += '<path class="pflow-edge" d="M 210,502 V 486 H 380"/>' +
+      '<path class="pflow-edge" d="M 580,486 H 605 V 453 H 630"/>' +
+      '<path class="pflow-edge" d="M 750,476 V 506"/>' +
+      '<path class="pflow-edge" d="M 750,552 V 578"/>' +
+      /* 回环 1：判定「否」→ 回到章纲续写 */
+      '<path class="pflow-edge is-loop" d="M 480,446 V 403 H 330"/>' +
+      '<text class="pflow-edge-label" text-anchor="middle" x="402" y="396">否 · 续写下一章</text>' +
+      /* 回环 2：全书组装 → 逐章流水线 */
+      '<path class="pflow-edge is-loop" d="M 870,453 H 890 V 479 H 330"/>' +
+      '<text class="pflow-edge-label" text-anchor="end" x="880" y="446">有新定稿章 · 重跑</text>' +
+      '<text class="pflow-edge-label" x="596" y="478">是</text>';
+
+    /* 左列节点 */
+    LEFT_Y.forEach(function (y, k) {
+      if (stages[k]) s += node(90, y, stages[k], 106);
+    });
+
+    /* 判定菱形 */
+    s += '<polygon class="pflow-decision" points="380,486 480,446 580,486 480,526"/>' +
+      '<text class="pflow-decision-text" text-anchor="middle" x="480" y="490">全书定稿？</text>' +
+      '<text class="pflow-meta" text-anchor="middle" x="480" y="504">（第 ' + (project.chaptersTotal || 60) + ' 章）</text>';
+
+    /* 右列节点 */
+    if (stages[6]) s += node(630, 430, stages[6], 646);
+    if (stages[7]) s += node(630, 506, stages[7], 646);
+
+    /* 终点 pill */
+    s += '<rect class="pflow-pill" x="690" y="578" width="120" height="28" rx="14"/>' +
+      '<text class="pflow-pill-text" text-anchor="middle" x="750" y="597">完结</text>';
+
+    svg.innerHTML = s;
+  }
+
   /* ================= 刷新罗盘 ================= */
   $('#btn-refresh-compass').addEventListener('click', function () {
     var btn = this;
@@ -1054,6 +1306,10 @@
   });
   api.getMatrix().then(function (mx) { renderMatrix(mx); });
   api.getPlotlines().then(function (pl) { renderPlotlines(pl); });
+
+  api.getBookTimeline().then(function (t) { renderBookTimeline(t); });
+  api.getBeatSheet().then(function (b) { renderBeatSheet(b); });
+  api.getBookPipeline().then(function (p) { renderBookPipeline(p); });
 
   $$('#view-tabs .vtab').forEach(function (b) {
     b.addEventListener('click', function () { setView(b.dataset.view); });
