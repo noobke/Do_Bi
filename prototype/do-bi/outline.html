@@ -174,12 +174,12 @@
       <div class="stack-24">
         <section class="card" data-reveal>
           <div class="card-head">
-            <h3>全书时间线（故事时间 × 叙述顺序）</h3>
-            <span class="tag tag-info">10 个时间锚点</span>
+            <h3>全书时间线（竖向主干）</h3>
+            <span class="tag tag-info">10 个锚点 · 4 个阶段</span>
           </div>
           <div class="card-body" style="padding:0">
-            <div class="tl2-wrap">
-              <svg id="booktl" viewBox="0 0 900 320" role="img" aria-label="全书时间线"></svg>
+            <div class="vtl-wrap">
+              <svg id="vtl" viewBox="0 0 760 940" role="img" aria-label="全书竖向时间线"></svg>
             </div>
             <div style="padding:14px 16px 16px"><div class="chart-note" id="timeline-note"></div></div>
           </div>
@@ -1240,68 +1240,120 @@
   }
 
   /* ================= 12 · 全书时间线（故事时间 × 叙述顺序 双轨） ================= */
+  /* 竖向时间线：阶段按 kind 归组，用于分段带 */
+  var VTL_STAGES = [
+    { key: 'backstory', name: '背景设定' },
+    { key: 'flashback', name: '闪回' },
+    { key: 'now',       name: '现在' },
+    { key: 'future',    name: '预叙 / 未写' }
+  ];
+  var VTL = { W: 760, LX: 296, AX: 376, RX: 420, PAD: 26, BAND: 34, ROW: 74, CHIP_W: 58, CHIP_GAP: 8 };
+  var VTL_NOW_CH = 17;
+
+  function vtlStage(kind) { return kind === 'planned' ? 'future' : kind; }
+  function vtlStageName(key) {
+    for (var i = 0; i < VTL_STAGES.length; i++) {
+      if (VTL_STAGES[i].key === key) return VTL_STAGES[i].name;
+    }
+    return key;
+  }
+  function vtlKindCls(kind) {
+    return kind === 'backstory' ? ' is-backstory'
+         : kind === 'flashback' ? ' is-flashback'
+         : kind === 'future' ? ' is-future'
+         : kind === 'planned' ? ' is-planned' : '';
+  }
+
   function renderBookTimeline(t) {
-    var svg = $('#booktl');
+    var svg = $('#vtl');
     if (!svg) return;
     var events = (t && t.events) || [];
     if (!events.length) return;
 
-    var n = events.length;
-    var total = (t.chapters && t.chapters.length) || 20;
-    function chX(c) { return 130 + (c - 1) * (720 / (total - 1)); }
-    function evX(i) { return 130 + i * (720 / (n - 1)); }
+    var L = VTL.LX, AX = VTL.AX, RX = VTL.RX, PAD = VTL.PAD;
+    var RIGHT = VTL.W - PAD + 8;
 
-    /* 两条轨线 + 左侧标签 */
-    var s = '<path class="tl2-rail" d="M 120,90 H 860"/>' +
-      '<path class="tl2-rail" d="M 120,250 H 860"/>' +
-      '<text class="tl2-rail-label" x="108" y="94" text-anchor="end">故事时间</text>' +
-      '<text class="tl2-rail-label" x="108" y="254" text-anchor="end">叙述顺序</text>';
+    /* 先探测总高：每个阶段一条带 + 每锚点一行 */
+    var probe = PAD, prev = null;
+    events.forEach(function (e) {
+      var st = vtlStage(e.kind);
+      if (st !== prev) { probe += VTL.BAND; prev = st; }
+      probe += VTL.ROW;
+    });
+    var H = probe + PAD + 14;
 
-    /* 上轨事件点：奇偶交替两档标签高度，避免长标签重叠 */
-    events.forEach(function (e, i) {
-      var xi = evX(i);
-      var kindCls = e.kind === 'backstory' ? ' is-backstory'
-                  : e.kind === 'future' ? ' is-future'
-                  : e.kind === 'planned' ? ' is-planned' : '';
-      var tip = e.storyAt + ' · ' + e.label + (e.note ? ' · ' + e.note : '');
-      s += '<circle class="tl2-dot' + kindCls + '" cx="' + xi + '" cy="90" r="6"><title>' + tip + '</title></circle>' +
-        '<text class="tl2-at" text-anchor="middle" x="' + xi + '" y="68">' + e.storyAt + '</text>' +
-        '<text class="tl2-label" text-anchor="middle" x="' + xi + '" y="' + (i % 2 === 0 ? 118 : 136) + '">' +
-          trunc(e.label, 8) + '</text>';
+    var s = '';
+    var y = PAD;
+
+    /* 阶段分段带（先画，作底层） */
+    prev = null;
+    events.forEach(function (e) {
+      var st = vtlStage(e.kind);
+      if (st === prev) return;
+      s += '<rect class="vtl-band" x="' + (PAD - 12) + '" y="' + y + '" width="' + (VTL.W - (PAD - 12) * 2) +
+           '" height="' + (VTL.BAND - 8) + '" rx="6"/>' +
+           '<text class="vtl-band-label" x="' + (PAD - 2) + '" y="' + (y + VTL.BAND - 20) + '">' + vtlStageName(st) + '</text>';
+      y += VTL.BAND;
+      prev = st;
     });
 
-    /* 下轨章节刻度：全部画刻度，仅关键章号标注 */
-    var c;
-    for (c = 1; c <= total; c++) {
-      s += '<path class="tl-tick" d="M ' + chX(c) + ',242 V 258"/>';
-    }
-    [1, 5, 10, 15, 20].forEach(function (k) {
-      s += '<text class="tl2-ch" text-anchor="middle" x="' + chX(k) + '" y="276">' + k + '</text>';
-    });
+    /* 中央主干（自上而下即故事时间推进）+ 底部箭头 */
+    s += '<path class="vtl-axis" d="M ' + AX + ',' + (PAD - 12) + ' V ' + (H - PAD - 6) + '"/>' +
+         '<path class="vtl-axis-arrow" d="M ' + (AX - 6) + ',' + (H - PAD - 8) + ' L ' + AX + ',' + (H - PAD + 4) +
+           ' L ' + (AX + 6) + ',' + (H - PAD - 8) + ' Z"/>';
 
-    /* 写作进度参照线（第 17 章） */
-    s += '<path class="tl2-now" d="M ' + chX(17) + ',56 V 292"/>' +
-      '<text class="tl2-now-label" text-anchor="middle" x="' + chX(17) + '" y="50">写作进度 · 第 17 章</text>';
+    /* 逐锚点：左＝时间与事件，中＝节点，右＝叙述顺序的章节 */
+    y = PAD;
+    prev = null;
+    events.forEach(function (e) {
+      var st = vtlStage(e.kind);
+      if (st !== prev) { y += VTL.BAND; prev = st; }
+      var cy = y + VTL.ROW / 2 - 8;
+      var chs = e.chapters || [];
+      var tip = e.storyAt + ' · ' + e.label + (e.note ? ' · ' + e.note : '') +
+                (chs.length ? ' · 第 ' + chs.join('、') + ' 章' : '');
 
-    /* 事件 → 所属章节的斜连线（背景设定为琥珀虚线） */
-    events.forEach(function (e, i) {
-      var xi = evX(i);
-      var linkCls = e.kind === 'backstory' ? ' is-backstory' : '';
-      (e.chapters || []).forEach(function (ch) {
-        s += '<path class="tl2-link' + linkCls + '" d="M ' + xi + ',96 C ' + xi + ',170 ' +
-          chX(ch) + ',170 ' + chX(ch) + ',244"/>';
+      /* 左列：时间 → 事件 → 备注（右对齐，中文有充足横向空间） */
+      s += '<text class="vtl-at" text-anchor="end" x="' + L + '" y="' + (cy - 16) + '">' + e.storyAt + '</text>' +
+           '<text class="vtl-label" text-anchor="end" x="' + L + '" y="' + (cy + 6) + '">' + trunc(e.label, 14) + '</text>';
+      if (e.note) {
+        s += '<text class="vtl-note" text-anchor="end" x="' + L + '" y="' + (cy + 24) + '">' + trunc(e.note, 18) + '</text>';
+      }
+
+      /* 引线 + 主干节点 */
+      s += '<path class="vtl-tick" d="M ' + (L + 8) + ',' + cy + ' H ' + (AX - 10) + '"/>' +
+           '<circle class="vtl-dot' + vtlKindCls(e.kind) + '" cx="' + AX + '" cy="' + cy + '" r="7"><title>' + tip + '</title></circle>' +
+           '<path class="vtl-tick" d="M ' + (AX + 10) + ',' + cy + ' H ' + RX + '"/>';
+
+      /* 右列：章节 chips（第 17 章高亮为当前进度） */
+      chs.forEach(function (ch, j) {
+        var cx = RX + j * (VTL.CHIP_W + VTL.CHIP_GAP);
+        var now = (ch === VTL_NOW_CH) ? ' is-now' : '';
+        s += '<rect class="vtl-chip' + now + '" x="' + cx + '" y="' + (cy - 12) + '" width="' + VTL.CHIP_W + '" height="24" rx="6"/>' +
+             '<text class="vtl-chip-t' + now + '" text-anchor="middle" x="' + (cx + VTL.CHIP_W / 2) + '" y="' + (cy + 4) + '">第 ' + ch + ' 章</text>';
       });
+
+      /* 当前写作进度：命中「现在 + 第 17 章」的行下方加朱砂提示 */
+      if (e.kind === 'now' && chs.indexOf(VTL_NOW_CH) >= 0) {
+        s += '<path class="vtl-now" d="M ' + (PAD - 12) + ',' + (cy + 36) + ' H ' + RIGHT + '"/>' +
+             '<text class="vtl-now-label" text-anchor="end" x="' + RIGHT + '" y="' + (cy + 30) +
+             '">写作进度 · 第 ' + VTL_NOW_CH + ' 章停在此处</text>';
+      }
+
+      y += VTL.ROW;
     });
 
+    svg.setAttribute('viewBox', '0 0 ' + VTL.W + ' ' + H);
     svg.innerHTML = s;
 
     var backstory = events.filter(function (e) { return e.kind === 'backstory'; }).length;
-    var flash = events.filter(function (e) { return e.kind === 'flashback' || e.kind === 'future'; }).length;
+    var flash = events.filter(function (e) { return e.kind === 'flashback'; }).length;
+    var ahead = events.filter(function (e) { return e.kind === 'future' || e.kind === 'planned'; }).length;
     var tlNote = $('#timeline-note');
     if (tlNote) {
       tlNote.innerHTML = '<strong>' + events.length + ' 个时间锚点：' + backstory + ' 个背景设定 · ' +
-        flash + ' 个闪回/预叙</strong> · 上轨按故事内时间排序，下轨按叙述顺序（章节）排列；' +
-        '两点之间的斜虚线即「闪回/预叙」造成的错位；琥珀色为背景设定，灰色为预叙或尚未写入';
+        flash + ' 个闪回 · ' + ahead + ' 个预叙/未写</strong> · 中央主干自上而下即故事时间推进；' +
+        '左列是时间与事件，右列是该锚点落在「叙述顺序」里的章节——同一锚点对应多章、或章号上下不单调，即为倒叙';
     }
   }
 
