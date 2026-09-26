@@ -84,47 +84,13 @@
       </div>
     </header>
 
-    <!-- 视图切换 -->
-    <div class="viewbar" data-reveal>
-      <div class="viewbar-tabs" id="view-tabs">
-        <button class="vtab active" data-view="tree">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></svg>
-          故事树
-        </button>
-        <button class="vtab" data-view="beats">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m6.08 9.5-3.5 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59"/><path d="m6.08 14.5-3.5 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59"/></svg>
-          节拍骨架
-        </button>
-        <button class="vtab" data-view="curve">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
-          节奏曲线
-        </button>
-        <button class="vtab" data-view="timeline">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          全书时间线
-        </button>
-        <button class="vtab" data-view="plotlines">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg>
-          情节线
-        </button>
-        <button class="vtab" data-view="pipeline">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></svg>
-          生产流程
-        </button>
-        <button class="vtab" data-view="overview">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-          总纲
-        </button>
-        <button class="vtab" data-view="board">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
-          章节板
-        </button>
-        <button class="vtab" data-view="graph">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
-          依赖图
-        </button>
-      </div>
-      <span class="fs-12 muted" id="view-hint">主干向右推进即剧情走向；支线自分岔章长出、在收束章合流</span>
+    <!-- 视图切换（二级：分组 → 视图） -->
+    <div class="viewbar is-grouped" data-reveal>
+      <div class="viewbar-groups" id="view-groups" aria-label="视图分组"></div>
+      <span class="fs-12 muted" id="view-hint">—</span>
+    </div>
+    <div class="viewbar-sub">
+      <div class="viewbar-tabs" id="view-tabs" aria-label="视图"></div>
     </div>
 
     <!-- 视图 · 故事树（默认） -->
@@ -696,8 +662,26 @@
     });
   }
 
-  /* ================= 6 · 视图切换 ================= */
+  /* ================= 6 · 视图切换（二级：分组 → 视图） ================= */
   var VIEWS = ['tree', 'beats', 'curve', 'timeline', 'plotlines', 'pipeline', 'overview', 'board', 'graph'];
+  var VIEW_META = {
+    tree:      { label: '故事树',     icon: '<rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/>' },
+    beats:     { label: '节拍骨架',   icon: '<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m6.08 9.5-3.5 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59"/><path d="m6.08 14.5-3.5 1.6a1 1 0 0 0 0 1.81l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9a1 1 0 0 0 0-1.83l-3.5-1.59"/>' },
+    curve:     { label: '节奏曲线',   icon: '<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>' },
+    timeline:  { label: '全书时间线', icon: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>' },
+    plotlines: { label: '情节线',     icon: '<circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>' },
+    pipeline:  { label: '生产流程',   icon: '<rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/>' },
+    overview:  { label: '总纲',       icon: '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>' },
+    board:     { label: '章节板',     icon: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/>' },
+    graph:     { label: '依赖图',     icon: '<line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>' }
+  };
+  /* 二级分组：走向 / 时间 / 生产 / 明细 */
+  var VIEW_GROUPS = [
+    { key: 'arc',    label: '走向', views: ['tree', 'beats', 'curve'] },
+    { key: 'time',   label: '时间', views: ['timeline', 'plotlines'] },
+    { key: 'build',  label: '生产', views: ['pipeline'] },
+    { key: 'detail', label: '明细', views: ['overview', 'board', 'graph'] }
+  ];
   var VIEW_HINT = {
     tree: '主干向右推进即剧情走向；支线自分岔章长出、在收束章合流 · 点击章节可进入章节详情',
     beats: '幕 → 节拍 → 章节 三层骨架；朱砂虚线为当前进度',
@@ -710,14 +694,87 @@
     graph: '章节间因果依赖，可点击节点看思维链'
   };
 
+  var activeGroup = 'arc';
+  var activeView = 'tree';
+  var groupMemory = {};   /* 记住每个分组上次看过的视图 */
+
+  function groupOfView(v) {
+    for (var i = 0; i < VIEW_GROUPS.length; i++) {
+      if (VIEW_GROUPS[i].views.indexOf(v) >= 0) return VIEW_GROUPS[i].key;
+    }
+    return null;
+  }
+  function groupByKey(k) {
+    return VIEW_GROUPS.filter(function (g) { return g.key === k; })[0];
+  }
+  function iconSvg(inner) {
+    return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+      'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>';
+  }
+
+  function renderGroups() {
+    var box = $('#view-groups');
+    if (!box) return;
+    box.innerHTML = '';
+    VIEW_GROUPS.forEach(function (g) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'vgroup' + (g.key === activeGroup ? ' active' : '');
+      b.dataset.group = g.key;
+      b.setAttribute('aria-pressed', g.key === activeGroup ? 'true' : 'false');
+      b.innerHTML = g.label + '<span class="vgroup-count">' + g.views.length + '</span>';
+      b.addEventListener('click', function () {
+        if (g.key === activeGroup) return;
+        var mem = groupMemory[g.key];
+        setView(mem && g.views.indexOf(mem) >= 0 ? mem : g.views[0]);
+      });
+      box.appendChild(b);
+    });
+  }
+
+  function renderViewTabs() {
+    var box = $('#view-tabs');
+    var g = groupByKey(activeGroup);
+    if (!box || !g) return;
+    box.innerHTML = '';
+    g.views.forEach(function (v) {
+      var m = VIEW_META[v];
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'vtab' + (v === activeView ? ' active' : '');
+      b.dataset.view = v;
+      b.setAttribute('aria-pressed', v === activeView ? 'true' : 'false');
+      b.innerHTML = iconSvg(m.icon) + m.label;
+      b.addEventListener('click', function () { setView(v); });
+      box.appendChild(b);
+    });
+  }
+
   function setView(name) {
+    var gk = groupOfView(name);
+    if (!gk) return;
+    activeView = name;
+    groupMemory[gk] = name;
+    var changed = (gk !== activeGroup);
+    activeGroup = gk;
+
     VIEWS.forEach(function (v) {
       var el = document.getElementById('view-' + v);
       if (el) el.hidden = (v !== name);
     });
-    $$('#view-tabs .vtab').forEach(function (b) {
-      b.classList.toggle('active', b.dataset.view === name);
-    });
+
+    var tabs = $('#view-tabs');
+    if (changed || !tabs || !tabs.children.length) {
+      renderGroups();
+      renderViewTabs();
+    } else {
+      $$('#view-tabs .vtab').forEach(function (b) {
+        var on = b.dataset.view === name;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    }
+
     var hint = $('#view-hint');
     if (hint) hint.textContent = VIEW_HINT[name] || '—';
   }
@@ -1311,9 +1368,7 @@
   api.getBeatSheet().then(function (b) { renderBeatSheet(b); });
   api.getBookPipeline().then(function (p) { renderBookPipeline(p); });
 
-  $$('#view-tabs .vtab').forEach(function (b) {
-    b.addEventListener('click', function () { setView(b.dataset.view); });
-  });
+  /* 视图标签为动态渲染，点击事件在创建时绑定，此处只需设置初始视图 */
   setView('tree');
 })();
 </script>

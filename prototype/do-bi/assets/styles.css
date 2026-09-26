@@ -1072,3 +1072,25 @@ svg { display:block; }
 .actline-name { font-size:var(--fs-13); color:var(--ink); }
 .actline-meta { font-family:var(--font-mono); font-size:var(--fs-11); color:var(--ink-3); }
 .actline-arrow { align-self:center; flex:none; color:var(--ink-4); }
+
+/* ---------- 56. 视图二级标签（分组 → 视图） ---------- */
+/* 用 .is-grouped 修饰符，避免影响仍用单级 .viewbar 的页面（如 chapter.html） */
+.viewbar.is-grouped { border-bottom:none; margin-bottom:0; padding-bottom:var(--sp-12); }
+.viewbar-groups { display:flex; align-items:center; gap:var(--sp-4); flex-wrap:wrap; }
+.vgroup {
+  display:inline-flex; align-items:center; gap:var(--sp-8);
+  height:30px; padding:0 var(--sp-12);
+  border:1px solid var(--line); border-radius:var(--r-sm);
+  background:var(--paper-2); color:var(--ink-2);
+  font-size:var(--fs-13); cursor:pointer;
+  transition:background 120ms var(--ease), border-color 120ms var(--ease), color 120ms var(--ease);
+}
+.vgroup:hover { background:var(--paper-3); color:var(--ink); }
+.vgroup.active { background:var(--accent); border-color:var(--accent); color:var(--paper); font-weight:500; }
+.vgroup-count { font-family:var(--font-mono); font-size:var(--fs-11); opacity:.65; }
+.viewbar-sub {
+  display:flex; align-items:center; flex-wrap:wrap;
+  padding-bottom:var(--sp-12);
+  border-bottom:1px solid var(--line);
+  margin-bottom:var(--sp-24);
+}
