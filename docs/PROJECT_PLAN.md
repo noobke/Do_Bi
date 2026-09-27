@@ -391,6 +391,23 @@ projects/<project-id>/
 - **核心质量指标**：**伏笔回收率** · L1 违规数 · L2 审计通过率 · 每章平均成本 · 修订轮次
 - 前端可见「本章花了多少 Token / 多少钱」
 
+> **已知缺口 · 错误日志收集（未实现，待补，建议 P1）**
+>
+> 上面第 1 条「调用日志」目前只落地了计量那一半（token / 成本，见 `core/metering.py` 的 `usage.jsonl`），
+> **错误流整条链路都没有**，具体缺：
+>
+> 1. **日志不落盘**：后端只有 `logging.getLogger("dobi")`，全仓无 `basicConfig` / `FileHandler`，进程结束日志即丢失。
+>    而 `api/` 的 500 文案写着「详情已写入服务端日志」——名不副实。
+> 2. **无结构化错误记录**：缺 `errors.jsonl` 一类（request id / path / 异常类型 / 堆栈 / 时间），事后无法复盘「昨天哪个接口挂了」。
+> 3. **`X-Request-Id` 是空头声明**：`main.py` 的 CORS `expose_headers` 暴露了它，但**没有任何中间件生成它**，前端一次报错无法与后端日志对上号。
+> 4. **无查询接口**：路由清单里没有 `/logs`、`/errors`、`/diagnostics`（只有 `/usage`、`/health`、`/stats`）。
+> 5. **前端无兜底**：无 `ErrorBoundary`（渲染期异常直接白屏）、无 `window.onerror` / `unhandledrejection` 捕获，也没有回传通道。
+>    现有错误处理只到「每请求级」：`ErrorState` / `errMsg` / `toast`，报完即丢。
+>
+> **建议的最小实现**（贴合现有约定：统一错误体、面向作者的中文文案、不新造视觉）：
+> `data/logs/dobi.log`（轮转）+ `data/logs/errors.jsonl`（结构化）+ request-id 中间件（真正生成并回写 `X-Request-Id`）
+> + `GET /api/logs/errors` 与上报接口 + 前端顶层 `ErrorBoundary` 与全局捕获 → 设置页「最近错误」列表（复用既有 list/table 样式）。
+
 ### 6.8 检索方案
 
 **P0 不上向量库**，用 BM25（SQLite FTS5 或 `rank_bm25`）做设定卡、事实表、历史摘要检索。理由：数据量小、零额外依赖、离线可用、短文本效果好。`memory.db` 承载时序记忆；向量后端做**可插拔接口预留**，后续按需替换。
