@@ -138,8 +138,7 @@ export default function Disassemble() {
   const [runStage, setRunStage] = useState(0)
   const [tab, setTab] = useState<TabKey>('chars')
   const [busy, setBusy] = useState<string | null>(null)
-  //: 批量决策：'accept' | 'reject' | null（null = 未打开二次确认）
-  const [batch, setBatch] = useState<'accept' | 'reject' | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
 
   const load = useCallback(async () => {
     if (!projectId) return
@@ -252,47 +251,39 @@ export default function Disassemble() {
     [projectId],
   )
 
-  /** 批量决策（全部接受 / 全部拒绝）：逐条调用，任一失败汇总提示，完成后刷新提案列表。 */
-  const decideAll = useCallback(
-    async (action: 'accept' | 'reject') => {
-      const id = projectId
-      if (!id || !data) return
-      const want = action === 'accept' ? 'accept' : 'ignore'
-      const word = action === 'accept' ? '接受' : '拒绝'
-      setBusy('all')
-      const updated = [...data.proposals]
-      const failed: string[] = []
-      let done = 0
-      for (const p of data.proposals) {
-        if (p.decision === want) continue
-        try {
-          const res = (await decideProposal(id, p.id, action)) as {
-            ok: boolean
-            decision?: 'accept' | 'ignore' | null
-            message?: string
-          }
-          if (res.ok) {
-            const idx = updated.findIndex((x) => x.id === p.id)
-            if (idx >= 0) updated[idx] = { ...updated[idx], decision: res.decision ?? want }
-            done += 1
-          } else {
-            failed.push(`${p.kind}：${res.message || '未写入'}`)
-          }
-        } catch (e) {
-          failed.push(`${p.kind}：${errMsg(e)}`)
+  const acceptAll = useCallback(async () => {
+    const id = projectId
+    if (!id || !data) return
+    setBusy('all')
+    const updated = [...data.proposals]
+    const failed: string[] = []
+    for (const p of data.proposals) {
+      if (p.decision === 'accept') continue
+      try {
+        const res = (await decideProposal(id, p.id, 'accept')) as {
+          ok: boolean
+          decision?: 'accept' | 'ignore' | null
+          message?: string
         }
+        if (res.ok) {
+          const idx = updated.findIndex((x) => x.id === p.id)
+          if (idx >= 0) updated[idx] = { ...updated[idx], decision: res.decision ?? 'accept' }
+        } else {
+          failed.push(`${p.kind}：${res.message || '未写入'}`)
+        }
+      } catch (e) {
+        failed.push(`${p.kind}：${errMsg(e)}`)
       }
-      setData((prev) => (prev ? { ...prev, proposals: updated } : prev))
-      setBusy(null)
-      setBatch(null)
-      if (failed.length > 0) {
-        toast(`${done} 条已${word}，${failed.length} 条失败：${failed[0]}`, 'warn')
-      } else {
-        toast(`已${word}全部提案`, 'ok')
-      }
-    },
-    [projectId, data],
-  )
+    }
+    setData((prev) => (prev ? { ...prev, proposals: updated } : prev))
+    setBusy(null)
+    setConfirmOpen(false)
+    if (failed.length > 0) {
+      toast(`${failed.length} 条未写入：${failed[0]}`, 'warn')
+    } else {
+      toast('已接受全部提案', 'ok')
+    }
+  }, [projectId, data])
 
   const steps: DStage[] = running
     ? STAGE_TITLES.map((s, i) => ({
@@ -642,18 +633,10 @@ export default function Disassemble() {
                 <button
                   type="button"
                   className="btn btn-ghost btn-sm"
-                  onClick={() => setBatch('accept')}
+                  onClick={() => setConfirmOpen(true)}
                   disabled={busy !== null || proposals.length === 0}
                 >
                   全部接受
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={() => setBatch('reject')}
-                  disabled={busy !== null || proposals.length === 0}
-                >
-                  全部拒绝
                 </button>
               </div>
             </div>
@@ -730,48 +713,35 @@ export default function Disassemble() {
         </div>
       )}
 
-      {/* 批量决策二次确认（全部接受 / 全部拒绝） */}
-      {batch ? (
+      {/* 全部接受二次确认 */}
+      {confirmOpen ? (
         <div className="modal">
-          <div className="modal-veil" onClick={() => (busy ? undefined : setBatch(null))} />
+          <div className="modal-veil" onClick={() => (busy ? undefined : setConfirmOpen(false))} />
           <div className="modal-card">
             <div className="card-head">
-              <h2>{batch === 'accept' ? '全部接受提案' : '全部拒绝提案'}</h2>
+              <h2>全部接受提案</h2>
               <button
                 type="button"
                 className="btn btn-quiet btn-sm"
-                onClick={() => setBatch(null)}
+                onClick={() => setConfirmOpen(false)}
                 disabled={busy !== null}
               >
                 关闭
               </button>
             </div>
             <div className="card-body stack">
-              {batch === 'accept' ? (
-                <>
-                  <p className="fs-13 muted">
-                    将接受全部 {proposals.length} 条提案，写入角色 / 世界观 / 伏笔 / 文风，可能影响已有设定。
-                  </p>
-                  <p className="fs-12 muted">
-                    写入会逐条经校验；校验不过的条目会原样回报原因，不会静默覆盖。
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="fs-13 muted">
-                    将拒绝全部 {proposals.length} 条提案，不会写入任何设定；之后仍可逐条撤回。
-                  </p>
-                  <p className="fs-12 muted">
-                    拒绝是逐条进行的，个别失败会汇总提示，不会静默跳过。
-                  </p>
-                </>
-              )}
+              <p className="fs-13 muted">
+                将接受全部 {proposals.length} 条提案，写入角色 / 世界观 / 伏笔 / 文风，可能影响已有设定。
+              </p>
+              <p className="fs-12 muted">
+                写入会逐条经校验；校验不过的条目会原样回报原因，不会静默覆盖。
+              </p>
             </div>
             <div className="card-foot row" style={{ justifyContent: 'flex-end' }}>
               <button
                 type="button"
                 className="btn btn-ghost"
-                onClick={() => setBatch(null)}
+                onClick={() => setConfirmOpen(false)}
                 disabled={busy !== null}
               >
                 取消
@@ -779,16 +749,10 @@ export default function Disassemble() {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={() => void decideAll(batch)}
+                onClick={() => void acceptAll()}
                 disabled={busy !== null}
               >
-                {busy === 'all'
-                  ? batch === 'accept'
-                    ? '写入中…'
-                    : '拒绝中…'
-                  : batch === 'accept'
-                    ? '确认全部接受'
-                    : '确认全部拒绝'}
+                {busy === 'all' ? '写入中…' : '确认全部接受'}
               </button>
             </div>
           </div>

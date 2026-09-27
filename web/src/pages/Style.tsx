@@ -6,7 +6,7 @@ import { Loading } from '../components/Loading'
 import { TopBar } from '../components/Layout'
 import { classNames, fmtInt, toast } from '../lib/ui'
 import { useProject } from '../state/project'
-import { addBanned, analyzeStyle, applyStyle, getProject, getStyle, removeBanned } from '../api/client'
+import { addBanned, analyzeStyle, applyStyle, getStyle, removeBanned } from '../api/client'
 
 /**
  * 文风档案 —— 对接 `GET /api/projects/{id}/style`。
@@ -149,84 +149,6 @@ export default function Style() {
   const povRaw = profile?.narrative.povSwitch ?? ''
   const povText = povRaw ? (POV_LABEL[povRaw] ?? povRaw) : '未判定'
 
-  /**
-   * 注入预览文本。后端 `StyleProfile.injection_text()` 并没有走任何接口，
-   * 这里用**接口确实返回的档案字段**整理成作者可读的等价物，避免凭空编造没依据的文案。
-   */
-  const injectionText = useMemo(() => {
-    if (!profile || !profile.source) return ''
-    const lines = ['文风档案（每次生成必选）']
-    lines.push(`来源：${profile.source}`)
-    if (s?.mean) {
-      lines.push(`句长：平均 ${s.mean} 字，一半句子短于 ${s.p50} 字，九成短于 ${s.p90} 字`)
-    }
-    if (profile.narrative.person) {
-      lines.push(
-        `叙述：${profile.narrative.person} · ${profile.narrative.tense} · 视角切换：${povText}` +
-          (profile.narrative.anchor ? `；锚点人物 ${profile.narrative.anchor}` : ''),
-      )
-    }
-    if (profile.ratio.length > 0) {
-      lines.push('描写 / 对话 / 动作比例：' + profile.ratio.map((r) => `${r.label} ${r.pct}%`).join(' · '))
-    }
-    if (profile.preferredPatterns.length > 0) {
-      lines.push('偏好手法：' + profile.preferredPatterns.join('；'))
-    }
-    if (profile.bannedExpressions.length > 0) {
-      lines.push('禁用表达：' + profile.bannedExpressions.join(' / '))
-    }
-    for (const item of profile.lexicon) lines.push(`${item.key}：${item.value}`)
-    return lines.join('\n')
-  }, [profile, s, povText])
-
-  /** 导出文风档案：序列化成作者可读的 JSON 下载，文件名用作品名。 */
-  const exportProfile = useCallback(async () => {
-    const id = projectId
-    if (!id || !profile || !profile.source) {
-      toast('还没有文风档案可导出', 'warn')
-      return
-    }
-    let title = ''
-    try {
-      const res = (await getProject(id)) as { project?: { title?: string } }
-      title = (res.project?.title ?? '').trim()
-    } catch {
-      // 作品名取不到不影响导出，退回通用文件名
-    }
-    const safe = title.replace(/[\\/:*?"<>|\s]+/g, '_') || '作品'
-    const data = {
-      档案来源: profile.source,
-      分析时间: profile.analyzedAt || '',
-      分析消耗额度: profile.tokens ?? 0,
-      句式特征: {
-        平均句长: s?.mean ?? 0,
-        中位句长: s?.p50 ?? 0,
-        九成句长: s?.p90 ?? 0,
-        最短: s?.min ?? 0,
-        最长: s?.max ?? 0,
-      },
-      叙述视角: {
-        人称: profile.narrative.person || '未判定',
-        时态: profile.narrative.tense || '未判定',
-        视角切换: povText,
-        锚点人物: profile.narrative.anchor || '',
-      },
-      描写比例: profile.ratio.map((r) => `${r.label} ${r.pct}%`),
-      偏好手法: profile.preferredPatterns,
-      禁用表达: profile.bannedExpressions,
-      词法: profile.lexicon,
-      示例: { 未按文风写: profile.samplePlain, 按文风写: profile.sampleStyled },
-    }
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${safe}-文风档案.json`
-    a.click()
-    URL.revokeObjectURL(url)
-    toast('已导出文风档案', 'ok')
-  }, [projectId, profile, s, povText])
-
   const gotoSelector = useCallback(() => {
     selectorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
@@ -321,14 +243,6 @@ export default function Style() {
       </button>
       <button type="button" className="btn btn-primary btn-sm" onClick={gotoSelector}>
         选择文风
-      </button>
-      <button
-        type="button"
-        className="btn btn-ghost btn-sm"
-        onClick={() => void exportProfile()}
-        disabled={!profile?.source}
-      >
-        导出文风档案
       </button>
     </>
   )
@@ -555,39 +469,27 @@ export default function Style() {
             )}
           </section>
 
-          {/* 注入预览：先给「每次生成会带上的文风描述」，再给试写对比 */}
-          {profile && profile.source ? (
+          {/* 注入对比 */}
+          {profile && profile.source && (profile.samplePlain || profile.sampleStyled) ? (
             <section className="card">
               <div className="card-head">
-                <h2>注入预览</h2>
+                <h2>注入对比</h2>
                 <span className="tag tag-info">必选 · 不占配额</span>
               </div>
               <div className="card-body stack">
                 <div className="fs-13 muted">
-                  每次生成都会带上这段文风描述；因体量小，不占用检索配额，也不参与相关性竞争
+                  每次生成都会带上这份文风；因体量小，不占用检索配额，也不参与相关性竞争
                 </div>
-                <div
-                  className="mono-block"
-                  title="对应服务端 StyleProfile.injection_text()；此处由本页已返回的档案字段实时拼出"
-                >
-                  {injectionText}
+                <div className="grid-2">
+                  <div className="stack-8">
+                    <div className="fs-12 muted">未按文风写</div>
+                    <div className="ms-text">{profile.samplePlain || '—'}</div>
+                  </div>
+                  <div className="stack-8">
+                    <div className="fs-12 muted">按文风写</div>
+                    <div className="ms-text">{profile.sampleStyled || '—'}</div>
+                  </div>
                 </div>
-                {profile.samplePlain || profile.sampleStyled ? (
-                  <>
-                    <div className="divider" />
-                    <div className="fs-13">试写对比</div>
-                    <div className="grid-2">
-                      <div className="stack-8">
-                        <div className="fs-12 muted">未按文风写</div>
-                        <div className="ms-text">{profile.samplePlain || '—'}</div>
-                      </div>
-                      <div className="stack-8">
-                        <div className="fs-12 muted">按文风写</div>
-                        <div className="ms-text">{profile.sampleStyled || '—'}</div>
-                      </div>
-                    </div>
-                  </>
-                ) : null}
               </div>
             </section>
           ) : null}

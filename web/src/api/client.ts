@@ -227,13 +227,8 @@ export const runDeai = (id: string, n: number) =>
   request(`/api/projects/${enc(id)}/chapters/${n}/deai`, json('POST'))
 export const runRevise = (id: string, n: number) =>
   request(`/api/projects/${enc(id)}/chapters/${n}/revise`, json('POST'))
-/** 定稿：`force` 用于作者已确认「带未处置阻塞项仍然写入」的场景（原型里的强制出口） */
-export const commitChapter = (id: string, n: number, force = false) =>
-  request(
-    `/api/projects/${enc(id)}/chapters/${n}/commit${force ? '?force=true' : ''}`,
-    json('POST'),
-  )
-/** 对某条审查发现做决策：`action` 取 'accept'（接受修订）/ 'ignore'（忽略）/ null（撤回） */
+export const commitChapter = (id: string, n: number) =>
+  request(`/api/projects/${enc(id)}/chapters/${n}/commit`, json('POST'))
 export const decideFinding = (id: string, n: number, dim: string, action: string | null) =>
   request(`/api/projects/${enc(id)}/chapters/${n}/findings/${enc(dim)}/decision`, json('POST', { action }))
 
@@ -286,9 +281,6 @@ export const removeBanned = (id: string, expr: string) =>
  * ------------------------------------------------------------------ */
 
 export const getUsage = (id: string) => request(`/api/projects/${enc(id)}/usage`)
-/** 设置本书总预算（元）；0 表示不设上限。返回最新预算快照 */
-export const updateBudget = (id: string, total: number) =>
-  request(`/api/projects/${enc(id)}/budget`, json('PUT', { total }))
 
 /* ------------------------------------------------------------------ *
  * 生产 / 干预

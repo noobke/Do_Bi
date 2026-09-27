@@ -5,16 +5,13 @@ import { Icon } from '../components/Icon'
 import { TopBar } from '../components/Layout'
 import { Loading } from '../components/Loading'
 import { classNames, toast } from '../lib/ui'
-import { getStructure, getWorld, resolveWorldConflict, setWorldKind } from '../api/client'
+import { getWorld, resolveWorldConflict, setWorldKind } from '../api/client'
 import { useProject } from '../state/project'
 
 /**
- * 世界观 —— 设定清单、冲突裁定、设定 × 情节线对齐。
+ * 世界观 —— 设定清单、冲突裁定、与引用章对齐。
  *
- * 数据源：`GET /world`（规则 + 分类 + 统计 + world.md 原文）与
- * `GET /structure`（其中的 plotlines 即支线板，带 name / color / active 活跃章）。
- * 「设定 × 情节线对齐」的关系来自两边皆有的真实字段：
- * WorldRule.refs（该设定被哪些章引用）× Subplot.active（情节线活跃于哪些章）。
+ * 数据源：`GET /world`（规则 + 分类 + 统计 + world.md 原文）。
  * 冲突裁定与约束强度切换都会返回**新的 world 数据**，直接就地替换（不整页重取）。
  * 类名取自 `styles/contract.css`（批次四）。
  */
@@ -40,29 +37,9 @@ interface WorldData {
   markdown: string
 }
 
-/** `/structure` 返回的支线板条目（后端 Subplot；`active` 为活跃章号） */
-interface Plotline {
-  id: string
-  name: string
-  kind: 'main' | 'sub'
-  color: string
-  summary: string
-  active: number[]
-  peak: number[]
-  status: string
-}
-
-interface StructureData {
-  plotlines: Plotline[]
-}
-
 const KIND_LABEL: Record<Kind, string> = { hard: '硬约束', soft: '软设定' }
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : '操作失败，请重试')
-
-function trunc(s: string, n: number): string {
-  return s.length > n ? `${s.slice(0, n)}…` : s
-}
 
 function statusTag(w: WorldRule): ReactNode {
   if (w.status === 'conflict') return <span className="tag tag-danger">冲突待裁定</span>
@@ -85,7 +62,6 @@ export default function World() {
   const { projectId } = useProject()
 
   const [world, setWorld] = useState<WorldData | null>(null)
-  const [plotlines, setPlotlines] = useState<Plotline[]>([])
   const [status, setStatus] = useState<'loading' | 'error' | 'ready'>('loading')
   const [err, setErr] = useState('')
   const [category, setCategory] = useState('全部')
@@ -95,12 +71,7 @@ export default function World() {
     if (!projectId) return
     setStatus('loading')
     try {
-      const [worldData, structure] = await Promise.all([
-        getWorld(projectId),
-        getStructure(projectId),
-      ])
-      setWorld(worldData as WorldData)
-      setPlotlines((structure as StructureData).plotlines ?? [])
+      setWorld((await getWorld(projectId)) as WorldData)
       setStatus('ready')
     } catch (e) {
       setErr(errMsg(e))
@@ -110,7 +81,6 @@ export default function World() {
 
   useEffect(() => {
     setWorld(null)
-    setPlotlines([])
     setCategory('全部')
     if (!projectId) {
       setStatus('ready')
@@ -162,15 +132,6 @@ export default function World() {
     for (const r of visibleRules) if (!cats.includes(r.category)) cats.push(r.category)
     return cats.map((cat) => ({ cat, rules: visibleRules.filter((r) => r.category === cat) }))
   }, [visibleRules])
-
-  /* 设定 × 情节线对齐：只列被正文引用过的设定；对每条设定找出「活跃章与该设定引用章有交集」的情节线。 */
-  const aligned = useMemo(() => {
-    const rules = (world?.rules ?? []).filter((r) => r.refs.length > 0)
-    return rules.map((rule) => ({
-      rule,
-      plots: plotlines.filter((pl) => (pl.active ?? []).some((c) => rule.refs.includes(c))),
-    }))
-  }, [world, plotlines])
 
   /* ---------- 三态 ---------- */
 
@@ -407,55 +368,6 @@ export default function World() {
                 <span className="fs-12">该分类下暂无设定</span>
               </div>
             )}
-          </div>
-        </section>
-
-        <section className="card">
-          <div className="card-head">
-            <h2>设定 × 情节线对齐</h2>
-            <span className="tag tag-quiet">交叉视图</span>
-          </div>
-          <div className="card-body" style={{ padding: 0 }}>
-            <div className="list">
-              {aligned.length ? (
-                aligned.map(({ rule, plots }) => (
-                  <div key={rule.id} className="list-row">
-                    <div className="row-main">
-                      <div className="row-title">{trunc(rule.rule, 16)}</div>
-                      <div className="row-sub">
-                        <span className="mono">{`第 ${rule.refs.join('、')} 章`}</span>
-                      </div>
-                    </div>
-                    <div className="wrap-row">
-                      {plots.length ? (
-                        <>
-                          {plots.slice(0, 2).map((pl) => (
-                            <span
-                              key={pl.id}
-                              className="chip"
-                              style={{ borderLeft: `3px solid ${pl.color}` }}
-                              title={pl.kind === 'main' ? '主线' : '支线'}
-                            >
-                              {pl.name}
-                            </span>
-                          ))}
-                          {plots.length > 2 ? (
-                            <span className="chip">{`+${plots.length - 2}`}</span>
-                          ) : null}
-                        </>
-                      ) : (
-                        <span className="fs-12 muted">尚无情节线覆盖这些章</span>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="empty">
-                  <Icon name="library" size={20} />
-                  <span className="fs-12">暂无被正文引用的设定</span>
-                </div>
-              )}
-            </div>
           </div>
         </section>
 
