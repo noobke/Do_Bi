@@ -214,6 +214,11 @@ export default function Hooks() {
     [visible],
   )
 
+  /* 「超期」不是一种状态，而是「仍待回收且已超过建议回收章」的派生标记；
+     后端 GET /hooks 用 Hook.overdue() 判定（status==planted 且 currentChapter > suggestedResolveBy），
+     这里据同一规则重算，独立成一条泳道。 */
+  const overdueList = useMemo(() => visible.filter((h) => h.overdue), [visible])
+
   /* ---------- 时间线：章节跨度 ---------- */
   const span = useMemo(() => {
     const nums = [
@@ -292,8 +297,7 @@ export default function Hooks() {
     )
   }
 
-  function lane(statusKey: HookStatus, label: string, emptyText: string): ReactNode {
-    const list = byStatus(statusKey)
+  function lane(label: string, list: Hook[], emptyText: string): ReactNode {
     return (
       <div className="lane">
         <div className="lane-head">
@@ -414,10 +418,21 @@ export default function Hooks() {
               </div>
             </div>
             <div className="card-body">
-              <div className={showAbandoned ? 'grid-3' : 'grid-2'}>
-                {lane('planted', '待回收', filter === 'overdue' ? '「仅超期」下无超期待回收伏笔' : '无待回收伏笔')}
-                {lane('resolved', '已回收', '无已回收伏笔')}
-                {showAbandoned ? lane('abandoned', '已弃用', '无已弃用伏笔') : null}
+              {/* 与原型 hooks.html 同构：待回收 / 已回收 / 超期告警三条泳道；
+                  「仅超期」筛选下，非超期泳道整体隐藏，避免与告警泳道重复。 */}
+              <div className={showAbandoned ? 'grid-4' : 'grid-3'}>
+                {lane(
+                  '待回收',
+                  filter === 'overdue' ? [] : byStatus('planted'),
+                  filter === 'overdue' ? '「仅超期」下已隐藏本泳道' : '无待回收伏笔',
+                )}
+                {lane(
+                  '已回收',
+                  filter === 'overdue' ? [] : byStatus('resolved'),
+                  filter === 'overdue' ? '「仅超期」下已隐藏本泳道' : '无已回收伏笔',
+                )}
+                {lane('超期告警', overdueList, '无超期伏笔')}
+                {showAbandoned ? lane('已弃用', byStatus('abandoned'), '无已弃用伏笔') : null}
               </div>
             </div>
           </section>

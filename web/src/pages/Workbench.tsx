@@ -8,6 +8,7 @@ import { classNames, fmtInt, fmtMoney, toast } from '../lib/ui'
 import { useProject } from '../state/project'
 import {
   commitChapter,
+  decideFinding,
   generateChapter,
   getChapter,
   getOverview,
@@ -158,6 +159,11 @@ const SEVERITY: Record<string, [string, string]> = {
   minor: ['tag-quiet', '建议'],
 }
 
+/** 发现排序：阻塞定稿 → 重点 → 建议（数字越小越靠前，未知严重度排最后） */
+const SEVERITY_ORDER: Record<string, number> = { blocker: 0, major: 1, minor: 2 }
+
+type Decision = 'accept' | 'ignore' | null
+
 const STEP_BUTTONS: { key: StepKind; label: string; icon: IconName }[] = [
   { key: 'audit', label: '审查', icon: 'clipboard-check' },
   { key: 'review', label: '评审', icon: 'search' },
@@ -194,6 +200,10 @@ export default function Workbench() {
   const [msStatus, setMsStatus] = useState<'loading' | 'error' | 'ready'>('loading')
   const [msErr, setMsErr] = useState('')
   const [audit, setAudit] = useState<AuditItem[]>([])
+  /** 是否已有审查报告：用于区分「没审查过」与「审查过但 0 条发现」，定稿前校验要用 */
+  const [hasAudit, setHasAudit] = useState(false)
+  /** 正在处置的发现（`dim:action`），用于禁用按钮并显示「处理中…」 */
+  const [deciding, setDeciding] = useState<string | null>(null)
 
   const [generating, setGenerating] = useState(false)
   const [streamText, setStreamText] = useState('')
@@ -204,6 +214,8 @@ export default function Workbench() {
   const [steerModal, setSteerModal] = useState<{ id: string; message: string; intent: SteerIntent } | null>(
     null,
   )
+  /** 定稿确认模态：点「定稿」先校验再写入，不直接落盘 */
+  const [commitModal, setCommitModal] = useState(false)
 
   const sseRef = useRef<SSEHandle | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -271,8 +283,10 @@ export default function Workbench() {
       if (chRes.status === 'fulfilled') {
         const a = (chRes.value as { audit?: { items?: AuditItem[] } | null }).audit
         setAudit(a?.items ?? [])
+        setHasAudit(a != null)
       } else {
         setAudit([])
+        setHasAudit(false)
       }
     },
     [projectId],
@@ -288,6 +302,7 @@ export default function Workbench() {
     setCurrent(null)
     setManuscript(null)
     setAudit([])
+    setHasAudit(false)
     void loadOverview()
   }, [projectId, loadOverview])
 
@@ -374,7 +389,7 @@ export default function Workbench() {
   }, [projectId, current, loadOverview, loadChapter])
 
   const runAction = useCallback(
-    async (n: number, kind: StepKind) => {
+    async (n: number, kind: StepKind, force = false) => {
       if (!projectId) return
       setBusy(kind)
       try {
@@ -388,7 +403,9 @@ export default function Workbench() {
                 : kind === 'revise'
                   ? runRevise
                   : commitChapter
-        const res = (await fn(projectId, n)) as { note?: string; status?: string; message?: string }
+        const res = (await (kind === 'commit'
+          ? commitChapter(projectId, n, force)
+          : fn(projectId, n))) as { note?: string; status?: string; message?: string }
         const label = STEP_BUTTONS.find((s) => s.key === kind)?.label ?? ''
         toast(res?.note || res?.status || `${label}完成`, 'ok')
         await loadOverview()
@@ -400,6 +417,41 @@ export default function Workbench() {
       }
     },
     [projectId, loadOverview, loadChapter],
+  )
+
+  /** 接受修订 / 忽略 / 撤回一条审查发现；成功后刷新本章审查数据 */
+  const decide = useCallback(
+    async (dim: string, action: Decision) => {
+      if (!projectId || current == null) return
+      setDeciding(`${dim}:${action ?? 'undo'}`)
+      try {
+        await decideFinding(projectId, current, dim, action)
+        toast(
+          action === 'accept'
+            ? `已接受「${dim}」的修订建议`
+            : action === 'ignore'
+              ? `已忽略「${dim}」，原文保留`
+              : `已撤回决策：${dim}`,
+          'ok',
+        )
+        await loadChapter(current)
+      } catch (e) {
+        toast(errMsg(e), 'error')
+      } finally {
+        setDeciding(null)
+      }
+    },
+    [projectId, current, loadChapter],
+  )
+
+  /** 定稿模态里的最终写入；`force` 即作者选择「带未处置阻塞项仍然定稿」 */
+  const confirmCommit = useCallback(
+    async (force: boolean) => {
+      if (current == null) return
+      setCommitModal(false)
+      await runAction(current, 'commit', force)
+    },
+    [current, runAction],
   )
 
   const changeMode = useCallback(
@@ -509,6 +561,13 @@ export default function Workbench() {
       : generating
         ? []
         : manuscript?.paragraphs ?? []
+
+  /* 审查发现全量展示，按严重度排序（阻塞定稿 → 重点 → 建议） */
+  const sortedAudit = [...audit].sort(
+    (a, b) => (SEVERITY_ORDER[a.severity] ?? 3) - (SEVERITY_ORDER[b.severity] ?? 3),
+  )
+  /* 未处置的阻塞项：口径与后端定稿校验一致（严重度为「阻塞定稿」且未修订） */
+  const blockerCount = audit.filter((it) => it.severity === 'blocker' && !it.fixed).length
 
   const spend = ov?.usage?.byChapter?.find((x) => x.chapter === current) ?? null
   const budget = ov?.usage?.budget ?? null
@@ -673,7 +732,12 @@ export default function Workbench() {
                         type="button"
                         className="btn btn-ghost btn-sm"
                         disabled={generating || busy !== null || !words || current == null}
-                        onClick={() => current != null && void runAction(current, s.key)}
+                        onClick={() => {
+                          if (current == null) return
+                          /* 定稿先走确认模态（校验 + 后果说明），不直接落盘 */
+                          if (s.key === 'commit') setCommitModal(true)
+                          else void runAction(current, s.key)
+                        }}
                       >
                         <Icon name={s.icon} size={16} />
                         {busy === s.key ? `${s.label}中…` : s.label}
@@ -756,20 +820,73 @@ export default function Workbench() {
                   </Link>
                 </div>
                 <div className="card-body stack-8">
-                  {audit.length ? (
-                    audit.slice(0, 3).map((it) => {
-                      const t = SEVERITY[it.severity] ?? SEVERITY.minor
-                      return (
-                        <div key={it.dim} className={classNames('audit-item', `sev-${it.severity}`)}>
-                          <div className="row-between">
-                            <span className="fs-13">{it.dim}</span>
-                            <span className={classNames('tag', t[0])} title={it.severity}>
-                              {t[1]}
-                            </span>
+                  {sortedAudit.length ? (
+                    <>
+                      {sortedAudit.map((it) => {
+                        const t = SEVERITY[it.severity] ?? SEVERITY.minor
+                        const working = deciding?.startsWith(`${it.dim}:`) ?? false
+                        const decided = it.decision === 'accept' || it.decision === 'ignore'
+                        return (
+                          <div
+                            key={it.dim}
+                            className={classNames('audit-item', `sev-${it.severity}`)}
+                          >
+                            <div className="row-between">
+                              <span className="fs-13">{it.dim}</span>
+                              {it.decision === 'accept' ? (
+                                <span className="tag tag-ok">已接受</span>
+                              ) : it.decision === 'ignore' ? (
+                                <span className="tag tag-quiet">已忽略</span>
+                              ) : (
+                                <span className={classNames('tag', t[0])} title={it.severity}>
+                                  {t[1]}
+                                </span>
+                              )}
+                            </div>
+                            {it.evidence ? (
+                              <div className="audit-evidence" title="原文证据（可举证）">
+                                {it.evidence}
+                              </div>
+                            ) : null}
+                            {it.suggestion ? <div className="audit-fix">{it.suggestion}</div> : null}
+                            <div className="row">
+                              {decided ? (
+                                <button
+                                  type="button"
+                                  className="btn btn-quiet btn-sm"
+                                  disabled={deciding !== null}
+                                  onClick={() => void decide(it.dim, null)}
+                                >
+                                  撤回
+                                </button>
+                              ) : (
+                                <>
+                                  <button
+                                    type="button"
+                                    className="btn btn-primary btn-sm"
+                                    disabled={deciding !== null}
+                                    onClick={() => void decide(it.dim, 'accept')}
+                                  >
+                                    {working ? '处理中…' : '接受修订'}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-ghost btn-sm"
+                                    disabled={deciding !== null}
+                                    onClick={() => void decide(it.dim, 'ignore')}
+                                  >
+                                    忽略
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      )
-                    })
+                        )
+                      })}
+                      <div className="fs-12 muted">
+                        接受＝按建议改；忽略＝保留原文并记账；撤回＝取消这次决策
+                      </div>
+                    </>
                   ) : (
                     <div className="empty">
                       <span className="fs-12">本章还没有审查发现</span>
@@ -826,6 +943,119 @@ export default function Workbench() {
           </div>
         </div>
       )}
+
+      {commitModal ? (
+        <div className="modal">
+          <div className="modal-veil" onClick={() => setCommitModal(false)} />
+          <div className="modal-card">
+            <div className="card-head">
+              <h2>写入真相文件</h2>
+              <button
+                type="button"
+                className="btn btn-quiet btn-sm"
+                onClick={() => setCommitModal(false)}
+              >
+                关闭
+              </button>
+            </div>
+            <div className="card-body stack">
+              <p className="fs-13 muted">
+                定稿后，本章将沉淀为可检索的资产，并写入世界观、角色状态与伏笔。请先确认以下信息。
+              </p>
+              <div className="card card-pad stack-8">
+                <div className="row-between fs-13">
+                  <span>本章字数</span>
+                  <span className="mono">{words ? fmtInt(words) : '—'}</span>
+                </div>
+                <div className="row-between fs-13">
+                  <span>未处置的阻塞项</span>
+                  <span className="mono">{blockerCount} 项</span>
+                </div>
+              </div>
+              {!hasAudit ? (
+                <div className="stack-8">
+                  <div className="fs-13">
+                    本章还没有审查报告，需先完成一次审查才能定稿（这是有意为之）。
+                  </div>
+                  <div className="fs-12 muted">
+                    审查会做规则校验与模型审查，给出可举证的发现；未审查过不允许直接写入。
+                  </div>
+                </div>
+              ) : blockerCount > 0 ? (
+                <div className="fs-13">
+                  有 {blockerCount} 项阻塞定稿的问题尚未处理。带病写入会把问题一并沉淀进正史。
+                </div>
+              ) : (
+                <div className="fs-13">校验通过，无阻塞项，可以安全写入。</div>
+              )}
+            </div>
+            <div className="card-foot row-between">
+              <span className="fs-12 muted">先审后写：未审查过的章节不允许直接定稿</span>
+              <div className="row">
+                {!hasAudit ? (
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => setCommitModal(false)}
+                    >
+                      取消
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => {
+                        setCommitModal(false)
+                        if (current != null) void runAction(current, 'audit')
+                      }}
+                    >
+                      先去审查
+                    </button>
+                  </>
+                ) : blockerCount > 0 ? (
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => {
+                        setCommitModal(false)
+                        navigate('/audit')
+                      }}
+                    >
+                      先去处理
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      title="忽略阻塞项，强制写入真相文件"
+                      onClick={() => void confirmCommit(true)}
+                    >
+                      仍然定稿
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => setCommitModal(false)}
+                    >
+                      取消
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => void confirmCommit(false)}
+                    >
+                      确认写入并标记已定稿
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {steerModal ? (
         <div className="modal">

@@ -5,7 +5,7 @@ import { Icon } from '../components/Icon'
 import { Crumb, TopBar } from '../components/Layout'
 import { Loading } from '../components/Loading'
 import { classNames, fmtInt, fmtMoney, toast } from '../lib/ui'
-import { getChapterDetail, getStructure, runAudit } from '../api/client'
+import { getChapterDetail, getStructure, listChapters, runAudit } from '../api/client'
 import { useProject } from '../state/project'
 
 /**
@@ -135,7 +135,7 @@ interface Fishbone {
 
 interface Detail {
   chapter: ChapterInfo
-  node: { title?: string; beats?: string[]; intensity?: number } | null
+  node: { title?: string; arc?: string; goal?: string; beats?: string[]; intensity?: number } | null
   acts: ActInfo[]
   act: ActInfo | null
   beats: BeatInfo[]
@@ -143,6 +143,16 @@ interface Detail {
   context: ContextInfo
   timeline: TimelineInfo
   fishbone: Fishbone | null
+}
+
+/** 章节列表行：只取梗概所需字段（由后端把「已归档摘要」与「章纲目标」合并为 summary） */
+interface ChapterBrief {
+  n: number
+  summary: string
+}
+
+interface ChapterList {
+  chapters: ChapterBrief[]
 }
 
 interface StructChapter {
@@ -338,6 +348,7 @@ export default function Chapter() {
 
   const [detail, setDetail] = useState<Detail | null>(null)
   const [structure, setStructure] = useState<Structure | null>(null)
+  const [briefs, setBriefs] = useState<ChapterBrief[]>([])
   const [status, setStatus] = useState<'loading' | 'error' | 'ready'>('loading')
   const [err, setErr] = useState('')
   const [view, setView] = useState<ViewKey>('pipeline')
@@ -352,10 +363,15 @@ export default function Chapter() {
       const token = ++seqRef.current
       setStatus('loading')
       try {
-        const [d, s] = await Promise.all([getChapterDetail(projectId, no), getStructure(projectId)])
+        const [d, s, l] = await Promise.all([
+          getChapterDetail(projectId, no),
+          getStructure(projectId),
+          listChapters(projectId),
+        ])
         if (token !== seqRef.current) return
         setDetail(d as Detail)
         setStructure(s as Structure)
+        setBriefs((l as ChapterList).chapters ?? [])
         setStatus('ready')
       } catch (e) {
         if (token !== seqRef.current) return
@@ -370,6 +386,7 @@ export default function Chapter() {
     if (!projectId) return
     setDetail(null)
     setStructure(null)
+    setBriefs([])
     void load(chapterNo)
   }, [projectId, chapterNo, load])
 
@@ -461,6 +478,12 @@ export default function Chapter() {
   const running = pipe.active != null ? 1 : 0
   const todoCount = Math.max(0, pipe.total - pipe.done - running)
   const activeStepName = pipe.active != null ? steps[pipe.active - 1]?.label ?? '' : ''
+
+  /** 本章梗概：接口把「已归档摘要」与「章纲目标」合并为 summary，本章暂缺时退回章纲目标 */
+  const briefText =
+    (briefs.find((b) => b.n === ch.chapter)?.summary ?? '') || (d.node?.goal ?? '')
+  const briefBeat = d.node?.title || d.act?.name || ''
+  const briefScenes = d.node?.beats ?? []
 
   const stepByName = (name: string) => steps.find((s) => s.label === name) ?? null
   const isStepDone = (name: string) => {
@@ -1152,6 +1175,45 @@ export default function Chapter() {
           </div>
         </div>
       </div>
+
+      {/* 本章梗概：章节列表接口把「已归档摘要」与「章纲目标」合并为 summary */}
+      <section className="card" style={{ marginBottom: 24 }}>
+        <div className="card-head">
+          <h2>本章梗概</h2>
+          <span className="chip" title="结构节拍">{briefBeat || '—'}</span>
+        </div>
+        <div className="card-body stack">
+          {briefText ? (
+            <div className="audit-evidence">{briefText}</div>
+          ) : (
+            <div className="empty">
+              <Icon name="pen-line" size={24} />
+              <span className="fs-13">本章还没有梗概</span>
+              <span className="fs-12 muted">章纲生成后这里会显示本章的目标与场景节拍</span>
+            </div>
+          )}
+          {briefScenes.length ? (
+            <div>
+              <div className="fs-12 muted" style={{ marginBottom: 8 }}>
+                场景节拍
+              </div>
+              <div className="wrap-row">
+                {briefScenes.map((sc, i) => (
+                  <span className="chip" key={`${sc}-${i}`}>
+                    {sc}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          {d.fishbone ? (
+            <div className="fs-12">
+              <span className="tag tag-warn">待处理</span>
+              <span>{d.fishbone.title}</span>
+            </div>
+          ) : null}
+        </div>
+      </section>
 
       <div className="viewbar">
         <div className="viewbar-tabs" role="tablist" aria-label="章节视图">

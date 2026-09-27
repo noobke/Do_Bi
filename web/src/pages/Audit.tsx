@@ -6,7 +6,7 @@ import { Loading } from '../components/Loading'
 import { TopBar } from '../components/Layout'
 import { classNames, toast } from '../lib/ui'
 import { useProject } from '../state/project'
-import { decideFinding, getAuditReport, runAudit } from '../api/client'
+import { decideFinding, getAuditReport, runAudit, runDeai } from '../api/client'
 
 /**
  * 审计报告 —— 对接 `GET /api/projects/{id}/audit`。
@@ -68,6 +68,13 @@ interface AuditStats {
   passRate?: number
 }
 
+interface RuleMeta {
+  key: string
+  rule: string
+  threshold: number
+  describe: string
+}
+
 interface Report {
   chapter: number | null
   title?: string
@@ -77,10 +84,22 @@ interface Report {
   review?: ReviewRow[]
   diffs?: DiffBlock[]
   stats?: AuditStats
+  rules?: RuleMeta[]
   generatedAt?: string
   chapters?: number[]
   message?: string
 }
+
+/** 「去 AI 味」涵盖的规则（key 稳定，中文名与说明由接口返回的规则清单给出）。
+    与后端 `consistency/deai.py` 的 DEAI_RULE_NAMES 一一对应；原型只列 3 条是示例，
+    完整清单是这 5 条。 */
+const DEAI_RULE_KEYS = [
+  'banned_expression',
+  'cliche_density',
+  'consecutive_particles',
+  'word_fatigue',
+  'paragraph_length',
+] as const
 
 /** 严重度 → 作者可读文案；原术语收进 title（不在正文里挡路） */
 const SEV: Record<Severity, { tag: string; label: string; raw: string }> = {
@@ -156,6 +175,8 @@ export default function Audit() {
   const [filter, setFilter] = useState<Filter>('all')
   const [openDiffs, setOpenDiffs] = useState<Record<string, boolean>>({})
   const [busy, setBusy] = useState<string | null>(null)
+  const [showDeaiRules, setShowDeaiRules] = useState(false)
+  const [deaiNote, setDeaiNote] = useState('')
 
   const load = useCallback(
     async (ch: number | null) => {
@@ -195,6 +216,17 @@ export default function Audit() {
     return m
   }, [report])
 
+  /** 去 AI 味规则清单：中文名与说明取自接口规则清单，命中情况取自本次审查的规则校验结果 */
+  const deaiRules = useMemo(() => {
+    const rows = report?.rules ?? []
+    const byRule = new Map((report?.l1Checked ?? []).map((r) => [r.rule, r]))
+    return DEAI_RULE_KEYS.map((key) => rows.find((r) => r.key === key))
+      .filter((r): r is RuleMeta => r != null)
+      .map((r) => ({ ...r, row: byRule.get(r.rule) }))
+  }, [report])
+  const deaiHitCount = deaiRules.filter((r) => r.row?.isHit).length
+  const deaiDiffs = useMemo(() => diffs.filter((d) => d.dim.startsWith('去 AI 味')), [diffs])
+
   const hitCount = l1Rows.filter((r) => r.isHit).length
   const shownFindings = findings.filter((f) => filter === 'all' || f.severity === filter)
 
@@ -207,6 +239,23 @@ export default function Audit() {
       await runAudit(id, n)
       await load(n)
       toast('审查已完成，报告已更新', 'ok')
+    } catch (e) {
+      toast(errMsg(e), 'error')
+    } finally {
+      setBusy(null)
+    }
+  }, [projectId, chapter, report, load])
+
+  const runDeaiNow = useCallback(async () => {
+    const id = projectId
+    const n = chapter ?? report?.chapter ?? null
+    if (!id || n == null) return
+    setBusy('deai')
+    try {
+      const res = (await runDeai(id, n)) as { note?: string }
+      await load(n)
+      setDeaiNote(res?.note || '已完成定点修复')
+      toast(res?.note || '定点修复已完成', 'ok')
     } catch (e) {
       toast(errMsg(e), 'error')
     } finally {
@@ -258,6 +307,13 @@ export default function Audit() {
       ? `第 ${report.chapter} 章${report.title ? ` · ${report.title}` : ''}` +
         `${report.generatedAt ? ` · ${report.generatedAt} 生成` : ''}`
       : undefined
+
+  /** 「上次执行结果」：本次刚跑完用返回文案，否则用落盘在改动预览里的上次改写 */
+  const deaiFoot = deaiNote
+    ? `本次定点修复：${deaiNote}`
+    : deaiDiffs.length > 0
+      ? `上次定点修复：${deaiDiffs.length} 处改写，已并入下方改动预览`
+      : '本章还没跑过去 AI 味；命中的规则会在这里标出'
 
   const topActions = (
     <>
@@ -520,6 +576,90 @@ export default function Audit() {
                   )}
                   <div className="fs-12 muted" style={{ marginTop: 12 }}>
                     接受＝按建议改；忽略＝保留原文并记账；撤回＝取消这次决策
+                  </div>
+                </div>
+              </section>
+
+              {/* 反 AIGC · 去 AI 味：先零成本规则校验，再定点改写违规句，最后重跑校验确认收敛 */}
+              <section className="card">
+                <div className="card-head">
+                  <h2 title="去 AI 味（deai）">反 AIGC · 去 AI 味</h2>
+                  {deaiHitCount > 0 ? (
+                    <span className="tag tag-warn">{`${deaiHitCount} 项待处理`}</span>
+                  ) : (
+                    <span className="tag tag-ok">未见 AI 味</span>
+                  )}
+                </div>
+                <div className="card-body">
+                  <div className="stack">
+                    <div
+                      className="fs-13 muted"
+                      title="先跑零成本的规则校验（确定性判定）；定点改写后须重跑规则校验，确认没有引入新问题"
+                    >
+                      先跑不需模型判断的规则校验（零成本）；改写后必须重跑规则校验，确认没有引入新问题
+                    </div>
+                    <div>
+                      {deaiRules.length === 0 ? (
+                        <div className="fs-12 muted">规则清单暂不可用</div>
+                      ) : (
+                        deaiRules.map((r) => {
+                          const row = r.row
+                          const isHit = !!row?.isHit
+                          const countText = isHit
+                            ? `${row?.hit ? `${row.hit} · ` : ''}${row?.count ?? 0}/${r.threshold}`
+                            : String(row?.count ?? 0)
+                          const samples = sampleMap.get(r.rule) ?? []
+                          return (
+                            <div
+                              className={classNames('rule-row', isHit && 'is-hit')}
+                              key={r.key}
+                            >
+                              <span className="rule-name">{r.rule}</span>
+                              <span className="wrap-row" style={{ justifyContent: 'flex-end' }}>
+                                {samples.map((s, i) => (
+                                  <span className="chip" key={`${r.key}-${i}`}>
+                                    {s}
+                                  </span>
+                                ))}
+                                <span className="rule-count">{countText}</span>
+                              </span>
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+                    {showDeaiRules ? (
+                      <div className="stack-8">
+                        {deaiRules.map((r) => (
+                          <div className="fs-12" key={`desc-${r.key}`}>
+                            <strong>{r.rule}</strong>
+                            <span className="muted">{`：${r.describe}`}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                    <div className="row">
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={() => void runDeaiNow()}
+                        disabled={busy !== null || chapterNow == null}
+                      >
+                        {busy === 'deai' ? '修复中…' : '执行定点修复'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => setShowDeaiRules((v) => !v)}
+                      >
+                        {showDeaiRules ? '收起改写规则' : '查看改写规则'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className="card-foot">
+                  <div className="fs-12 muted" title="最近一次去 AI 味的执行结果">
+                    {deaiFoot}
                   </div>
                 </div>
               </section>

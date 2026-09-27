@@ -14,6 +14,7 @@ import {
   probeProvider,
   testMcp,
   toggleMcp,
+  updateBudget,
   updateMcp,
   updateProvider,
   updateRole,
@@ -180,6 +181,11 @@ export default function Settings() {
 
   const [usage, setUsage] = useState<UsagePayload | null>(null)
   const [warn, setWarn] = useState<string | null>(null)
+  //: 总预算：编辑草稿（字符串，便于清空/输入中间态）+ 是否正在保存
+  const [budgetDraft, setBudgetDraft] = useState('')
+  const [budgetBusy, setBudgetBusy] = useState(false)
+  //: 「添加模型服务」说明弹层：后端只支持在配置文件里声明新服务，前端不伪造表单
+  const [addOpen, setAddOpen] = useState(false)
 
   const loadProviders = useCallback(async () => {
     setStatus('loading')
@@ -244,6 +250,40 @@ export default function Settings() {
       alive = false
     }
   }, [projectId])
+
+  //: 预算草稿跟随当前作品刷新（切作品 / 保存后 usage 变化）。不设上限时留空。
+  useEffect(() => {
+    if (usage && !usage.budget.unlimited) setBudgetDraft(String(usage.budget.total))
+    else setBudgetDraft('')
+  }, [usage])
+
+  /** 保存本书总预算。低于已用成本时后端会拒绝，这里先拦一道给作者更快的反馈。 */
+  const saveBudget = useCallback(async () => {
+    const id = projectId
+    if (!id) return
+    const raw = budgetDraft.trim()
+    const value = Number(raw)
+    if (!raw || Number.isNaN(value) || value <= 0) {
+      toast('请填写大于 0 的预算金额', 'warn')
+      return
+    }
+    const unit = usage?.budget.unit ?? '¥'
+    if (usage && !usage.budget.unlimited && value < usage.budget.used) {
+      toast(`预算不得低于已用成本 ${fmtMoney(usage.budget.used, unit)}`, 'warn')
+      return
+    }
+    setBudgetBusy(true)
+    try {
+      const res = (await updateBudget(id, value)) as { ok: boolean; budget: UsagePayload['budget'] }
+      setUsage((prev) => (prev ? { ...prev, budget: res.budget } : prev))
+      setBudgetDraft(String(res.budget.total))
+      toast('预算已保存', 'ok')
+    } catch (e) {
+      toast(errMsg(e), 'error')
+    } finally {
+      setBudgetBusy(false)
+    }
+  }, [projectId, budgetDraft, usage])
 
   const toggleEnabled = useCallback(async (p: Provider) => {
     setBusy(`toggle:${p.name}`)
@@ -499,7 +539,17 @@ export default function Settings() {
           <section className="card">
             <div className="card-head">
               <h2>模型服务</h2>
-              <span className="tag tag-quiet">兼容 OpenAI</span>
+              <div className="row" style={{ gap: 8 }}>
+                <span className="tag tag-quiet">兼容 OpenAI</span>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  title="新增服务需先在服务端配置文件 server/config/providers.json 里声明；本页只能修改已声明的服务"
+                  onClick={() => setAddOpen(true)}
+                >
+                  添加模型服务
+                </button>
+              </div>
             </div>
             <div className="card-body" style={{ padding: 0 }}>
               {providers.length === 0 ? (
@@ -936,6 +986,43 @@ export default function Settings() {
                 <div className="fs-13 muted">暂时拿不到成本明细</div>
               ) : (
                 <>
+                  <div className="field" style={{ maxWidth: 320 }}>
+                    <label className="field-label" htmlFor="budget-total">
+                      本书总预算（¥）
+                    </label>
+                    <div className="row">
+                      <input
+                        id="budget-total"
+                        className="input mono"
+                        type="number"
+                        min={1}
+                        step={10}
+                        style={{ maxWidth: 160 }}
+                        value={budgetDraft}
+                        disabled={budgetBusy}
+                        onChange={(e) => setBudgetDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') void saveBudget()
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        disabled={budgetBusy}
+                        onClick={() => void saveBudget()}
+                      >
+                        {budgetBusy ? '保存中…' : '保存预算'}
+                      </button>
+                    </div>
+                    <span className="field-hint">
+                      达到上限会暂停全自动模式并挂起检查点，不会静默消耗。
+                    </span>
+                    <span className="field-hint">
+                      {`累计已用 ${fmtMoney(usage.budget.used, usage.budget.unit)}；预算不得低于累计已用。`}
+                    </span>
+                  </div>
+                  <div className="divider" />
+
                   <div className="stack-8">
                     <div className="row-between fs-13">
                       <span>项目预算</span>
@@ -1286,6 +1373,47 @@ export default function Settings() {
           </section>
         </div>
       )}
+
+      {/* 添加模型服务：新服务需先在服务端登记，这里只如实说明，不伪造可用的新建表单 */}
+      {addOpen ? (
+        <div className="modal">
+          <div className="modal-veil" onClick={() => setAddOpen(false)} />
+          <div className="modal-card">
+            <div className="card-head">
+              <h2>添加模型服务</h2>
+              <button
+                type="button"
+                className="btn btn-quiet btn-sm"
+                onClick={() => setAddOpen(false)}
+              >
+                关闭
+              </button>
+            </div>
+            <div className="card-body stack">
+              <p className="fs-13 muted">
+                本页只能修改已经登记过的模型服务：填密钥、启用/停用、指定每个环节用哪个模型。
+                若要接入一家新服务，请先在服务端登记它的服务地址与可用模型清单，登记后回到本页刷新，
+                就能在这里给它填密钥并启用。
+              </p>
+              <div
+                className="fs-12 muted"
+                title="需要编辑服务端配置文件 server/config/providers.json（只存服务地址与模型清单，密钥仍只放在服务端环境变量里，不进仓库）"
+              >
+                新服务不会在本页凭空创建，避免出现「填了却用不了」的空壳条目。
+              </div>
+            </div>
+            <div className="card-foot row" style={{ justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => setAddOpen(false)}
+              >
+                知道了
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   )
 }

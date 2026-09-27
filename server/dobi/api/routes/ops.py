@@ -193,6 +193,33 @@ async def decide_proposal(project_id: str, proposal_id: str,
 
 
 # ==========================================================================
+# 项目：总预算（成本熔断阈值）
+# ==========================================================================
+
+class BudgetUpdateBody(ApiBody):
+    #: 项目总预算（元）。0 表示不设上限（不触发熔断）。
+    total: float = Field(ge=0)
+
+
+@router.put("/projects/{project_id}/budget")
+def update_budget(project_id: str, body: BudgetUpdateBody) -> dict[str, Any]:
+    """设置**本书**的总预算上限（写进项目 meta，不是全局配置）。
+
+    达到上限会挂起全自动模式并留下检查点，不会静默继续花钱。
+    不允许把上限设到低于已发生的成本——否则一保存就立刻熔断，作者会以为坏了。
+    """
+    store = get_store(project_id)
+    meter = make_meter(store)
+    total = round(float(body.total), 2)
+    if total > 0 and total < meter.used:
+        raise BadRequest(f"预算不得低于已用成本 {meter.used:.2f} 元。")
+    meta = store.meta()
+    meta.budget_total = total
+    store.save_meta(meta)
+    return {"ok": True, "budget": meter.budget()}
+
+
+# ==========================================================================
 # 设置：服务商
 # ==========================================================================
 

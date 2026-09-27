@@ -6,7 +6,7 @@ import { Loading } from '../components/Loading'
 import { TopBar } from '../components/Layout'
 import { classNames, fmtInt, fmtMoney, toast } from '../lib/ui'
 import { useProject } from '../state/project'
-import { createProject, getOverview, health, listProjects, request } from '../api/client'
+import { createProject, getOverview, getUsage, health, listProjects, request } from '../api/client'
 
 /**
  * 我的作品（首页）—— 项目总览 / 继续创作 / 新建 / 拆书入口。
@@ -41,6 +41,39 @@ interface Resume {
 
 interface HealthPayload {
   providers?: { configured?: boolean; message?: string }
+}
+
+/** 一段生成记录（后端 `usage.jsonl` 的 `UsageEntry`，经 `GET /usage` 的 recent 返回） */
+interface UsageEntry {
+  chapter: number
+  step: string
+  promptTokens: number
+  completionTokens: number
+  totalTokens: number
+  cost: number
+  ts: string
+}
+
+interface UsageData {
+  recent: UsageEntry[]
+}
+
+/** 生产环节取值 → 作者可读文案（与后端 STEP_LABELS 一致；英文原词只留在 title） */
+const STEP_LABEL: Record<string, string> = {
+  plan: '章纲',
+  context: '上下文组装',
+  draft: '草稿',
+  audit: '规则与模型审查',
+  review: '可举证评审',
+  deai: '去 AI 味',
+  revise: '修订',
+  commit: '定稿',
+  style: '文风分析',
+}
+
+/** 用量流水的时间戳（ISO）→ 「月-日 时:分」；缺失时留空占位 */
+function fmtTs(ts: string): string {
+  return ts ? ts.slice(5, 16).replace('T', ' ') : '—'
 }
 
 /** 干预模式取值 → 作者可读文案（与后端 modeLabel 一套） */
@@ -81,6 +114,7 @@ export default function Projects() {
   const [projects, setProjects] = useState<ProjectSummary[]>([])
   const [currentId, setCurrentId] = useState<string | null>(null)
   const [resume, setResume] = useState<Resume | null>(null)
+  const [recent, setRecent] = useState<UsageEntry[]>([])
   const [status, setStatus] = useState<'loading' | 'error' | 'ready'>('loading')
   const [error, setError] = useState('')
   const [warn, setWarn] = useState<string | null>(null)
@@ -109,8 +143,16 @@ export default function Projects() {
         } catch {
           setResume(null)
         }
+        // 最近生成记录：取当前作品用量流水里最新的几条（`GET /usage` → recent）
+        try {
+          const usage = (await getUsage(cur)) as UsageData
+          setRecent(usage.recent ?? [])
+        } catch {
+          setRecent([])
+        }
       } else {
         setResume(null)
+        setRecent([])
       }
     } catch (e) {
       setError(errMsg(e))
@@ -385,6 +427,47 @@ export default function Projects() {
                   <strong>新建作品</strong>
                   <span className="fs-12">从一个名字和一句话灵感开始，不填表</span>
                 </button>
+              </div>
+            </div>
+          </section>
+
+          <section className="card">
+            <div className="card-head">
+              <h2>最近生成记录</h2>
+              <span className="tag tag-quiet">{currentProject?.title ?? '当前作品'}</span>
+            </div>
+            <div className="card-body" style={{ padding: 0 }}>
+              <div className="list">
+                {recent.length ? (
+                  recent.slice(0, 8).map((u, i) => (
+                    <div key={`${u.ts}-${u.chapter}-${u.step}-${i}`} className="list-row">
+                      <span className="mono fs-12 muted" style={{ width: 76, flex: 'none' }}>
+                        {fmtTs(u.ts)}
+                      </span>
+                      <div className="row-main">
+                        <div className="row-title">
+                          {u.chapter > 0
+                            ? `第 ${u.chapter} 章 · ${STEP_LABEL[u.step] ?? '生成'}`
+                            : STEP_LABEL[u.step] ?? '生成'}
+                        </div>
+                        <div
+                          className="row-sub mono"
+                          title={`step: ${u.step} · 输入 ${u.promptTokens} tokens · 输出 ${u.completionTokens} tokens`}
+                        >
+                          {`输入 ${fmtInt(u.promptTokens)} · 输出 ${fmtInt(u.completionTokens)} 额度`}
+                        </div>
+                      </div>
+                      <span className="mono fs-13" style={{ width: 56, textAlign: 'right' }}>
+                        {fmtMoney(u.cost)}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="empty">
+                    <Icon name="refresh-cw" size={24} />
+                    <div className="fs-13">这部作品还没有生成记录</div>
+                  </div>
+                )}
               </div>
             </div>
           </section>

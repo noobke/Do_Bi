@@ -577,6 +577,40 @@ class TestOps:
             {"name": "z", "transport": "stdio", "command": "echo"},
             {"name": "z", "transport": "stdio", "command": "echo"}]}).status_code == 400
 
+    def test_update_project_budget(self, http: TestClient, project: str):
+        """本书总预算可写：落到项目 meta、立即生效；0 表示不设上限。"""
+        ok = http.put(f"/api/projects/{project}/budget", json={"total": 120})
+        assert ok.status_code == 200, ok.text
+        assert ok.json()["budget"]["total"] == 120.0
+        assert ok.json()["budget"]["unlimited"] is False
+
+        # 立即生效：meta 与成本接口都能看到新值
+        assert http.get(f"/api/projects/{project}").json()["meta"]["budgetTotal"] == 120.0
+        assert http.get(f"/api/projects/{project}/usage").json()["budget"]["total"] == 120.0
+
+        # 0 表示不设上限
+        assert http.put(f"/api/projects/{project}/budget",
+                        json={"total": 0}).json()["budget"]["unlimited"] is True
+
+        # 负数不合法（校验错 → 400 + 中文文案）
+        bad = http.put(f"/api/projects/{project}/budget", json={"total": -1})
+        assert bad.status_code == 400
+
+    def test_budget_cannot_go_below_spent(self, http: TestClient, project: str):
+        """预算下限：不得低于已发生的成本，否则一保存就熔断。"""
+        from dobi.api.deps import get_store
+        from dobi.core.metering import Meter
+        from dobi.core.schema import UsageEntry
+
+        Meter(get_store(project)).record(UsageEntry(chapter=1, step="draft", cost=5.0))
+        resp = http.put(f"/api/projects/{project}/budget", json={"total": 1})
+        assert resp.status_code == 400
+        assert "不得低于" in resp.json()["message"]
+
+        # 高于已用成本就放行
+        assert http.put(f"/api/projects/{project}/budget",
+                        json={"total": 8}).status_code == 200
+
 
 # ==========================================================================
 # 知识库：实体索引 / 跨类检索 / 关系图谱 / 双向链接
