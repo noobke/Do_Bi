@@ -15,7 +15,7 @@ import { CJK_RUN_RE, STOPWORDS_2_3, cjkLen, textRatio } from './l1'
 import { completeJson, type Message } from './llm'
 import { nowIso } from './util'
 
-const SENT_RE = /[^。！？…\n]+[。！？…]?/
+const SENT_RE = /[^。！？…\n]+[。！？…]?/g
 
 // ==========================================================================
 // 本地确定性指标

@@ -141,8 +141,8 @@ function mk(key: string, hit: string, count: number, samples?: string[]): L1Viol
 // ---------------------------------------------------------------------------
 
 const PARA_RE = /\n\s*\n+/
-const SENT_RE = /[^。！？…\n]+[。！？…]?/
-const DIALOG_RE = /[「『“"]([^」』”"]*)[」』”"]/
+const SENT_RE = /[^。！？…\n]+[。！？…]?/g
+const DIALOG_RE = /[「『“"]([^」』”"]*)[」』”"]/g
 export const CJK_RUN_RE = /[\u4e00-\u9fff]+/g
 
 function paragraphs(text: string): string[] {

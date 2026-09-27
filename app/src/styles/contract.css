@@ -528,17 +528,33 @@ svg { display:block; }
   .sidebar { position:static; width:auto; flex-direction:row; align-items:center; border-right:none; border-bottom:1px solid var(--line); padding:0 var(--sp-16); }
   .brand { padding:var(--sp-12) 0; }
   .brand-sub, .sidebar-foot { display:none; }
-  .nav { flex-direction:row; padding:0; margin-left:var(--sp-16); overflow-x:auto; }
+  /* 顶部导航改横向滚动：条目固定不收缩（flex:none），避免「工作台」这类词被拦腰截断；
+     隐藏滚动条保整洁，仍可手势滑动。 */
+  .nav { flex-direction:row; padding:0; margin-left:var(--sp-16); overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .nav::-webkit-scrollbar { display:none; }
+  .nav-item { flex:none; white-space:nowrap; gap:var(--sp-8); padding:0 var(--sp-10); }
   .nav-item.active::before { display:none; }
   .main { margin-left:0; padding:var(--sp-20) var(--sp-16) var(--sp-48); }
   .workbench { grid-template-columns:minmax(0,1fr); }
   .grid-3, .grid-4 { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .grid-2 { grid-template-columns:minmax(0,1fr); }
+
+  /* 防拥挤通修：标题区按钮/标签不再与标题抢一行；按钮行放不下时换行。
+     卡片体允许横向滚动，容纳超宽表格（避免多列表格挤成一团）。 */
+  .card-head { flex-wrap:wrap; row-gap:var(--sp-8); }
+  .row, .row-between { flex-wrap:wrap; }
+  .card-body { overflow-x:auto; }
 }
 @media (max-width:560px) {
   .topbar { flex-direction:column; align-items:flex-start; }
   .grid-3, .grid-4 { grid-template-columns:minmax(0,1fr); }
   .ms-text { font-size:17px; }
+
+  /* 服务商卡片改纵向：内容与右侧按钮组不再左右挤压；
+     表格在窄屏降一档密度，配合上方 .card-body 横向滚动使用。 */
+  .provider-card { flex-direction:column; align-items:flex-start; }
+  .table { font-size:var(--fs-12); }
+  .table th, .table td { padding:var(--sp-8) var(--sp-10); }
 }
 
 /* ==========================================================================
@@ -925,13 +941,13 @@ svg { display:block; }
 .tree-node .tn-n { font-family:var(--font-mono); font-size:11px; fill:var(--ink-2); }
 .tree-node.is-selected .tn-n { fill:var(--paper); }
 .tree-node .tn-t { font-family:var(--font-body); font-size:12px; font-weight:500; fill:var(--ink); }
-.tree-node .tn-s { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.tree-node .tn-s { font-family:var(--font-mono); font-size:11px; fill:var(--ink-3); }
 
 .tree-branch { fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .tree-branch-dot { stroke:var(--paper); stroke-width:1.5; }
 .tree-branch-label { font-family:var(--font-body); font-size:11px; font-weight:500; }
-.tree-branch-caption { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
-.tree-axis { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.tree-branch-caption { font-family:var(--font-mono); font-size:11px; fill:var(--ink-3); }
+.tree-axis { font-family:var(--font-mono); font-size:11px; fill:var(--ink-3); }
 .tree-axis-line { stroke:var(--line); stroke-width:1; }
 
 /* ---------- 46. 节奏曲线 ---------- */
@@ -948,7 +964,7 @@ svg { display:block; }
 .curve-dot { fill:var(--paper); stroke:var(--accent); stroke-width:2; }
 .curve-dot.is-peak { fill:var(--accent-ink); stroke:var(--accent-ink); }
 .curve-dot.is-low { fill:var(--paper-3); stroke:var(--ink-4); }
-.curve-axis { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.curve-axis { font-family:var(--font-mono); font-size:11px; fill:var(--ink-3); }
 .curve-label { font-family:var(--font-body); font-size:11px; fill:var(--ink-2); }
 .curve-peak-label { font-family:var(--font-body); font-size:11px; font-weight:500; fill:var(--accent-ink); }
 
@@ -992,7 +1008,7 @@ svg { display:block; }
 .flow-node.is-resolve rect { fill:var(--moss-soft); stroke:var(--moss); }
 .flow-node { cursor:default; }
 .flow-node .fn-t { font-family:var(--font-body); font-size:12px; font-weight:500; fill:var(--ink); }
-.flow-node .fn-s { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.flow-node .fn-s { font-family:var(--font-mono); font-size:11px; fill:var(--ink-3); }
 .flow-edge { stroke:var(--ink-4); stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round; }
 .flow-edge.is-branch { stroke:var(--amber); stroke-dasharray:5 4; }
 .flow-edge-label { font-family:var(--font-body); font-size:11px; fill:var(--ink-3); }
@@ -1005,9 +1021,9 @@ svg { display:block; }
 .tl-dot { fill:var(--accent); stroke:var(--paper); stroke-width:2; }
 .tl-dot.is-flashback { fill:var(--amber); }
 .tl-dot.is-future { fill:var(--ink-4); }
-.tl-at { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.tl-at { font-family:var(--font-mono); font-size:11px; fill:var(--ink-3); }
 .tl-label { font-family:var(--font-body); font-size:12px; fill:var(--ink); }
-.tl-label-sub { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.tl-label-sub { font-family:var(--font-mono); font-size:11px; fill:var(--ink-3); }
 
 /* ---------- 50. 情节结构图 ---------- */
 .struct-act { fill:var(--paper-2); }
@@ -1015,7 +1031,7 @@ svg { display:block; }
 .struct-area { fill:color-mix(in srgb, var(--accent) 10%, transparent); }
 .struct-curve { stroke:var(--accent); stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
 .struct-act-name { font-family:var(--font-display); font-size:12px; font-weight:600; fill:var(--ink-2); }
-.struct-beat { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.struct-beat { font-family:var(--font-mono); font-size:11px; fill:var(--ink-3); }
 .struct-marker-line { stroke:var(--crimson); stroke-width:1.5; stroke-dasharray:3 3; }
 .struct-marker { fill:var(--crimson); stroke:var(--paper); stroke-width:2; }
 .struct-label { font-family:var(--font-body); font-size:11px; font-weight:500; fill:var(--crimson); }
@@ -1044,11 +1060,11 @@ svg { display:block; }
 .tl2-dot.is-planned { fill:var(--paper-3); stroke:var(--line-strong); }
 .tl2-link { stroke:var(--line-strong); stroke-width:1; fill:none; stroke-dasharray:3 3; }
 .tl2-link.is-backstory { stroke:var(--amber); }
-.tl2-at { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.tl2-at { font-family:var(--font-mono); font-size:11px; fill:var(--ink-3); }
 .tl2-label { font-family:var(--font-body); font-size:12px; fill:var(--ink); }
-.tl2-ch { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.tl2-ch { font-family:var(--font-mono); font-size:11px; fill:var(--ink-3); }
 .tl2-now { stroke:var(--crimson); stroke-width:1.5; stroke-dasharray:4 3; fill:none; }
-.tl2-now-label { font-family:var(--font-mono); font-size:10px; fill:var(--crimson); }
+.tl2-now-label { font-family:var(--font-mono); font-size:11px; fill:var(--crimson); }
 
 /* ---------- 53. 节拍骨架（幕 → 节拍 → 章节 三层） ---------- */
 .beat-wrap { position:relative; width:100%; overflow:hidden; background:var(--paper); border:1px solid var(--line); border-radius:var(--r-sm); }
@@ -1060,9 +1076,9 @@ svg { display:block; }
 .beat-block.is-active { fill:var(--amber-soft); stroke:var(--amber); }
 .beat-block.is-todo { fill:var(--paper-3); stroke:var(--line-strong); stroke-dasharray:4 3; }
 .beat-name { font-family:var(--font-body); font-size:11px; font-weight:500; fill:var(--ink); }
-.beat-core { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.beat-core { font-family:var(--font-mono); font-size:11px; fill:var(--ink-3); }
 .beat-link { stroke:var(--line); stroke-width:1; fill:none; }
-.beat-axis { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.beat-axis { font-family:var(--font-mono); font-size:11px; fill:var(--ink-3); }
 .beat-axis-line { stroke:var(--line); stroke-width:1; }
 .beat-marker { stroke:var(--crimson); stroke-width:1.5; stroke-dasharray:3 3; fill:none; }
 .beat-marker-dot { fill:var(--crimson); stroke:var(--paper); stroke-width:2; }
@@ -1078,7 +1094,7 @@ svg { display:block; }
 .pflow-node.is-optional rect { stroke-dasharray:4 3; }
 .pflow-node.is-revise rect { fill:var(--amber-soft); stroke:var(--amber); }
 .pflow-name { font-family:var(--font-body); font-size:12px; font-weight:500; fill:var(--ink); }
-.pflow-meta { font-family:var(--font-mono); font-size:10px; fill:var(--ink-3); }
+.pflow-meta { font-family:var(--font-mono); font-size:11px; fill:var(--ink-3); }
 .pflow-edge { stroke:var(--ink-4); stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round; }
 .pflow-edge.is-loop { stroke:var(--amber); stroke-dasharray:5 4; }
 .pflow-edge-label { font-family:var(--font-body); font-size:11px; fill:var(--ink-3); }
@@ -1313,7 +1329,7 @@ svg { display:block; }
 
 /* 邻边上的关系名（如「师徒」「埋设」）：白描边打底，压在连线之上也能读清 */
 .gedge-label {
-  font-family:var(--font-body); font-size:10px; fill:var(--ink-2);
+  font-family:var(--font-body); font-size:11px; fill:var(--ink-2);
   text-anchor:middle; dominant-baseline:middle; pointer-events:none;
   paint-order:stroke; stroke:var(--paper); stroke-width:3px; stroke-linejoin:round;
 }
