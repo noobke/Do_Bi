@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
+import re
 from pathlib import Path
 from typing import Any, AsyncIterator, Callable, Iterable
 
@@ -24,6 +26,9 @@ from ..core.metering import Meter
 from ..core.store import ProjectStore
 from ..errors import NotFound
 from ..llm.provider import LLMClient
+from .serialize import to_api
+
+log = logging.getLogger("dobi")
 
 __all__ = [
     "settings", "projects_root", "list_stores", "get_store", "project_id_of",
@@ -33,6 +38,12 @@ __all__ = [
 
 _CURRENT_FILE = "current.json"
 _LOCKS: dict[str, asyncio.Lock] = {}
+
+#: 作品 id 的合法形状。与 `core.store.slugify` / `_new_project_id` 的产出严格对齐：
+#: 小写字母数字，内部用单个连字符分隔，无首尾连字符（slugify 会 strip 掉）。
+#: 注意不要放进 `_probe` —— 那是后端自己创建在 `data/_probe`（projects/ 之外）的
+#: 连通性探测目录，永远不会经由 `get_store` 访问，也没有理由出现在作品白名单里。
+_PROJECT_ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 def settings() -> Settings:
     return get_settings()
@@ -55,6 +66,10 @@ def list_stores() -> list[ProjectStore]:
 
 
 def get_store(project_id: str) -> ProjectStore:
+    # project_id 来自路径参数，必须先按白名单校验再拼路径：`ProjectStore.root.resolve()`
+    # 会把 `..` 归一化，单靠「目标目录得有 meta.json」不是可靠的越权护栏。
+    if not _PROJECT_ID_RE.match(project_id or ""):
+        raise NotFound(f"没有这个作品：{project_id}")
     store = ProjectStore(projects_root() / project_id)
     if not store.exists:
         raise NotFound(f"没有这个作品：{project_id}")
@@ -167,8 +182,10 @@ async def guarded(project_id: str, coro):
 # ---------------- SSE ----------------
 
 def sse_event(event: str, data: Any) -> str:
+    # SSE 的 data 也是响应的一部分，必须走全项目的 camelize 约定（`to_api`）；
+    # 否则以后某个 payload 一旦用了 snake_case 键，就会静默泄漏、前端按 camelCase 读不到。
     payload = data if isinstance(data, str) else json.dumps(
-        data, ensure_ascii=False, default=str)
+        to_api(data), ensure_ascii=False, default=str)
     return f"event: {event}\ndata: {payload}\n\n"
 
 
@@ -193,8 +210,10 @@ def sse_response(source: Callable[[], AsyncIterator[dict[str, Any]]]) -> Streami
             if isinstance(exc, DobiError):
                 yield sse_event("error", {"code": exc.code, "message": exc.message})
             else:
+                # 非业务异常是 bug：写成日志供排查，但**不把英文堆栈拼给作者看**。
+                log.exception("流式执行中断：%s", type(exc).__name__)
                 yield sse_event("error", {"code": "internal",
-                                          "message": f"执行中断：{exc}"})
+                                          "message": "执行中断，可重试。"})
 
     return StreamingResponse(
         _gen(),

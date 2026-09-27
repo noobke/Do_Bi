@@ -1329,6 +1329,12 @@ svg { display:block; }
 /* 左栏清单限高滚动：条目多时不要把关系网顶出屏幕 */
 .list-scroll { max-height:56vh; overflow-y:auto; scrollbar-width:thin; }
 
+/* 知识库的条目行比全站默认松一档：默认行高 56px 里要同时挤下「标题」和「类型 + 关系数」
+   两行，读起来是一团。这里把行高固定到 72px（内容 41px 上下各留约 16px），
+   标题与标签之间再拉开 6px —— 扫读一列条目时不再需要逐行辨认边界。 */
+.kb-list .list-row { min-height:72px; padding:var(--sp-12) var(--sp-8); }
+.kb-list .row-sub { margin-top:6px; }
+
 /* 知识库双栏：窄栏（找条目）在左，宽栏（看关系）在右。
    DOM 顺序是「找条目」在前——因为窄屏要反过来（先看图再翻清单），
    而窄屏的先后由 order 决定，不由 DOM 顺序决定。

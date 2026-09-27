@@ -387,11 +387,11 @@ export default function Settings() {
       return
     }
     if (mcpForm.transport === 'stdio' && !mcpForm.command.trim()) {
-      toast('用 stdio 的话要填启动命令', 'warn')
+      toast('选择「本机命令」时要填启动命令', 'warn')
       return
     }
     if (mcpForm.transport === 'http' && !/^https?:\/\//.test(mcpForm.url.trim())) {
-      toast('http 地址要以 http:// 或 https:// 开头', 'warn')
+      toast('远程地址要以 http:// 或 https:// 开头', 'warn')
       return
     }
     const existing = mcp?.servers ?? []
@@ -475,7 +475,7 @@ export default function Settings() {
 
   return (
     <>
-      <TopBar title="设置" sub="模型接入 · 全部通过接口调用 · 不含本地模型" />
+      <TopBar title="设置" sub="模型接入 · 全部在线调用 · 不含本地模型" />
 
       {status === 'loading' ? (
         <Loading text="正在加载设置…" />
@@ -490,7 +490,7 @@ export default function Settings() {
                   <Icon name="alert-triangle" size={16} />
                   <span className="fs-13">{warn}</span>
                 </div>
-                <span className="fs-12 muted">密钥写在服务端 .env 里，可在此直接填写；接口只回显脱敏指纹</span>
+                <span className="fs-12 muted" title="密钥保存在服务端 .env">密钥保存在服务端，可在此直接填写；只回显脱敏指纹</span>
               </div>
             </section>
           ) : null}
@@ -499,7 +499,7 @@ export default function Settings() {
           <section className="card">
             <div className="card-head">
               <h2>模型服务</h2>
-              <span className="tag tag-quiet">OpenAI 兼容协议</span>
+              <span className="tag tag-quiet">兼容 OpenAI</span>
             </div>
             <div className="card-body" style={{ padding: 0 }}>
               {providers.length === 0 ? (
@@ -528,8 +528,8 @@ export default function Settings() {
                             </span>
                           )}
                           {!p.configured ? (
-                            <span className="mono fs-12 muted" title="密钥所在环境变量名">
-                              {p.apiKeyRef}
+                            <span className="mono fs-12 muted" title={`环境变量：${p.apiKeyRef}`}>
+                              密钥只保存在服务端
                             </span>
                           ) : null}
                         </div>
@@ -556,7 +556,8 @@ export default function Settings() {
                                 type="password"
                                 autoComplete="off"
                                 spellCheck={false}
-                                placeholder={p.configured ? '粘贴新密钥以替换' : `粘贴密钥，将写入 ${p.apiKeyRef}`}
+                                title={`环境变量：${p.apiKeyRef}`}
+                                placeholder={p.configured ? '粘贴新密钥以替换' : '粘贴密钥，将保存到服务端'}
                                 value={keyValue}
                                 onChange={(e) => setKeyValue(e.target.value)}
                                 onKeyDown={(e) => {
@@ -596,10 +597,12 @@ export default function Settings() {
                                 取消
                               </button>
                             </div>
-                            <div className="fs-12 muted" style={{ marginTop: 6 }}>
-                              密钥只写入服务端 <span className="mono">.env</span>（
-                              <span className="mono">{p.apiKeyRef}</span>
-                              ），保存后立即生效、无需重启；接口只回显脱敏指纹。
+                            <div
+                              className="fs-12 muted"
+                              style={{ marginTop: 6 }}
+                              title={`环境变量：${p.apiKeyRef}（保存到服务端 .env）`}
+                            >
+                              密钥只写入服务端，保存后立即生效、无需重启；只回显脱敏指纹。
                             </div>
                           </div>
                         ) : null}
@@ -685,8 +688,8 @@ export default function Settings() {
               )}
             </div>
             <div className="card-foot">
-              <span className="fs-12 muted">
-                密钥只存在服务端 .env，前端永不接触；这里只显示「已配置 / 未配置」与脱敏指纹。
+              <span className="fs-12 muted" title="密钥只存在服务端 .env">
+                密钥只存在服务端，前端永不接触；这里只显示「已配置 / 未配置」与脱敏指纹。
               </span>
             </div>
           </section>
@@ -990,7 +993,7 @@ export default function Settings() {
                       <div className="fs-12 muted">
                         {usage.totals.unpriced > 0
                           ? `${usage.totals.unpriced} 次调用未定价`
-                          : '按接口用量计'}
+                          : '按实际用量计'}
                       </div>
                     </div>
                   </div>
@@ -1192,8 +1195,8 @@ export default function Settings() {
                           setMcpForm({ ...mcpForm, transport: e.target.value as 'stdio' | 'http' })
                         }
                       >
-                        <option value="stdio">stdio（本机命令）</option>
-                        <option value="http">http（远程地址）</option>
+                        <option value="stdio">本机命令</option>
+                        <option value="http">远程地址</option>
                       </select>
                     </div>
                     <div className="row" style={{ gap: 8, marginTop: 8 }}>
@@ -1264,10 +1267,12 @@ export default function Settings() {
                         取消
                       </button>
                     </div>
-                    <div className="fs-12 muted" style={{ marginTop: 8 }}>
-                      stdio 的相对路径以 <span className="mono">server/</span> 为基准（即启动后端的目录）。
-                      项目自带一个可跑通的示例：<span className="mono">python3 mcp/example_server.py</span>，
-                      工具名填 <span className="mono">lookup_setting, search_reference, fetch_history</span>。
+                    <div
+                      className="fs-12 muted"
+                      style={{ marginTop: 8 }}
+                      title="命令以服务端 server/ 为基准；示例命令：python3 mcp/example_server.py；工具名示例：lookup_setting, search_reference, fetch_history"
+                    >
+                      选择「本机命令」时，命令以服务端目录为基准；工具名用逗号分隔，留空表示全部开放。
                     </div>
                   </div>
                 </div>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { ErrorState } from '../components/ErrorState'
 import { Icon } from '../components/Icon'
@@ -107,6 +107,21 @@ function countWords(text: string): number {
 function extOf(name: string): string {
   const i = name.lastIndexOf('.')
   return i >= 0 ? name.slice(i).toLowerCase() : ''
+}
+
+/** 非原生控件（`div` 等）承载点击时必须键盘可达（契约 §12.7），写法照抄 Outline/Knowledge 的 `press` */
+function press(handler: () => void, role: string | null = 'button') {
+  return {
+    ...(role ? { role } : {}),
+    tabIndex: 0,
+    onClick: handler,
+    onKeyDown: (e: KeyboardEvent<Element>) => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault()
+        handler()
+      }
+    },
+  }
 }
 
 export default function Disassemble() {
@@ -339,7 +354,8 @@ export default function Disassemble() {
             <div className="card-body stack">
               <div
                 className={classNames('dropzone', dragging && 'is-over')}
-                onClick={() => inputRef.current?.click()}
+                aria-label="选择要拆解的文件"
+                {...press(() => inputRef.current?.click())}
                 onDragOver={(e) => {
                   e.preventDefault()
                   setDragging(true)
@@ -355,7 +371,15 @@ export default function Disassemble() {
                 <Icon name="upload" size={24} />
                 <div className="fs-14">拖入 .txt / .md 文件，或点击选择</div>
                 <div className="fs-12">支持 txt / md 纯文本；解析在服务端进行，不调用模型</div>
-                <button type="button" className="btn btn-primary btn-sm">
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    inputRef.current?.click()
+                  }}
+                  onKeyDown={(e) => e.stopPropagation()}
+                >
                   选择文件
                 </button>
               </div>

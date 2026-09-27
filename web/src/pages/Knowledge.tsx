@@ -562,7 +562,7 @@ export default function Knowledge() {
                 search.hits.length ? (
                   <>
                     <div className="fs-12 muted">{search.note}</div>
-                    <div className="list list-scroll">
+                    <div className="list list-scroll kb-list">
                       {search.hits.map((hit) => {
                         const key = hitKey(hit)
                         return (
@@ -624,7 +624,7 @@ export default function Knowledge() {
               </div>
               {/* 行自带 8px 内边距，这里再补 12px → 与卡片头/卡身的 20px 齐平，
                   否则列表文字会贴到卡片边框上 */}
-              <div className="list list-scroll" style={{ padding: '0 12px 12px' }}>
+              <div className="list list-scroll kb-list" style={{ padding: '0 12px 12px' }}>
                 {visible.length ? (
                   visible.map((entity) => (
                     <div

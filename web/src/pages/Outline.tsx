@@ -1530,6 +1530,18 @@ const NODE_STATUS_TAG: Record<string, [string, string]> = {
   skeleton: ['tag-quiet', '骨架'],
 }
 
+/** 依赖边类型 → 面向作者的中文名（契约第 10 条：不得把英文枚举露给作者）。
+    原枚举收进 `title`，信息不丢。 */
+const EDGE_TYPE_LABEL: Record<string, string> = {
+  motivation: '动机',
+  setup: '铺垫',
+  payoff: '回收',
+  causality: '因果',
+  parallel: '并行',
+}
+
+const edgeTypeLabel = (type: string) => EDGE_TYPE_LABEL[type] ?? type
+
 interface GPos {
   x: number
   y: number
@@ -1705,7 +1717,7 @@ function GraphView({ s, onOpen }: { s: Structure; onOpen: (n: number) => void })
                       <td className="mono">{`第 ${e.fromChapter} 章`}</td>
                       <td className="mono">{`第 ${e.toChapter} 章`}</td>
                       <td>
-                        <span className="chip mono">{e.type}</span>
+                        <span className="chip" title={e.type}>{edgeTypeLabel(e.type)}</span>
                       </td>
                       <td className="muted">{e.note}</td>
                     </tr>
@@ -1775,13 +1787,15 @@ function GraphView({ s, onOpen }: { s: Structure; onOpen: (n: number) => void })
                   <div className="fs-12 muted" style={{ marginBottom: 8 }}>
                     上游依赖
                   </div>
-                  {outEdges.length ? (
+                  {/* 入边（别的章指向本章）才是上游：A→B 表示 B 依赖 A。
+                      方向标错会让作者把「谁依赖我」当成「我依赖谁」。 */}
+                  {inEdges.length ? (
                     <div className="list">
-                      {outEdges.map((e, i) => (
+                      {inEdges.map((e, i) => (
                         <div key={i} className="list-row">
                           <div className="row-main">
-                            <div className="row-title">{`本章 → 第 ${e.toChapter} 章`}</div>
-                            <div className="row-sub">{`${e.type} · ${e.note}`}</div>
+                            <div className="row-title">{`第 ${e.fromChapter} 章 → 本章`}</div>
+                            <div className="row-sub">{`${edgeTypeLabel(e.type)} · ${e.note}`}</div>
                           </div>
                         </div>
                       ))}
@@ -1794,13 +1808,14 @@ function GraphView({ s, onOpen }: { s: Structure; onOpen: (n: number) => void })
                   <div className="fs-12 muted" style={{ marginBottom: 8 }}>
                     下游影响
                   </div>
-                  {inEdges.length ? (
+                  {/* 出边（本章指向别的章）是下游：那些章依赖本章 */}
+                  {outEdges.length ? (
                     <div className="list">
-                      {inEdges.map((e, i) => (
+                      {outEdges.map((e, i) => (
                         <div key={i} className="list-row">
                           <div className="row-main">
-                            <div className="row-title">{`第 ${e.fromChapter} 章 → 本章`}</div>
-                            <div className="row-sub">{`${e.type} · ${e.note}`}</div>
+                            <div className="row-title">{`本章 → 第 ${e.toChapter} 章`}</div>
+                            <div className="row-sub">{`${edgeTypeLabel(e.type)} · ${e.note}`}</div>
                           </div>
                         </div>
                       ))}

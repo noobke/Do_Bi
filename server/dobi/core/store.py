@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import shutil
@@ -47,6 +48,8 @@ from .schema import (
 )
 
 __all__ = ["ProjectStore", "CommitResult", "count_words", "slugify"]
+
+log = logging.getLogger(__name__)
 
 
 # ==========================================================================
@@ -119,6 +122,15 @@ class ProjectStore:
     def __init__(self, root: Path | str) -> None:
         self.root = Path(root).resolve()
         self.id = self.root.name
+        # 纵深防御：store 只应指向数据目录之下（作品在 data/projects/，
+        # CLI 与「测试连通性」用的探测目录在 data/_probe/）。越出 data/ 只可能是
+        # 上游把未校验的输入拼进了路径，直接暴露为开发期错误，别让它变成越权读写。
+        data_dir = get_settings().data_dir
+        try:
+            self.root.relative_to(Path(data_dir).resolve())
+        except ValueError as exc:
+            raise AssertionError(
+                f"ProjectStore 路径越出数据目录：{self.root}（data_dir={data_dir}）") from exc
         # 供 commit 后置钩子使用（如写 memory.db 索引），由外部注入，避免循环依赖
         self._on_truth_changed: Callable[[str], None] | None = None
 
@@ -800,7 +812,9 @@ class TruthWriter:
         try:
             char = Character.model_validate(p.payload)
         except Exception as exc:
-            return [ValidationIssue(kind="字段非法", message=f"角色字段不合法：{exc}", proposal_id=p.id)]
+            log.warning("角色提案字段校验失败：%s", exc)
+            return [ValidationIssue(kind="字段非法", message="角色字段不合法",
+                                    proposal_id=p.id)]
 
         if char.id in ctx["characters"]:
             out.append(ValidationIssue(kind="重复角色", proposal_id=p.id,
@@ -850,7 +864,9 @@ class TruthWriter:
         try:
             hook = Hook.model_validate(p.payload)
         except Exception as exc:
-            return [ValidationIssue(kind="字段非法", message=f"伏笔字段不合法：{exc}", proposal_id=p.id)]
+            log.warning("伏笔提案字段校验失败：%s", exc)
+            return [ValidationIssue(kind="字段非法", message="伏笔字段不合法",
+                                    proposal_id=p.id)]
 
         norm = _norm(hook.content)
         for existing in ctx["hooks"]:
@@ -896,7 +912,9 @@ class TruthWriter:
         try:
             rule = WorldRule.model_validate(p.payload)
         except Exception as exc:
-            return [ValidationIssue(kind="字段非法", message=f"世界观字段不合法：{exc}", proposal_id=p.id)]
+            log.warning("世界观提案字段校验失败：%s", exc)
+            return [ValidationIssue(kind="字段非法", message="世界观字段不合法",
+                                    proposal_id=p.id)]
 
         norm = _norm(rule.rule)
         for existing in ctx["world"].rules:
@@ -916,7 +934,9 @@ class TruthWriter:
         try:
             node = OutlineNode.model_validate(p.payload)
         except Exception as exc:
-            return [ValidationIssue(kind="字段非法", message=f"章纲字段不合法：{exc}", proposal_id=p.id)]
+            log.warning("章纲提案字段校验失败：%s", exc)
+            return [ValidationIssue(kind="字段非法", message="章纲字段不合法",
+                                    proposal_id=p.id)]
         existing = ctx["graph"].node(node.chapter)
         if existing and existing.status == "written" and _norm(existing.goal) != _norm(node.goal):
             out.append(ValidationIssue(
@@ -928,7 +948,9 @@ class TruthWriter:
         try:
             edge = OutlineEdge.model_validate(p.payload)
         except Exception as exc:
-            return [ValidationIssue(kind="字段非法", message=f"依赖边字段不合法：{exc}", proposal_id=p.id)]
+            log.warning("依赖边提案字段校验失败：%s", exc)
+            return [ValidationIssue(kind="字段非法", message="依赖边字段不合法",
+                                    proposal_id=p.id)]
         if edge.from_chapter == edge.to_chapter:
             return [ValidationIssue(kind="字段非法", proposal_id=p.id,
                                     message="依赖边的起点与终点不能是同一章")]
@@ -944,21 +966,27 @@ class TruthWriter:
         try:
             Subplot.model_validate(p.payload)
         except Exception as exc:
-            return [ValidationIssue(kind="字段非法", message=f"情节线字段不合法：{exc}", proposal_id=p.id)]
+            log.warning("情节线提案字段校验失败：%s", exc)
+            return [ValidationIssue(kind="字段非法", message="情节线字段不合法",
+                                    proposal_id=p.id)]
         return []
 
     def _validate_summary_upsert(self, p: Proposal, **ctx: Any) -> list[ValidationIssue]:
         try:
             ChapterSummary.model_validate(p.payload)
         except Exception as exc:
-            return [ValidationIssue(kind="字段非法", message=f"章节摘要字段不合法：{exc}", proposal_id=p.id)]
+            log.warning("章节摘要提案字段校验失败：%s", exc)
+            return [ValidationIssue(kind="字段非法", message="章节摘要字段不合法",
+                                    proposal_id=p.id)]
         return []
 
     def _validate_style_update(self, p: Proposal, **ctx: Any) -> list[ValidationIssue]:
         try:
             StyleProfile.model_validate(p.payload)
         except Exception as exc:
-            return [ValidationIssue(kind="字段非法", message=f"文风档案字段不合法：{exc}", proposal_id=p.id)]
+            log.warning("文风档案提案字段校验失败：%s", exc)
+            return [ValidationIssue(kind="字段非法", message="文风档案字段不合法",
+                                    proposal_id=p.id)]
         return []
 
     def _validate_fact_add(self, p: Proposal, **ctx: Any) -> list[ValidationIssue]:
@@ -986,9 +1014,10 @@ class TruthWriter:
             try:
                 rel = self._apply(p)
             except Exception as exc:              # 应用失败同样不写入
+                log.warning("提案应用失败 %s：%s", p.id, exc)
                 result.issues.append(ValidationIssue(
                     kind="应用失败", proposal_id=p.id,
-                    message=f"提案 {p.id} 写入失败：{exc}"))
+                    message=f"提案 {p.id} 写入失败"))
                 result.pending.append(p)
                 continue
             p.decision = p.decision or "accept"

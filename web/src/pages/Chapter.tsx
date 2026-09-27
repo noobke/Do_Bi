@@ -181,11 +181,14 @@ const VIEW_HINT: Record<ViewKey, string> = {
   fishbone: '把本章问题按维度归因，每条都对应可定位的审查证据',
 }
 
+/** 章节状态 → 标签色 + 作者可读文案。文案须与工作台 `STATUS` 逐字一致：
+    同一个状态在两页各叫一名（「待审查」/「待审计」）会让作者以为是两件事；
+    「审计」也是侧栏那一页的名字，统一取它。 */
 const CH_STATUS: Record<string, [string, string]> = {
   todo: ['tag-quiet', '未写'],
   planned: ['tag-quiet', '待写'],
   draft: ['tag-info', '草稿'],
-  audit: ['tag-warn', '待审查'],
+  audit: ['tag-warn', '待审计'],
   revise: ['tag-warn', '修订中'],
   done: ['tag-ok', '已定稿'],
 }

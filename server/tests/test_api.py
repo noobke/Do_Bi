@@ -95,6 +95,21 @@ class TestProjects:
         assert http.delete(f"/api/projects/{project}").json()["ok"] is True
         assert http.get(f"/api/projects/{project}").status_code == 404
 
+    def test_traversal_project_ids_are_rejected(self, http: TestClient, project: str):
+        """project_id 来自路径参数，必须先过白名单：非法 id 一律 404，绝不落到真实目录。"""
+        for bad in ("..", "%2E%2E", "..%2F..", "%2e%2e"):
+            for resp in (http.get(f"/api/projects/{bad}"),
+                         http.delete(f"/api/projects/{bad}")):
+                assert resp.status_code == 404, (bad, resp.status_code)
+
+        # 编码后的穿越没被客户端归一化，会走到我们的校验：按普通「不存在的作品」处理
+        encoded = http.get("/api/projects/%2E%2E")
+        assert encoded.json()["code"] == "not_found"
+        assert "没有这个作品" in encoded.json()["message"]
+
+        # 正常 id 不能被白名单误杀
+        assert http.get(f"/api/projects/{project}").status_code == 200
+
     def test_mode_switching(self, http: TestClient, project: str):
         data = http.post(f"/api/projects/{project}/mode", json={"mode": "auto"}).json()
         assert data["mode"] == "auto"
@@ -503,6 +518,18 @@ class TestOps:
                           params={"q": "铜灯", "k": 3}).json()
         assert search.get("ok") is True
 
+    async def test_mcp_resolves_relative_command_from_any_cwd(
+            self, env, monkeypatch, tmp_path):
+        """stdin 命令是相对路径（以 server/ 为基准）。把工作目录切走后仍要连得上，
+        否则换目录启动后端会静默降级成内置检索（测试恰好在 server/ 下跑，掩盖了这点）。"""
+        from dobi.integrations.mcp import McpRegistry
+
+        away = tmp_path / "away"
+        away.mkdir()
+        monkeypatch.chdir(away)
+        result = await McpRegistry().test("local-archive")
+        assert result["ok"] is True, result
+
     def test_update_role_from_settings_page(self, http: TestClient):
         """模型分工可改：换服务商 / 换模型 / 调温度，立即生效并回显。"""
         data = http.put("/api/settings/roles/writer",
@@ -708,6 +735,22 @@ class TestSerializationContract:
             resp = http.get(path)
             assert resp.status_code == 200, f"{path} → {resp.status_code} {resp.text[:200]}"
             _assert_camel(resp.json(), path)
+
+    def test_sse_frames_are_camel(self, http: TestClient, project: str):
+        """SSE 的 data 也是响应的一部分，同样不得泄漏 snake_case。"""
+        http.post(f"/api/projects/{project}/plan", json={})
+        resp = http.post(f"/api/projects/{project}/chapters/1/generate", json={})
+        assert resp.status_code == 200
+        seen = 0
+        for block in resp.text.split("\n\n"):
+            data = [ln[5:].strip() for ln in block.splitlines() if ln.startswith("data:")]
+            if not data:
+                continue
+            payload = json.loads("\n".join(data))
+            if isinstance(payload, dict):
+                _assert_camel(payload)
+                seen += 1
+        assert seen >= 2, "至少要看到 delta 与 done 两类数据帧"
 
     def test_write_endpoints_are_camel_too(self, http: TestClient, project: str):
         # 注意：generate / run 返回的是 SSE，不是 JSON，不在此列。

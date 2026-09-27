@@ -187,6 +187,11 @@ class McpClient:
         try:
             self._proc = await asyncio.create_subprocess_exec(
                 *argv,
+                # 配置里的命令是相对路径（文档约定「以 server/ 为基准」，见
+                # MCP_CONFIG_COMMENT 与 mcp/example_server.py）。不固定 cwd 的话，
+                # 只有从 server/ 启动后端才找得到脚本，换目录启动必然
+                # FileNotFoundError 并静默降级成内置检索。
+                cwd=_config.SERVER_ROOT,
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,

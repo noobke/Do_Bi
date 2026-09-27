@@ -139,14 +139,16 @@ interface SteerResult {
 
 type StepKind = 'audit' | 'review' | 'deai' | 'revise' | 'commit'
 
-/** 章节状态 → 标签色 + 作者可读文案 */
+/** 章节状态 → 标签色 + 作者可读文案。
+    文案须与章节页 `CH_STATUS` 逐字一致：同一个 `commit` 状态在别处叫「已定稿」，
+    这里叫「已完成」会让作者以为是两件事（后端 `schema.py` 的工序名就叫「定稿」）。 */
 const STATUS: Record<string, [string, string]> = {
   todo: ['tag-quiet', '未写'],
   planned: ['tag-quiet', '待写'],
   draft: ['tag-info', '草稿'],
   audit: ['tag-warn', '待审计'],
   revise: ['tag-warn', '修订中'],
-  done: ['tag-ok', '已完成'],
+  done: ['tag-ok', '已定稿'],
 }
 
 /** 审查严重度 → 标签色 + 作者可读文案（英文原词进 title） */
@@ -206,6 +208,9 @@ export default function Workbench() {
   const sseRef = useRef<SSEHandle | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
+  /** 序号防乱序：连点章节时旧响应可能后到，过期响应直接丢弃（否则正文与左栏选中的章对不上） */
+  const seqRef = useRef(0)
+
   const scrollBottom = () => bottomRef.current?.scrollIntoView({ block: 'end' })
 
   const loadOverview = useCallback(async () => {
@@ -227,11 +232,13 @@ export default function Workbench() {
   const loadChapter = useCallback(
     async (n: number) => {
       if (!projectId) return
+      const token = ++seqRef.current
       setMsStatus('loading')
       const [msRes, chRes] = await Promise.allSettled([
         request(`/api/projects/${encodeURIComponent(projectId)}/chapters/${n}/manuscript`),
         getChapter(projectId, n),
       ])
+      if (token !== seqRef.current) return
 
       if (msRes.status === 'fulfilled') {
         setManuscript(msRes.value as Manuscript)
@@ -287,6 +294,16 @@ export default function Workbench() {
   useEffect(() => {
     if (projectId && current != null) void loadChapter(current)
   }, [projectId, current, loadChapter])
+
+  /* 离开页面（或切换作品）时中止仍在跑的生成流：否则后台继续烧额度，
+     回到页面还会看到正文与左栏选中的章错位。 */
+  useEffect(
+    () => () => {
+      sseRef.current?.abort()
+      sseRef.current = null
+    },
+    [projectId],
+  )
 
   /* 生成结束后刷新章节与统计 */
   const finishGenerate = useCallback(

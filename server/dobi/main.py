@@ -73,14 +73,37 @@ async def handle_dobi_error(request: Request, exc: DobiError) -> JSONResponse:
     return JSONResponse(status_code=exc.status_code, content=exc.to_dict())
 
 
+#: pydantic 错误类型 → 面向作者的中文（设计契约第 10 条：不向作者暴露工程文案）。
+#: 英文原文一概只进 `detail`，供排查，不进 `message`。
+_VALIDATION_MESSAGES: dict[str, str] = {
+    "missing": "必填",
+    "string_too_short": "太短了",
+    "string_too_long": "太长了",
+    "string_type": "要填文字",
+    "int_parsing": "要填数字",
+    "int_type": "要填数字",
+    "float_parsing": "要填数字",
+    "float_type": "要填数字",
+    "bool_parsing": "要填「是」或「否」",
+    "list_type": "要填列表",
+    "dict_type": "格式不正确",
+    "enum": "不是可选项",
+    "value_error": "填写有误",
+}
+
+
+def _validation_message(err: dict[str, Any]) -> str:
+    return _VALIDATION_MESSAGES.get(str(err.get("type") or ""), "填写有误")
+
+
 @app.exception_handler(RequestValidationError)
 async def handle_validation(request: Request, exc: RequestValidationError) -> JSONResponse:
     first = (exc.errors() or [{}])[0]
     loc = ".".join(str(x) for x in first.get("loc", []) if x not in ("body", "query"))
-    message = first.get("msg") or "提交的内容不符合要求。"
+    message = _validation_message(first)
     return JSONResponse(status_code=400, content={
         "code": "bad_request",
-        "message": f"「{loc}」填写有误：{message}" if loc else message,
+        "message": f"「{loc}」{message}" if loc else message,
         "detail": exc.errors()[:5],
     })
 
