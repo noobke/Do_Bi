@@ -150,6 +150,9 @@ export default function Settings() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [probes, setProbes] = useState<Record<string, ProbeResult>>({})
   const [busy, setBusy] = useState<string | null>(null)
+  //: 正在填密钥的服务商名 + 输入框内容（密钥只在内存里过一手，不回显）
+  const [keyFor, setKeyFor] = useState<string | null>(null)
+  const [keyValue, setKeyValue] = useState('')
 
   const [mcp, setMcp] = useState<McpPayload | null>(null)
   const [mcpBusy, setMcpBusy] = useState<string | null>(null)
@@ -268,6 +271,47 @@ export default function Settings() {
     [],
   )
 
+  /** 保存密钥：写进服务端 .env 并立即生效，随后顺手测一次连通性。 */
+  const saveKey = useCallback(
+    async (p: Provider, value: string) => {
+      const key = value.trim()
+      if (!key) {
+        toast('请先粘贴密钥', 'warn')
+        return
+      }
+      setBusy(`key:${p.name}`)
+      try {
+        const res = (await updateProvider(p.name, { apiKey: key })) as { providers: Provider[] }
+        if (res.providers) setProviders(res.providers)
+        setKeyFor(null)
+        setKeyValue('')
+        toast(`已保存 ${p.name} 的密钥，正在测试连通性…`, 'ok')
+        void probe({ ...p, configured: true })
+      } catch (e) {
+        toast(errMsg(e), 'error')
+      } finally {
+        setBusy(null)
+      }
+    },
+    [probe],
+  )
+
+  /** 清除密钥（传空串）。 */
+  const clearKey = useCallback(async (p: Provider) => {
+    setBusy(`key:${p.name}`)
+    try {
+      const res = (await updateProvider(p.name, { apiKey: '' })) as { providers: Provider[] }
+      if (res.providers) setProviders(res.providers)
+      setKeyFor(null)
+      setKeyValue('')
+      toast(`已清除 ${p.name} 的密钥`, 'ok')
+    } catch (e) {
+      toast(errMsg(e), 'error')
+    } finally {
+      setBusy(null)
+    }
+  }, [])
+
   const doToggleMcp = useCallback(async (s: McpServer) => {
     setMcpBusy(`toggle:${s.name}`)
     try {
@@ -333,7 +377,7 @@ export default function Settings() {
                   <Icon name="alert-triangle" size={16} />
                   <span className="fs-13">{warn}</span>
                 </div>
-                <span className="fs-12 muted">密钥写在服务端 .env 里，前端只用于显示状态</span>
+                <span className="fs-12 muted">密钥写在服务端 .env 里，可在此直接填写；接口只回显脱敏指纹</span>
               </div>
             </section>
           ) : null}
@@ -391,6 +435,61 @@ export default function Settings() {
                             )}
                           </div>
                         ) : null}
+                        {keyFor === p.name ? (
+                          <div style={{ marginTop: 12 }}>
+                            <div className="row" style={{ gap: 8 }}>
+                              <input
+                                className="input mono"
+                                type="password"
+                                autoComplete="off"
+                                spellCheck={false}
+                                placeholder={p.configured ? '粘贴新密钥以替换' : `粘贴密钥，将写入 ${p.apiKeyRef}`}
+                                value={keyValue}
+                                onChange={(e) => setKeyValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') void saveKey(p, keyValue)
+                                  if (e.key === 'Escape') {
+                                    setKeyFor(null)
+                                    setKeyValue('')
+                                  }
+                                }}
+                              />
+                              <button
+                                type="button"
+                                className="btn btn-sm"
+                                disabled={busy !== null}
+                                onClick={() => void saveKey(p, keyValue)}
+                              >
+                                {busy === `key:${p.name}` ? '保存中…' : '保存并测试'}
+                              </button>
+                              {p.configured ? (
+                                <button
+                                  type="button"
+                                  className="btn btn-quiet btn-sm"
+                                  disabled={busy !== null}
+                                  onClick={() => void clearKey(p)}
+                                >
+                                  清除
+                                </button>
+                              ) : null}
+                              <button
+                                type="button"
+                                className="btn btn-quiet btn-sm"
+                                onClick={() => {
+                                  setKeyFor(null)
+                                  setKeyValue('')
+                                }}
+                              >
+                                取消
+                              </button>
+                            </div>
+                            <div className="fs-12 muted" style={{ marginTop: 6 }}>
+                              密钥只写入服务端 <span className="mono">.env</span>（
+                              <span className="mono">{p.apiKeyRef}</span>
+                              ），保存后立即生效、无需重启；接口只回显脱敏指纹。
+                            </div>
+                          </div>
+                        ) : null}
                         {isOpen ? (
                           p.models.length > 0 ? (
                             <table className="table" style={{ marginTop: 12 }}>
@@ -435,6 +534,18 @@ export default function Settings() {
                           disabled={busy !== null}
                           onClick={() => void toggleEnabled(p)}
                         />
+                        <button
+                          type="button"
+                          className={classNames('btn', p.configured ? 'btn-quiet' : 'btn-primary', 'btn-sm')}
+                          disabled={busy !== null}
+                          onClick={() => {
+                            const next = keyFor === p.name ? null : p.name
+                            setKeyFor(next)
+                            setKeyValue('')
+                          }}
+                        >
+                          {p.configured ? '更换密钥' : '填写密钥'}
+                        </button>
                         <button
                           type="button"
                           className="btn btn-quiet btn-sm"

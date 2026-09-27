@@ -6,22 +6,32 @@
 2. **每个用例一个独立数据目录**：`DOBI_DATA_DIR` 指向 tmp_path，测完即弃。
 3. **配置也隔离**：`config/` 整份复制到 tmp_path 再改指过去，
    这样「切换服务商启用状态」这类测试不会把状态写回仓库里的真实配置。
+4. **`.env` 也隔离**：`DOBI_ENV_FILE` 指向 tmp_path，
+   否则「在设置页填密钥」这类测试会覆盖开发者真实的 `server/.env`。
 """
 
 from __future__ import annotations
 
+import os
 import shutil
+import tempfile
 from pathlib import Path
 
-import httpx
-import pytest
+#: 必须在导入任何被测模块**之前**执行：`dobi.main` 在导入期就会读一次 `Settings`
+#: （CORS 白名单），若此时 `DOBI_ENV_FILE` 未设置，开发者真实的 `server/.env`
+#: 会被灌进 `os.environ`，污染整个测试会话（真实密钥泄漏进断言）。
+os.environ.setdefault(
+    "DOBI_ENV_FILE", str(Path(tempfile.gettempdir()) / "dobi-tests-no-such.env"))
 
-import dobi.config as config_mod
-from dobi.config import get_settings, reload_config
-from dobi.core.store import ProjectStore
-from dobi.llm.provider import LLMClient
+import httpx  # noqa: E402
+import pytest  # noqa: E402
 
-import fake_llm
+import dobi.config as config_mod  # noqa: E402
+from dobi.config import get_settings, reload_config  # noqa: E402
+from dobi.core.store import ProjectStore  # noqa: E402
+from dobi.llm.provider import LLMClient  # noqa: E402
+
+import fake_llm  # noqa: E402
 
 _SHIPPED_CONFIG = Path(config_mod.__file__).resolve().parent.parent / "config"
 
@@ -38,6 +48,9 @@ def env(tmp_path, monkeypatch):
         if src.exists():
             shutil.copy(src, tmp_config / name)
     monkeypatch.setattr(config_mod, "CONFIG_DIR", tmp_config)
+    # ---- .env 隔离（写密钥的接口会落盘到这个文件）----
+    tmp_env = tmp_path / ".env"
+    monkeypatch.setenv("DOBI_ENV_FILE", str(tmp_env))
     # 清掉慢启动时可能已写入的探测结果，保证每次从干净配置开始
     for name in ("providers.json", "mcp.json"):
         path = tmp_config / name

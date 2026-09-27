@@ -1,52 +1,203 @@
 {
-  "_comment": "服务商清单。api_key_ref 是【环境变量名】，密钥值只存在于 .env / 进程环境，本文件永不写明文。priority 越小越优先，即降级链顺序：主力 → 备用 → 挂起 checkpoint 并提示。price_in / price_out 为【示例参考价，元/百万 token】，请按服务商实际价目核对后维护；留 0 表示不计价。",
   "providers": [
     {
       "name": "DeepSeek",
       "base_url": "https://api.deepseek.com/v1",
       "api_key_ref": "DOBI_KEY_DEEPSEEK",
+      "models": [
+        {
+          "name": "deepseek-chat",
+          "context_window": 65536,
+          "max_output": 8192,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": false,
+          "price_in": 2.0,
+          "price_out": 8.0,
+          "note": ""
+        },
+        {
+          "name": "deepseek-reasoner",
+          "context_window": 65536,
+          "max_output": 8192,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": false,
+          "price_in": 4.0,
+          "price_out": 16.0,
+          "note": ""
+        }
+      ],
       "priority": 1,
       "enabled": true,
       "note": "主力。JSON 输出与长上下文都稳，成本低。",
+      "probed": {
+        "ok": true,
+        "latency_ms": 580,
+        "checked_at": "2026-09-27T03:51:53+00:00",
+        "error": null,
+        "max_tokens_field": "max_tokens",
+        "supports_response_format": true,
+        "supports_stream_options": true,
+        "supports_tools": false
+      }
+    },
+    {
+      "name": "MiMo",
+      "base_url": "https://api.xiaomimimo.com/v1",
+      "api_key_ref": "DOBI_KEY_MIMO",
       "models": [
-        { "name": "deepseek-chat", "context_window": 65536, "max_output": 8192, "supports_json": true, "supports_stream": true, "price_in": 2.0, "price_out": 8.0 },
-        { "name": "deepseek-reasoner", "context_window": 65536, "max_output": 8192, "supports_json": true, "supports_stream": true, "price_in": 4.0, "price_out": 16.0 }
-      ]
+        {
+          "name": "mimo-v2.6-pro",
+          "context_window": 1048576,
+          "max_output": 131072,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": false,
+          "price_in": 3.0,
+          "price_out": 6.0,
+          "note": ""
+        },
+        {
+          "name": "mimo-v2.6-flash",
+          "context_window": 1048576,
+          "max_output": 131072,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": false,
+          "price_in": 1.0,
+          "price_out": 2.0,
+          "note": ""
+        }
+      ],
+      "priority": 2,
+      "enabled": true,
+      "note": "小米 MiMo，OpenAI 兼容。上下文 1M，便宜档用 flash。国内计费按未命中缓存价（元/百万 token）：pro 3/6，flash 1/2。",
+      "probed": {
+        "ok": true,
+        "latency_ms": 916,
+        "checked_at": "2026-09-27T03:51:54+00:00",
+        "error": null,
+        "max_tokens_field": "max_tokens",
+        "supports_response_format": true,
+        "supports_stream_options": true,
+        "supports_tools": false
+      }
     },
     {
       "name": "OpenAI",
       "base_url": "https://api.openai.com/v1",
       "api_key_ref": "DOBI_KEY_OPENAI",
-      "priority": 2,
+      "models": [
+        {
+          "name": "gpt-4.1",
+          "context_window": 128000,
+          "max_output": 8192,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": true,
+          "price_in": 14.0,
+          "price_out": 56.0,
+          "note": ""
+        },
+        {
+          "name": "gpt-4.1-mini",
+          "context_window": 128000,
+          "max_output": 8192,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": true,
+          "price_in": 3.0,
+          "price_out": 12.0,
+          "note": ""
+        }
+      ],
+      "priority": 3,
       "enabled": true,
       "note": "备用。注意部分新模型用 max_completion_tokens 而非 max_tokens，首次调用会自动探测。",
-      "models": [
-        { "name": "gpt-4.1", "context_window": 128000, "max_output": 8192, "supports_json": true, "supports_stream": true, "supports_tools": true, "price_in": 14.0, "price_out": 56.0 },
-        { "name": "gpt-4.1-mini", "context_window": 128000, "max_output": 8192, "supports_json": true, "supports_stream": true, "supports_tools": true, "price_in": 3.0, "price_out": 12.0 }
-      ]
+      "probed": {
+        "ok": false,
+        "latency_ms": null,
+        "checked_at": null,
+        "error": null,
+        "max_tokens_field": "max_tokens",
+        "supports_response_format": true,
+        "supports_stream_options": true,
+        "supports_tools": false
+      }
     },
     {
       "name": "通义千问",
       "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
       "api_key_ref": "DOBI_KEY_DASHSCOPE",
-      "priority": 3,
+      "models": [
+        {
+          "name": "qwen-max",
+          "context_window": 32768,
+          "max_output": 8192,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": false,
+          "price_in": 20.0,
+          "price_out": 80.0,
+          "note": ""
+        },
+        {
+          "name": "qwen-plus",
+          "context_window": 131072,
+          "max_output": 8192,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": false,
+          "price_in": 4.0,
+          "price_out": 12.0,
+          "note": ""
+        }
+      ],
+      "priority": 4,
       "enabled": true,
       "note": "审计与摘要档位便宜，适合跑量。",
-      "models": [
-        { "name": "qwen-max", "context_window": 32768, "max_output": 8192, "supports_json": true, "supports_stream": true, "price_in": 20.0, "price_out": 80.0 },
-        { "name": "qwen-plus", "context_window": 131072, "max_output": 8192, "supports_json": true, "supports_stream": true, "price_in": 4.0, "price_out": 12.0 }
-      ]
+      "probed": {
+        "ok": false,
+        "latency_ms": null,
+        "checked_at": null,
+        "error": null,
+        "max_tokens_field": "max_tokens",
+        "supports_response_format": true,
+        "supports_stream_options": true,
+        "supports_tools": false
+      }
     },
     {
       "name": "硅基流动",
       "base_url": "https://api.siliconflow.cn/v1",
       "api_key_ref": "DOBI_KEY_SILICONFLOW",
-      "priority": 4,
+      "models": [
+        {
+          "name": "deepseek-ai/DeepSeek-V3",
+          "context_window": 65536,
+          "max_output": 8192,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": false,
+          "price_in": 2.0,
+          "price_out": 8.0,
+          "note": ""
+        }
+      ],
+      "priority": 5,
       "enabled": false,
       "note": "备选。未启用时完全不参与降级链。",
-      "models": [
-        { "name": "deepseek-ai/DeepSeek-V3", "context_window": 65536, "max_output": 8192, "supports_json": true, "supports_stream": true, "price_in": 2.0, "price_out": 8.0 }
-      ]
+      "probed": {
+        "ok": false,
+        "latency_ms": null,
+        "checked_at": null,
+        "error": null,
+        "max_tokens_field": "max_tokens",
+        "supports_response_format": true,
+        "supports_stream_options": true,
+        "supports_tools": false
+      }
     }
   ]
 }

@@ -34,7 +34,7 @@
       "tools": [
         "fetch_history"
       ],
-      "enabled": true,
+      "enabled": false,
       "status": "idle",
       "latency": null,
       "calls": 0

@@ -1,0 +1,34 @@
+{
+  "id": "novel-fc126c9b",
+  "title": "密钥连通测试",
+  "genre": "悬疑",
+  "logline": "一盏不灭的铜灯。",
+  "premise": "一盏不灭的青铜灯，灯灭时亡者复归",
+  "mode": "semi-auto",
+  "steps": {
+    "plan": "confirm",
+    "context": "auto",
+    "draft": "auto",
+    "audit": "confirm",
+    "review": "auto",
+    "deai": "auto",
+    "revise": "auto",
+    "commit": "confirm"
+  },
+  "stop_conditions": [
+    "audit.blocker_exists",
+    "budget.exceeded",
+    "steer.affects_committed"
+  ],
+  "chapters_total": 0,
+  "words": 0,
+  "words_per_chapter": 3000,
+  "budget_total": 80.0,
+  "budget_used": 0.0022,
+  "cost_unit": "¥",
+  "audit_dims": [],
+  "audit_dims_extended": false,
+  "style_locked": false,
+  "created_at": "2026-09-27T03:51:59+00:00",
+  "updated_at": "2026-09-27T03:52:01+00:00"
+}

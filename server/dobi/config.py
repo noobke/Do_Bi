@@ -17,6 +17,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
 
+from dotenv import load_dotenv
 from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -151,7 +152,6 @@ class ModelRoleSpec(BaseModel):
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="DOBI_",
-        env_file=str(SERVER_ROOT / ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -239,7 +239,14 @@ def _read_json(path: Path, default: Any) -> Any:
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    return Settings()
+    # 显式传入 `.env` 路径，保证「读」与「写」（save_secrets）用同一个文件。
+    path = env_file_path()
+    # 关键：把 `.env` 的键**灌进 os.environ**，否则 `ProviderSpec.api_key`
+    # （读的是 os.environ）永远看不到密钥——「填 .env 就能用」会变成假象。
+    # override=False：真实环境变量优先于 .env。
+    if path.exists():
+        load_dotenv(path, override=False)
+    return Settings(_env_file=path)
 
 
 def load_providers() -> list[ProviderSpec]:
@@ -266,6 +273,48 @@ def save_providers(specs: list[ProviderSpec]) -> None:
 def reload_config() -> None:
     """配置改动（如设置页写入 providers.json）后调用，清缓存。"""
     get_settings.cache_clear()
+
+
+def env_file_path() -> Path:
+    """`.env` 位置。默认 `server/.env`；`DOBI_ENV_FILE` 可指向别处（测试与多环境部署用）。
+
+    密钥的**读**（`Settings`）与**写**（`save_secrets`）都以这里为准，
+    否则「界面填的密钥」重启后会读不到。
+    """
+    raw = os.environ.get("DOBI_ENV_FILE", "").strip()
+    if raw:
+        return Path(raw).expanduser().resolve()
+    return SERVER_ROOT / ".env"
+
+
+def save_secrets(updates: dict[str, str | None]) -> Path:
+    """把密钥写进 `.env` 并立即生效（同步更新 `os.environ`，无需重启）。
+
+    `value=None` 或空串表示清除该变量。只改这几行，其余内容（含注释）原样保留。
+    返回值是写入的路径，**不返回密钥本体**。
+    """
+    path = env_file_path()
+    lines = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+    pending = dict(updates)
+    out: list[str] = []
+    for line in lines:
+        stripped = line.lstrip()
+        name = stripped.split("=", 1)[0].strip() if "=" in stripped else ""
+        if name in pending and not stripped.startswith("#"):
+            value = pending.pop(name)
+            out.append(f"{name}={value}" if value else f"{name}=")
+        else:
+            out.append(line)
+    for name, value in pending.items():
+        out.append(f"{name}={value}" if value else f"{name}=")
+
+    path.write_text("\n".join(out) + "\n", encoding="utf-8")
+    for name, value in updates.items():
+        if value:
+            os.environ[name] = value
+        else:
+            os.environ.pop(name, None)
+    return path
 
 
 def mask(secret: str | None) -> str | None:

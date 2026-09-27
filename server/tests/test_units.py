@@ -424,3 +424,43 @@ class TestTextTools:
     def test_split_paragraphs_strips_heading_and_enders(self):
         raw = "第 17 章 雪落雁回\n\n第一段内容。\n\n第二段内容。\n\n（本章完）"
         assert split_paragraphs(raw) == ["第一段内容。", "第二段内容。"]
+
+
+class TestSecretsFromEnvFile:
+    """密钥写进 `.env` 就必须生效。
+
+    曾经的真实故障：`Settings` 会把 `.env` 读进模型字段，但 `ProviderSpec.api_key`
+    读的是 `os.environ`，两者不通——文档说的「复制 .env.example 填密钥」完全是假象，
+    只有 `export` 出来的进程环境变量才算数。
+    """
+
+    def test_key_in_env_file_is_visible_to_providers(self, tmp_path, monkeypatch):
+        from dobi.config import load_providers, reload_config
+
+        monkeypatch.delenv("DOBI_KEY_DEEPSEEK", raising=False)
+        env_file = tmp_path / ".env"
+        env_file.write_text("DOBI_KEY_DEEPSEEK=sk-from-dotenv-file-7777\n",
+                            encoding="utf-8")
+        monkeypatch.setenv("DOBI_ENV_FILE", str(env_file))
+        reload_config()
+        try:
+            deepseek = next(p for p in load_providers() if p.name == "DeepSeek")
+            assert deepseek.configured is True
+            assert deepseek.api_key == "sk-from-dotenv-file-7777"
+        finally:
+            reload_config()
+
+    def test_real_env_var_wins_over_env_file(self, tmp_path, monkeypatch):
+        """进程环境变量优先——部署时用 `export` 覆盖 `.env` 是合理预期。"""
+        from dobi.config import load_providers, reload_config
+
+        env_file = tmp_path / ".env"
+        env_file.write_text("DOBI_KEY_DEEPSEEK=sk-from-file\n", encoding="utf-8")
+        monkeypatch.setenv("DOBI_ENV_FILE", str(env_file))
+        monkeypatch.setenv("DOBI_KEY_DEEPSEEK", "sk-from-process-env")
+        reload_config()
+        try:
+            deepseek = next(p for p in load_providers() if p.name == "DeepSeek")
+            assert deepseek.api_key == "sk-from-process-env"
+        finally:
+            reload_config()

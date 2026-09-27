@@ -427,8 +427,7 @@ class TestOps:
 
     def test_settings_providers(self, http: TestClient):
         data = http.get("/api/settings/providers").json()
-        assert len(data["providers"]) == 4
-        assert data["providers"][0]["name"] == "DeepSeek"
+        assert [p["name"] for p in data["providers"]][:2] == ["DeepSeek", "MiMo"]
         assert len(data["roles"]) == 11
         # 密钥永不外泄：只给脱敏指纹
         for provider in data["providers"]:
@@ -441,6 +440,29 @@ class TestOps:
         updated = http.put("/api/settings/providers/OpenAI", json={"enabled": False}).json()
         assert next(p for p in updated["providers"] if p["name"] == "OpenAI")["enabled"] is False
         assert http.put("/api/settings/providers/nope", json={}).status_code == 404
+
+    def test_set_api_key_from_settings_page(self, http: TestClient):
+        """设置页可以直接填密钥：写进 `.env`、立即生效、且不回显。"""
+        marker = "sk-ui-typed-9f3a1c"
+        resp = http.put("/api/settings/providers/MiMo", json={"apiKey": marker})
+        assert resp.status_code == 200, resp.text
+        mimo = next(p for p in resp.json()["providers"] if p["name"] == "MiMo")
+        assert mimo["configured"] is True
+        # 响应里不能出现密钥本体
+        assert marker not in json.dumps(resp.json())
+
+        # 立即生效：探测不再报「未配置」
+        assert http.post("/api/settings/providers/MiMo/probe").json()["ok"] is True
+
+        # 落盘到隔离的 .env（测试绝不碰真实 server/.env）
+        import os
+        from pathlib import Path
+        env_file = Path(os.environ["DOBI_ENV_FILE"])
+        assert f"DOBI_KEY_MIMO={marker}" in env_file.read_text(encoding="utf-8")
+
+        # 清除
+        cleared = http.put("/api/settings/providers/MiMo", json={"apiKey": ""}).json()
+        assert next(p for p in cleared["providers"] if p["name"] == "MiMo")["configured"] is False
 
     def test_probe_provider(self, http: TestClient):
         data = http.post("/api/settings/providers/DeepSeek/probe").json()

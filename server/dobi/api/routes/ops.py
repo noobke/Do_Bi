@@ -8,7 +8,8 @@ from typing import Any
 from fastapi import APIRouter, Request
 from pydantic import Field
 
-from ...config import get_settings, load_providers, load_roles, mask, save_providers
+from ...config import (get_settings, load_providers, load_roles, mask,
+                       save_providers, save_secrets)
 from ...core.checkpoint import CheckpointManager
 from ...errors import BadRequest, NotConfigured, NotFound
 from ...ingest.disassemble import Disassembler, load as load_disassemble
@@ -206,7 +207,9 @@ def get_providers() -> dict[str, Any]:
         "fallbackChain": [p.name for p in providers if p.enabled and p.configured],
         "configured": any(p.enabled and p.configured for p in providers),
         "envHint": ("至少配置一个密钥才能产出内容。"
-                    "密钥请写在服务端的 .env 里，前端只用于显示「已配置 / 未配置」。"),
+                    "可以直接在此填写（写入服务端 .env，保存后立即生效），"
+                    "也可以手动改 .env 后重启服务。密钥只保存在服务端，"
+                    "接口只回显脱敏指纹。"),
         "budgetSplit": [
             {"label": "系统规则", "pct": 5}, {"label": "角色/世界观", "pct": 15},
             {"label": "动态事实", "pct": 10}, {"label": "历史摘要", "pct": 20},
@@ -218,6 +221,9 @@ def get_providers() -> dict[str, Any]:
 class ProviderUpdateBody(ApiBody):
     enabled: bool | None = None
     priority: int | None = None
+    #: 填写密钥。传空串表示清除。**只写进服务端 `.env`，不落进数据目录**；
+    #: 任何响应都不回显密钥本体，只回脱敏指纹。
+    api_key: str | None = None
 
 
 @router.put("/settings/providers/{name}")
@@ -231,6 +237,9 @@ def update_provider(name: str, body: ProviderUpdateBody) -> dict[str, Any]:
         target.enabled = body.enabled
     if body.priority is not None:
         target.priority = max(1, body.priority)
+    if body.api_key is not None:
+        key = body.api_key.strip()
+        save_secrets({target.api_key_ref: key or None})
     save_providers(providers)
     return {"ok": True,
             "providers": to_api([p.public(settings.key_mask_keep)
