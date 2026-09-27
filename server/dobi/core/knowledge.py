@@ -288,9 +288,19 @@ def _stats(entities: Iterable[Entity], links: Iterable[Link]) -> dict[str, int]:
 def index_of(store: ProjectStore) -> dict[str, Any]:
     """全库实体索引：给「知识库」页的清单用。"""
     entities, links = build(store)
+    # 每个条目牵连多少条关系——清单按它降序排，先看到「结」再看到边角。
+    degree: dict[str, int] = {}
+    for l in links:
+        degree[l.src] = degree.get(l.src, 0) + 1
+        degree[l.dst] = degree.get(l.dst, 0) + 1
+    rows: list[dict[str, Any]] = []
+    for e in entities:
+        row = e.public()
+        row["degree"] = degree.get(e.key, 0)
+        rows.append(row)
     return {
         "stats": _stats(entities, links),
-        "entities": [e.public() for e in entities],
+        "entities": rows,
         "note": "知识库由真相文件实时派生，只读；在别的页面改了设定后，这里同步更新。",
     }
 

@@ -601,6 +601,10 @@ class TestKnowledge:
         assert "主角" in char["tags"]
         assert {e["kind"] for e in data["entities"]} >= {"character", "hook", "rule", "subplot"}
 
+        # degree 让清单能按「牵连多少」排序：串起师徒与伏笔的沈砚，一定多于没写关系的角色
+        assert char["degree"] >= 2
+        assert char["degree"] > next(e for e in data["entities"] if e["id"] == "char_002")["degree"]
+
     def test_graph_scope_controls_which_kinds_are_drawn(self, http: TestClient, store):
         self._seed(store)
         pid = store.root.name

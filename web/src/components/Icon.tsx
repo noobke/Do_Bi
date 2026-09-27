@@ -4,8 +4,8 @@ import type { ReactNode } from 'react'
  * Lucide 内联 SVG 图标（设计契约规定「Lucide 内联 SVG，禁止 emoji」，禁止引 CDN）。
  *
  * 说明：
- * - 侧栏 10 项导航的 path 逐字取自权威 App Shell `prototype/do-bi/index.html`，保证与原型一致；
- * - 其余图标取自 lucide-static 官方 path 数据；
+ * - 侧栏导航中取自权威 App Shell `prototype/do-bi/index.html` 的 path 逐字照搬，保证与原型一致；
+ * - 其余图标（含侧栏新增的 `network`，知识库用）取自 lucide-static 官方 path 数据；
  * - 统一 `stroke="currentColor"` / `strokeWidth={1.5}` / `fill="none"` / 圆头圆角。
  */
 export type IconName =
@@ -15,6 +15,7 @@ export type IconName =
   | 'users'
   | 'bookmark'
   | 'git-branch'
+  | 'network'
   | 'globe'
   | 'clipboard-check'
   | 'type'
@@ -86,6 +87,15 @@ const PATHS: Record<IconName, ReactNode> = {
       <circle cx="12" cy="12" r="10" />
       <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
       <path d="M2 12h20" />
+    </>
+  ),
+  network: (
+    <>
+      <rect x="16" y="16" width="6" height="6" rx="1" />
+      <rect x="2" y="16" width="6" height="6" rx="1" />
+      <rect x="9" y="2" width="6" height="6" rx="1" />
+      <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" />
+      <path d="M12 12V8" />
     </>
   ),
   'clipboard-check': (

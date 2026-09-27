@@ -679,7 +679,7 @@ svg { display:block; }
    批次三（v1.2 新增）· 项目列表 / 拆书 / MCP
    ========================================================================== */
 
-/* ---------- 33. 导航滚动保护（9 项） ---------- */
+/* ---------- 33. 导航滚动保护（11 项） ---------- */
 .nav { overflow-y:auto; min-height:0; }
 @media (max-width:900px) { .nav { overflow-y:visible; } }
 
@@ -1292,3 +1292,56 @@ svg { display:block; }
 .tl2-wrap > svg, .struct-wrap > svg, .fish-wrap > svg { min-width:900px; }
 .vtr-wrap > svg { min-width:760px; }
 .graph-wrap > svg { min-width:720px; }
+
+/* ---------- 60. 知识库（类型着色 / 焦点态 / 邻边关系名） ----------
+   关系网要能「一眼分清谁是谁、谁和谁有关」，所以：节点带一枚类型色点、
+   选中条目时它的邻边直接写出关系名、其余节点与连线降淡——不必对着图例猜。 */
+
+/* 节点左侧类型色点（与图例圆点同色）。用 circle 而非 rect：
+   §26 的 `.gnode rect` / `.gnode.is-selected rect` 会连带改色改描边，圆点可避开这层联带。 */
+.gnode .gkind { fill:var(--ink-4); }
+.gnode[data-kind="character"] .gkind { fill:var(--accent); }
+.gnode[data-kind="hook"]      .gkind { fill:var(--crimson); }
+.gnode[data-kind="rule"]      .gkind { fill:var(--moss); }
+.gnode[data-kind="subplot"]   .gkind { fill:var(--amber); }
+.gnode[data-kind="chapter"]   .gkind { fill:var(--ink-3); }
+
+/* 焦点态：选中条目后，与它无关的节点与连线降淡，邻域自己浮出来 */
+.gnode.is-dim { opacity:.22; }
+.gnode.is-dim:hover { opacity:.6; }
+.gedge.is-dim { opacity:.16; }
+
+/* 邻边上的关系名（如「师徒」「埋设」）：白描边打底，压在连线之上也能读清 */
+.gedge-label {
+  font-family:var(--font-body); font-size:10px; fill:var(--ink-2);
+  text-anchor:middle; dominant-baseline:middle; pointer-events:none;
+  paint-order:stroke; stroke:var(--paper); stroke-width:3px; stroke-linejoin:round;
+}
+
+/* 图例里的类型圆点（与节点色点同色） */
+.legend-swatch.is-kind { width:10px; height:10px; border:none; border-radius:var(--r-full); }
+.legend-swatch.is-kind.is-character { background:var(--accent); }
+.legend-swatch.is-kind.is-hook      { background:var(--crimson); }
+.legend-swatch.is-kind.is-rule      { background:var(--moss); }
+.legend-swatch.is-kind.is-subplot   { background:var(--amber); }
+.legend-swatch.is-kind.is-chapter   { background:var(--ink-3); }
+
+/* 左栏清单限高滚动：条目多时不要把关系网顶出屏幕 */
+.list-scroll { max-height:56vh; overflow-y:auto; scrollbar-width:thin; }
+
+/* 知识库双栏：窄栏（找条目）在左，宽栏（看关系）在右。
+   DOM 顺序是「找条目」在前——因为窄屏要反过来（先看图再翻清单），
+   而窄屏的先后由 order 决定，不由 DOM 顺序决定。 */
+.kb-split {
+  display:grid; gap:var(--sp-24); align-items:start;
+  grid-template-columns:340px minmax(0,1fr);
+}
+.kb-split > .kb-nav  { order:1; }
+.kb-split > .kb-main { order:2; }
+/* 精确的临界宽度是 1392（= 244 侧栏 + 64 页边距 + 340 窄栏 + 24 间距 + 720 图）。
+   留出余量取 1440：1400 上下两栏只剩 8px 富余，纵向滚动条一挤就要横滚了。 */
+@media (max-width:1439px) {
+  .kb-split { grid-template-columns:minmax(0,1fr); }
+  .kb-split > .kb-main { order:1; }
+  .kb-split > .kb-nav  { order:2; }
+}

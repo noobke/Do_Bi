@@ -18,7 +18,7 @@ interface NavItemDef {
   to: string
 }
 
-/** 10 项导航：顺序冻结，禁止增删改序 */
+/** 11 项导航：顺序冻结，禁止增删改序 */
 const NAV_ITEMS: NavItemDef[] = [
   { key: 'projects', label: '项目', icon: 'library', to: '/' },
   { key: 'workbench', label: '工作台', icon: 'pen-line', to: '/workbench' },
@@ -27,15 +27,15 @@ const NAV_ITEMS: NavItemDef[] = [
   { key: 'hooks', label: '伏笔', icon: 'bookmark', to: '/hooks' },
   { key: 'outline', label: '结构', icon: 'git-branch', to: '/outline' },
   { key: 'world', label: '世界观', icon: 'globe', to: '/world' },
+  { key: 'knowledge', label: '知识库', icon: 'network', to: '/knowledge' },
   { key: 'audit', label: '审计', icon: 'clipboard-check', to: '/audit' },
   { key: 'style', label: '文风', icon: 'type', to: '/style' },
   { key: 'settings', label: '设置', icon: 'settings-2', to: '/settings' },
 ]
 
-/** 子页归属映射（契约 NAV_PARENT）：章节详情归「结构」，拆书归「项目」，知识库归「结构」 */
+/** 子页归属映射（契约 NAV_PARENT）：章节详情归「结构」，拆书归「项目」 */
 const NAV_PARENT: Record<string, string> = {
   chapter: 'outline',
-  knowledge: 'outline',
   disassemble: 'projects',
 }
 
