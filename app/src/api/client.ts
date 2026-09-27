@@ -1,15 +1,19 @@
 /**
- * 后端 API 客户端 —— 对接 `/workspace/server` 的 FastAPI。
+ * 本地核心 API 客户端。
+ *
+ * 原版对接 `/workspace/server` 的 FastAPI；现在整套后端逻辑已用 TypeScript 重写，
+ * 直接跑在手机里（`web/src/api/core/*`）。这里只做**传输层替换**：
+ * 路径、方法、请求体、响应体形状完全不变，页面代码一行不改。
  *
  * 约定：
- * - 开发时由 Vite `server.proxy` 把 `/api` 转发到 `http://127.0.0.1:8000`，前端不处理 CORS；
- *   生产构建用绝对根路径（`base: '/'`）并请求相对路径 `/api`，由 nginx/Caddy 同源反代到后端。
- * - 请求体统一 `JSON.stringify`，`Accept: application/json`。
- * - 非 2xx 抛 `ApiError`，错误体形如 `{ code, message, detail? }`。
- *   `message` 是后端面向作者的中文文案，**可直接展示给用户**。
- * - 流式接口（章节生成 / 整本生产）走 `streamSSE`：fetch + ReadableStream 解析
- *   `text/event-stream`，逐条回调 `{ event, data }`，返回带 `abort()` 的句柄。
+ * - 密钥与数据都只在本机（localStorage），不经过任何中转服务与云服务器。
+ * - 请求体统一 `JSON.stringify`；响应体已是前端 camelCase。
+ * - 出错抛 `ApiError`，`message` 是面向作者的中文文案，**可直接展示给用户**。
+ * - 流式接口（章节生成 / 整本生产）由本地核心逐条回调 `{ event, data }`，
+ *   返回带 `abort()` 的句柄。
  */
+
+import { LocalApiError, localRequest, localStreamSSE } from './core/api'
 
 /** 统一的接口错误；`message` 可直接展示给作者 */
 export class ApiError extends Error {
@@ -28,40 +32,15 @@ export class ApiError extends Error {
 
 const enc = encodeURIComponent
 
-/** 解析响应体：优先 JSON，其次纯文本 */
-async function readBody(res: Response): Promise<unknown> {
-  const text = await res.text()
-  if (!text) return null
-  try {
-    return JSON.parse(text)
-  } catch {
-    return text
-  }
-}
-
-/** 从错误响应体里提取 `{ code, message, detail }` */
-function toApiError(res: Response, body: unknown): ApiError {
-  const fallback = `请求失败（HTTP ${res.status}）`
-  if (body && typeof body === 'object') {
-    const b = body as { code?: unknown; message?: unknown; detail?: unknown }
-    const message = typeof b.message === 'string' && b.message ? b.message : fallback
-    const code = typeof b.code === 'string' && b.code ? b.code : String(res.status)
-    return new ApiError(message, code, res.status, b.detail)
-  }
-  const message = typeof body === 'string' && body ? body : fallback
-  return new ApiError(message, String(res.status), res.status)
-}
-
-/** 统一请求入口 */
+/** 统一请求入口：走本地核心，错误包成 `ApiError`。 */
 export async function request<T = unknown>(path: string, init: RequestInit = {}): Promise<T> {
-  const headers = new Headers(init.headers)
-  if (!headers.has('Accept')) headers.set('Accept', 'application/json')
-  if (init.body != null && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
-
-  const res = await fetch(path, { ...init, headers })
-  const body = await readBody(res)
-  if (!res.ok) throw toApiError(res, body)
-  return body as T
+  try {
+    return await localRequest<T>(path, init)
+  } catch (e) {
+    if (e instanceof LocalApiError) throw new ApiError(e.message, e.code, e.status, e.detail)
+    const message = e instanceof Error ? e.message : '本地执行失败，请重试。'
+    throw new ApiError(message, 'internal', 500)
+  }
 }
 
 /** 构造 JSON 请求的 init（无 body 时只带 method） */
@@ -85,70 +64,19 @@ export interface SSEHandle {
   abort(): void
 }
 
-/** 解析一段 SSE 报文（不含结尾空行）并回调 */
-function emitEvent(raw: string, onEvent: (ev: SSEEvent) => void): void {
-  let event = 'message'
-  const data: string[] = []
-  for (const line of raw.split('\n')) {
-    if (!line || line.startsWith(':')) continue
-    const colon = line.indexOf(':')
-    const field = colon === -1 ? line : line.slice(0, colon)
-    let value = colon === -1 ? '' : line.slice(colon + 1)
-    if (value.startsWith(' ')) value = value.slice(1)
-    if (field === 'event') event = value
-    else if (field === 'data') data.push(value)
-  }
-  if (data.length === 0 && event === 'message') return
-  onEvent({ event, data: data.join('\n') })
-}
-
 /**
- * 流式 POST：解析 `text/event-stream`，逐条回调 `{ event, data }`。
- * 网络 / 服务端错误以 `{ event: 'error', data: message }` 形式回调，调用方统一处理即可。
+ * 流式接口：把 `path` + `body` 交给本地核心执行，逐条回调 `{ event, data }`。
+ *
+ * 事件语义与原来的 SSE 完全一致：`delta`（逐段文本）/ `step` / `done` /
+ * `paused` / `error` 等；`data` 是 JSON 字符串（已转 camelCase）。
+ * `abort()` 会让写作流程在安全点停下，并把已生成的部分落盘为草稿。
  */
 export function streamSSE(
   path: string,
   body: unknown,
   onEvent: (ev: SSEEvent) => void,
 ): SSEHandle {
-  const controller = new AbortController()
-
-  const run = async (): Promise<void> => {
-    const res = await fetch(path, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
-      body: JSON.stringify(body ?? {}),
-      signal: controller.signal,
-    })
-    if (!res.ok) throw toApiError(res, await readBody(res))
-    if (!res.body) throw new ApiError('服务端没有返回事件流', 'NO_STREAM', res.status)
-
-    const reader = res.body.getReader()
-    const decoder = new TextDecoder()
-    let buffer = ''
-    for (;;) {
-      const { value, done } = await reader.read()
-      if (done) break
-      buffer += decoder.decode(value, { stream: true })
-      buffer = buffer.replace(/\r\n/g, '\n')
-      let sep = buffer.indexOf('\n\n')
-      while (sep !== -1) {
-        emitEvent(buffer.slice(0, sep), onEvent)
-        buffer = buffer.slice(sep + 2)
-        sep = buffer.indexOf('\n\n')
-      }
-    }
-    buffer += decoder.decode()
-    if (buffer.trim()) emitEvent(buffer, onEvent)
-  }
-
-  run().catch((err: unknown) => {
-    if (err instanceof DOMException && err.name === 'AbortError') return
-    const message = err instanceof Error ? err.message : '流式请求失败'
-    onEvent({ event: 'error', data: message })
-  })
-
-  return { abort: () => controller.abort() }
+  return localStreamSSE(path, body, onEvent)
 }
 
 /* ------------------------------------------------------------------ *
