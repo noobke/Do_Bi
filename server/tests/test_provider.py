@@ -119,7 +119,9 @@ class TestRetryAndFallback:
 
         assert hits.count("api.deepseek.com") == 2      # 首次 + 1 次重试（DOBI_MAX_RETRIES=1）
         assert result.provider == "MiMo"                 # 降级到备用服务商
-        assert result.degraded_from == "DeepSeek/deepseek-v4-pro"
+        # 只钉「主力是 DeepSeek 的哪个模型」这一层：具体档位由 model_roles.json 决定，
+        # 作者会按需换（配置改动不该让回归红）。这里同时兜住「不该整条链都没主」的情况。
+        assert result.degraded_from.startswith("DeepSeek/")
 
     def test_auth_error_does_not_retry_but_falls_back(self, env, monkeypatch):
         seen: list[str] = []
@@ -135,7 +137,7 @@ class TestRetryAndFallback:
         import asyncio
         result = asyncio.run(client.complete("architect", MESSAGES))
         assert result.provider == "MiMo"
-        assert result.degraded_from == "DeepSeek/deepseek-v4-pro"
+        assert result.degraded_from.startswith("DeepSeek/")
         # DeepSeek 只被敲了一次（401 不重试）
         assert seen.count("api.deepseek.com") == 1
 
@@ -306,7 +308,8 @@ class TestJsonAndStream:
         with pytest.raises(ProviderError):
             asyncio.run(_go())
         assert got == ["开头"]                  # 已产出的内容没有被丢掉
-        assert hits == ["api.deepseek.com"]     # 没有换服务商重来
+        # 不换服务商重来：整段流只敲过一个服务商（具体是谁由 model_roles.json 决定）
+        assert len(hits) == 1
 
 
 # ==========================================================================

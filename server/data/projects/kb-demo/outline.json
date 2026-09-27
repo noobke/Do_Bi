@@ -1,0 +1,68 @@
+{
+  "_derived_from": "outline_graph.json",
+  "compass": {
+    "endgame": "",
+    "active_threads": [],
+    "scale_estimate": "",
+    "refresh_at": "尚未刷新"
+  },
+  "volumes": [],
+  "chapters": [
+    {
+      "chapter": 1,
+      "title": "灯灭",
+      "volume": "",
+      "arc": "",
+      "status": "written",
+      "goal": "",
+      "beats": [],
+      "pov": "沈砚",
+      "intensity": 3
+    },
+    {
+      "chapter": 2,
+      "title": "名单",
+      "volume": "",
+      "arc": "",
+      "status": "written",
+      "goal": "",
+      "beats": [],
+      "pov": "沈砚",
+      "intensity": 3
+    },
+    {
+      "chapter": 3,
+      "title": "新坟",
+      "volume": "",
+      "arc": "",
+      "status": "draft",
+      "goal": "",
+      "beats": [],
+      "pov": "崔十九",
+      "intensity": 3
+    },
+    {
+      "chapter": 4,
+      "title": "断刃",
+      "volume": "",
+      "arc": "",
+      "status": "planned",
+      "goal": "",
+      "beats": [],
+      "pov": "陆青梧",
+      "intensity": 3
+    },
+    {
+      "chapter": 5,
+      "title": "归墟",
+      "volume": "",
+      "arc": "",
+      "status": "skeleton",
+      "goal": "",
+      "beats": [],
+      "pov": "沈砚",
+      "intensity": 3
+    }
+  ],
+  "edge_count": 0
+}

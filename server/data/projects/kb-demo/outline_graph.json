@@ -1,0 +1,83 @@
+{
+  "compass": {
+    "endgame": "",
+    "active_threads": [],
+    "scale_estimate": "",
+    "refresh_at": "尚未刷新"
+  },
+  "volumes": [],
+  "nodes": [
+    {
+      "chapter": 1,
+      "title": "灯灭",
+      "arc": "",
+      "volume": "",
+      "status": "written",
+      "goal": "",
+      "beats": [],
+      "rationale": "",
+      "pov": "沈砚",
+      "intensity": 3,
+      "story_at": "",
+      "timeline": []
+    },
+    {
+      "chapter": 2,
+      "title": "名单",
+      "arc": "",
+      "volume": "",
+      "status": "written",
+      "goal": "",
+      "beats": [],
+      "rationale": "",
+      "pov": "沈砚",
+      "intensity": 3,
+      "story_at": "",
+      "timeline": []
+    },
+    {
+      "chapter": 3,
+      "title": "新坟",
+      "arc": "",
+      "volume": "",
+      "status": "draft",
+      "goal": "",
+      "beats": [],
+      "rationale": "",
+      "pov": "崔十九",
+      "intensity": 3,
+      "story_at": "",
+      "timeline": []
+    },
+    {
+      "chapter": 4,
+      "title": "断刃",
+      "arc": "",
+      "volume": "",
+      "status": "planned",
+      "goal": "",
+      "beats": [],
+      "rationale": "",
+      "pov": "陆青梧",
+      "intensity": 3,
+      "story_at": "",
+      "timeline": []
+    },
+    {
+      "chapter": 5,
+      "title": "归墟",
+      "arc": "",
+      "volume": "",
+      "status": "skeleton",
+      "goal": "",
+      "beats": [],
+      "rationale": "",
+      "pov": "沈砚",
+      "intensity": 3,
+      "story_at": "",
+      "timeline": []
+    }
+  ],
+  "edges": [],
+  "updated_at": "2026-09-27T05:28:24+00:00"
+}

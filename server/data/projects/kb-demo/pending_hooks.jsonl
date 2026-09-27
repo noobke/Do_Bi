@@ -1,0 +1,4 @@
+{"id": "hook_001", "content": "青铜灯在子时自行熄灭", "planted_chapter": 1, "status": "planted", "resolved_chapter": null, "importance": "major", "linked_characters": ["char_001"], "suggested_resolve_by": 9}
+{"id": "hook_002", "content": "名单末行写着验尸官自己的名字", "planted_chapter": 2, "status": "planted", "resolved_chapter": null, "importance": "major", "linked_characters": ["char_001", "char_002"], "suggested_resolve_by": null}
+{"id": "hook_003", "content": "白阿婆屋后那座没有碑的新坟", "planted_chapter": 3, "status": "planted", "resolved_chapter": null, "importance": "minor", "linked_characters": ["char_004"], "suggested_resolve_by": 12}
+{"id": "hook_004", "content": "刀鞘里那截断掉的旧刃", "planted_chapter": 5, "status": "planted", "resolved_chapter": null, "importance": "minor", "linked_characters": ["char_003"], "suggested_resolve_by": null}

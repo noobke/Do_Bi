@@ -1,0 +1,33 @@
+[
+  {
+    "id": "sp_001",
+    "name": "文脉之秘",
+    "kind": "main",
+    "summary": "追查文脉之力的源头",
+    "color": "#4F6B4A",
+    "active": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "peak": [
+      5
+    ],
+    "status": "active"
+  },
+  {
+    "id": "sp_002",
+    "name": "白阿婆的旧案",
+    "kind": "sub",
+    "summary": "十年前的失踪案",
+    "color": "#8C6A3F",
+    "active": [
+      3,
+      4
+    ],
+    "peak": [],
+    "status": "active"
+  }
+]

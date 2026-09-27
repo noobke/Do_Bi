@@ -32,9 +32,10 @@ const NAV_ITEMS: NavItemDef[] = [
   { key: 'settings', label: '设置', icon: 'settings-2', to: '/settings' },
 ]
 
-/** 子页归属映射（契约 NAV_PARENT）：章节详情归「结构」，拆书归「项目」 */
+/** 子页归属映射（契约 NAV_PARENT）：章节详情归「结构」，拆书归「项目」，知识库归「结构」 */
 const NAV_PARENT: Record<string, string> = {
   chapter: 'outline',
+  knowledge: 'outline',
   disassemble: 'projects',
 }
 

@@ -275,7 +275,7 @@ bg-texture: 极淡纸纹 = 暖色 radial 光晕 + 极低不透明度纤维纹（
 | 令牌 | `--line-ctl` · `--error` · `--error-soft` | 见上 1–3 条；`--ink-3` / `--ink-4` / `--amber` 取值已调整 |
 | CSS 类 | `.crumb`（面包屑）· `.state-error`（加载失败态）· `.toast-ok` / `.toast-warn` / `.toast-error`（toast 分型） | styles.css §2 / §10 / §59 |
 | JS API | `App.clickable(el, handler[, role])` · `App.fail(container, err, retry)` · `App.toast(msg[, type])` · `api.setFailRate(r)` | 见上 7–8 条 |
-| JS 约定 | `NAV_PARENT = { chapter:'outline', disassemble:'projects' }` | 子页在侧栏的归属映射，子页进入后侧栏必须有 active 与 `aria-current="page"` |
+| JS 约定 | `NAV_PARENT = { chapter:'outline', knowledge:'outline', disassemble:'projects' }` | 子页在侧栏的归属映射，子页进入后侧栏必须有 active 与 `aria-current="page"` |
 | 结构 | 每个子页须有面包屑；`.card-head` 内标题统一 `<h2>`；页面层级为 `h1 → h2`（卡片） | 不得跳级 |
 
 > **框架约定（v1.3 修订）**：`.seg` 的分段控件改用**事件委托**（见 app.js `initSegs`），因此**页面载入后动态注入的 `.seg` 按钮同样生效**；页面不得再自行派发 `seg:change`，只监听即可。
@@ -332,6 +332,9 @@ brand 区块（冻结）：`.brand` = `.brand-seal`（靛蓝方印 + 朱砂点�
 | 10 | style.html | 文风档案 | 二/四 | 当前文风 + 提取入口 + 选择入口 + 分析结果 | 当前文风卡、文风选择器网格（含样段）、提取模态、句式/视角/比例卡、禁用 chip、注入对比 |
 | 11 | settings.html | 设置 | 一/三 | Provider / 模型 / 预算 / MCP | Provider 列表、映射表、预算、成本、MCP 面板 |
 | 12 | disassemble.html | 拆书 | 三 | 导入已有作品反推结构化设定 | 投放区、反推流水线步骤条、抽取结果选项卡、写入提案 |
+| 13 | **knowledge.html**（`/knowledge`） | **知识库** | 十二 | **把散在各页的设定 / 角色 / 伏笔 / 支线 / 章节连成一张可漫游的网**（只读派生：数据来自真相文件里已有的关系字段，不新增真相文件） | 统计条、全库检索、**关系网**（按类型分列的节点 + 带箭头的关系连线，点节点即漫游）、条目详情（它指向谁 / 谁指向它）、条目清单（按类型筛选） |
+
+**知识库页为「结构」下的子页**：导航 10 项仍冻结（不得增删改序），本页无独立导航项，侧栏归属「结构」（`NAV_PARENT`），入口在结构页顶栏的「知识库」按钮。图谱沿用 `.graph-wrap` / `.gnode` / `.gedge` / `.legend` / `.chart-note`，`viewBox` 固定 720 宽（`.graph-wrap > svg { min-width:720px }`）；列数一多就收窄节点，绝不把列挤出画布。
 
 **导航高亮特例（两页，均为刻意行为）**：
 - `disassemble.html`（`data-page="disassemble"`）在导航中无对应项——拆书是「项目」下的任务流，不是日常工作面。顶部提供「← 返回全部作品」回链。

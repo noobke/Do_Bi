@@ -57,7 +57,8 @@ DEGRADE_NOTE = "外部工具未响应，已改用内置检索"
 MCP_CONFIG_COMMENT = (
     "MCP 服务器配置（规划文档 §6.9）。MCP 永远是增强而非依赖："
     "MCP 不可用时全流程自动降级为内置检索，不阻塞主流程。"
-    "transport 取 stdio 或 http；command 供 stdio 使用，url 供 http 使用。"
+    "transport 取 stdio 或 http；command 供 stdio 使用（相对路径以 server/ 为基准），"
+    "url 供 http 使用。设置页可以直接增删改这份清单。"
 )
 
 _TIMEOUT = 10.0          # 单次请求超时（秒）
@@ -108,12 +109,18 @@ class McpServer:
 
 
 #: 兜底配置：只在 `config/mcp.json` **缺失或损坏**时用。
-#: 第 1 条是本项目自带的、真能跑通的示例（见 `server/mcp/example_server.py`）。
+#: 第 1 条是本项目自带的、真能跑通的示例（见 `server/mcp/example_server.py`）；
+#: 第 2 条是 Obsidian 资料库的预留接口（见 `server/mcp/obsidian_vault.py`），
+#: 默认停用——填好 `DOBI_OBSIDIAN_VAULT` 再启用即可。
 DEFAULT_SERVERS: list[dict[str, Any]] = [
     {"name": "本地档案库 local-archive", "transport": "stdio",
      "command": "python3 mcp/example_server.py",
      "tools": ["lookup_setting", "search_reference", "fetch_history"],
      "enabled": True, "status": "idle", "latency": None, "calls": 0},
+    {"name": "Obsidian 笔记库 obsidian-vault", "transport": "stdio",
+     "command": "python3 mcp/obsidian_vault.py",
+     "tools": ["vault_status", "list_notes", "search_notes", "read_note"],
+     "enabled": False, "status": "idle", "latency": None, "calls": 0},
     {"name": "资料检索 reference-search", "transport": "http",
      "url": "https://mcp.local/reference/mcp",
      "tools": ["search_reference"],

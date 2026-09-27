@@ -2097,6 +2097,10 @@ export default function Outline() {
         sub={sub}
         actions={
           <>
+            <Link className="btn btn-ghost btn-sm" to="/knowledge" title="把角色、伏笔、设定、支线与章节连成一张网">
+              <Icon name="git-branch" size={16} />
+              知识库
+            </Link>
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => runAction('plan')} disabled={busy !== ''}>
               <Icon name="refresh-cw" size={16} />
               {busy === 'plan' ? '刷新中…' : '刷新大纲'}

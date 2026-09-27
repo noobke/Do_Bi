@@ -5,6 +5,12 @@
 
 from __future__ import annotations
 
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 
 from dobi.agents.writer import split_paragraphs
@@ -464,3 +470,85 @@ class TestSecretsFromEnvFile:
             assert deepseek.api_key == "sk-from-process-env"
         finally:
             reload_config()
+
+
+# ==========================================================================
+# Obsidian 资料库的 MCP 接口（预留）
+# ==========================================================================
+
+class TestObsidianVaultServer:
+    """`server/mcp/obsidian_vault.py` 是真子进程跑的 stdio 服务，这里钉住协议契约。
+
+    它是「以后想接 Obsidian 笔记」的接口：**没配 vault 也必须能启动并列出工具**，
+    否则「设置 → 外部工具 → 测试」会连不上，作者不知道差在哪一步。
+    """
+
+    _SCRIPT = Path(__file__).resolve().parent.parent / "mcp" / "obsidian_vault.py"
+
+    def _run(self, messages: list[dict], *, vault: Path | None = None) -> list[dict]:
+        env = {k: v for k, v in os.environ.items()
+               if k not in ("DOBI_OBSIDIAN_VAULT", "OBSIDIAN_VAULT")}
+        argv = [sys.executable, str(self._SCRIPT)]
+        if vault is not None:
+            argv.append(str(vault))
+        payload = "".join(json.dumps(m, ensure_ascii=False) + "\n" for m in messages)
+        proc = subprocess.run(argv, input=payload, capture_output=True,
+                              text=True, env=env, timeout=30)
+        return [json.loads(line) for line in proc.stdout.splitlines() if line.strip()]
+
+    @staticmethod
+    def _call(msg_id: int, name: str, arguments: dict) -> dict:
+        return {"jsonrpc": "2.0", "id": msg_id, "method": "tools/call",
+                "params": {"name": name, "arguments": arguments}}
+
+    def test_starts_and_lists_tools_without_vault(self):
+        replies = self._run([
+            {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}},
+            {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}},
+        ])
+        by_id = {r.get("id"): r for r in replies}
+        assert by_id[1]["result"]["serverInfo"]["name"] == "dobi-obsidian-vault"
+        names = [t["name"] for t in by_id[2]["result"]["tools"]]
+        assert names == ["vault_status", "list_notes", "search_notes", "read_note"]
+
+    def test_without_vault_returns_actionable_message(self):
+        replies = self._run([
+            {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}},
+            self._call(2, "vault_status", {}),
+        ])
+        status = json.loads(replies[-1]["result"]["content"][0]["text"])
+        assert status["ok"] is False
+        assert status["configured"] is False
+        assert "DOBI_OBSIDIAN_VAULT" in status["error"]   # 告诉作者差哪一步
+
+    def test_searches_and_reads_a_real_vault(self, tmp_path):
+        vault = tmp_path / "vault"
+        (vault / "设定").mkdir(parents=True)
+        (vault / "设定" / "青铜灯.md").write_text(
+            "# 青铜灯\n\n灯灭时亡者复归。灯芯那截始终是亮的。\n", encoding="utf-8")
+        (vault / "随笔.md").write_text("# 随笔\n\n今天写了一章。\n", encoding="utf-8")
+        (vault / ".obsidian").mkdir()
+        (vault / ".obsidian" / "config.md").write_text("不该被扫到\n", encoding="utf-8")
+
+        replies = self._run([
+            {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}},
+            self._call(2, "vault_status", {}),
+            self._call(3, "search_notes", {"query": "青铜灯", "k": 5}),
+            self._call(4, "read_note", {"path": "设定/青铜灯"}),
+            self._call(5, "read_note", {"path": "../../etc/passwd"}),
+        ], vault=vault)
+        by_id = {r.get("id"): r for r in replies}
+
+        status = json.loads(by_id[2]["result"]["content"][0]["text"])
+        assert status["ok"] is True and status["notes"] == 2   # 隐藏目录不计入
+
+        hits = json.loads(by_id[3]["result"]["content"][0]["text"])
+        assert [h["path"] for h in hits["hits"]] == ["设定/青铜灯.md"]
+        assert hits["hits"][0]["title"] == "青铜灯"
+
+        note = json.loads(by_id[4]["result"]["content"][0]["text"])
+        assert note["ok"] is True and "亡者复归" in note["text"]
+
+        escaped = json.loads(by_id[5]["result"]["content"][0]["text"])
+        assert escaped["ok"] is False                            # 越权路径被挡住
+

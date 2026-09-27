@@ -333,6 +333,25 @@ export const testMcp = (name: string) =>
   request(`/api/settings/mcp/${enc(name)}/test`, json('POST'))
 
 /* ------------------------------------------------------------------ *
+ * 知识库
+ * ------------------------------------------------------------------ */
+
+/**
+ * 知识库是**只读派生层**：数据来自真相文件里已有的关系字段，不新增真相文件。
+ * 因此在别处改了设定，回这里刷新即可看到最新关系。
+ */
+export const getKnowledge = (id: string) => request(`/api/projects/${enc(id)}/knowledge`)
+/** 跨类检索：一次在 摘要 / 正文 / 设定 / 角色 / 伏笔 / 章纲 里找 */
+export const searchKnowledge = (id: string, q: string, k = 8) =>
+  request(`/api/projects/${enc(id)}/knowledge/search?q=${enc(q)}&k=${k}`)
+/** 关系图谱。scope=core 只含角色与伏笔（易读）；scope=all 再加设定与支线 */
+export const getKnowledgeGraph = (id: string, scope: 'core' | 'all' = 'core') =>
+  request(`/api/projects/${enc(id)}/knowledge/graph?scope=${scope}`)
+/** 单个实体的双向链接：它指向谁、谁指向它 */
+export const getKnowledgeEntity = (id: string, kind: string, entityId: string) =>
+  request(`/api/projects/${enc(id)}/knowledge/entity/${enc(kind)}/${enc(entityId)}`)
+
+/* ------------------------------------------------------------------ *
  * 健康
  * ------------------------------------------------------------------ */
 

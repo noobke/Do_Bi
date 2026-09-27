@@ -6,6 +6,7 @@ import Characters from './pages/Characters'
 import Chat from './pages/Chat'
 import Disassemble from './pages/Disassemble'
 import Hooks from './pages/Hooks'
+import Knowledge from './pages/Knowledge'
 import Outline from './pages/Outline'
 import Projects from './pages/Projects'
 import Settings from './pages/Settings'
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/characters" element={<Characters />} />
         <Route path="/hooks" element={<Hooks />} />
         <Route path="/outline" element={<Outline />} />
+        <Route path="/knowledge" element={<Knowledge />} />
         <Route path="/chapter/:n" element={<Chapter />} />
         <Route path="/world" element={<World />} />
         <Route path="/audit" element={<Audit />} />

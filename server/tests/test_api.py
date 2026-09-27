@@ -475,10 +475,11 @@ class TestOps:
 
     def test_mcp_is_optional_and_degrades(self, http: TestClient, project: str):
         servers = http.get("/api/settings/mcp").json()
-        assert len(servers["servers"]) == 2
+        assert len(servers["servers"]) == 3
         assert "回落" in servers["note"]
         assert [s["name"] for s in servers["servers"]] == [
-            "本地档案库 local-archive", "资料检索 reference-search"]
+            "本地档案库 local-archive", "Obsidian 笔记库 obsidian-vault",
+            "资料检索 reference-search"]
 
         # 随附的本地示例服务是真能连上的；短标识 local-archive 也能匹配到
         tested = http.post("/api/settings/mcp/local-archive/test").json()
@@ -551,6 +552,96 @@ class TestOps:
 
 
 # ==========================================================================
+# 知识库：实体索引 / 跨类检索 / 关系图谱 / 双向链接
+# ==========================================================================
+
+class TestKnowledge:
+    """知识库全部由真相文件派生，只读。这里直接写真相文件来铺关系，不经过模型。"""
+
+    @staticmethod
+    def _seed(store) -> None:
+        from dobi.core.schema import (Character, Hook, OutlineGraph, OutlineNode,
+                                      Relation, Subplot, WorldDoc, WorldRule)
+
+        store.save_characters([
+            Character(id="char_001", name="沈砚", role="主角", lead=True,
+                      aliases=["沈大人"], first_appearance=1,
+                      relationships=[Relation(target="陆青梧", type="师徒")]),
+            Character(id="char_002", name="陆青梧", role="配角", first_appearance=2),
+        ])
+        store.save_hooks([
+            Hook(id="hook_001", content="青铜灯在子时自行熄灭", planted_chapter=1,
+                 importance="major", linked_characters=["char_001"],
+                 suggested_resolve_by=9),
+        ])
+        store.save_world(WorldDoc(rules=[
+            WorldRule(id="rule_001", category="器物", kind="hard",
+                      rule="青铜灯灭时，亡者复归", refs=[1, 2]),
+        ]))
+        store.save_subplots([
+            Subplot(id="sp_001", name="文脉之秘", kind="main", active=[1, 2]),
+        ])
+        # 章节是这张网的枢纽：设定引用它、支线活跃在它、角色出场于它。
+        store.save_outline_graph(OutlineGraph(nodes=[
+            OutlineNode(chapter=1, title="灯灭", status="written"),
+            OutlineNode(chapter=2, title="名单", status="planned"),
+        ]))
+
+    def test_index_lists_entities_with_author_facing_labels(self, http: TestClient, store):
+        self._seed(store)
+        data = http.get(f"/api/projects/{store.root.name}/knowledge").json()
+        assert data["stats"]["characters"] == 2
+        assert data["stats"]["hooks"] == 1
+        assert data["stats"]["rules"] == 1
+        assert data["stats"]["links"] > 0
+
+        char = next(e for e in data["entities"] if e["id"] == "char_001")
+        assert char["key"] == "character:char_001"
+        assert char["kindLabel"] == "角色"          # 面向作者，不是内部类型名
+        assert "主角" in char["tags"]
+        assert {e["kind"] for e in data["entities"]} >= {"character", "hook", "rule", "subplot"}
+
+    def test_graph_scope_controls_which_kinds_are_drawn(self, http: TestClient, store):
+        self._seed(store)
+        pid = store.root.name
+
+        core = http.get(f"/api/projects/{pid}/knowledge/graph?scope=core").json()
+        assert {n["kind"] for n in core["nodes"]} == {"character", "hook"}
+        types = {e["type"] for e in core["edges"]}
+        assert "relation" in types            # 人物关系
+        assert "hook_character" in types      # 伏笔 ⇄ 角色
+        assert all(n["degree"] >= 1 for n in core["nodes"])
+        assert core["legend"]
+
+        wider = http.get(f"/api/projects/{pid}/knowledge/graph?scope=all").json()
+        assert {"rule", "subplot"} <= {n["kind"] for n in wider["nodes"]}
+        assert wider["stats"]["edges"] >= core["stats"]["edges"]
+
+    def test_entity_detail_has_both_directions(self, http: TestClient, store):
+        self._seed(store)
+        pid = store.root.name
+        detail = http.get(f"/api/projects/{pid}/knowledge/entity/character/char_001").json()
+        assert detail["entity"]["title"] == "沈砚"
+        assert "陆青梧" in {r["title"] for r in detail["outbound"]}     # 出链：师徒
+        assert "hook_character" in {r["type"] for r in detail["inbound"]}  # 入链：伏笔
+
+        assert http.get(f"/api/projects/{pid}/knowledge/entity/character/nope").status_code == 404
+        assert http.get(f"/api/projects/{pid}/knowledge/entity/unknown/1").status_code == 400
+
+    def test_search_finds_across_kinds(self, http: TestClient, store):
+        self._seed(store)
+        pid = store.root.name
+        data = http.get(f"/api/projects/{pid}/knowledge/search",
+                        params={"q": "青铜灯", "k": 5}).json()
+        assert data["hits"], data
+        assert {"world", "hook"} & {h["kind"] for h in data["hits"]}
+        assert data["hits"][0]["kindLabel"]
+
+        blank = http.get(f"/api/projects/{pid}/knowledge/search", params={"q": "  "}).json()
+        assert blank["hits"] == []
+
+
+# ==========================================================================
 # 序列化契约：前端只认 camelCase
 # ==========================================================================
 
@@ -592,6 +683,8 @@ class TestSerializationContract:
         "/api/projects/{pid}/run/state",
         "/api/projects/{pid}/chat",
         "/api/projects/{pid}/plan/coverage",
+        "/api/projects/{pid}/knowledge",
+        "/api/projects/{pid}/knowledge/graph",
         "/api/settings/providers",
         "/api/settings/mcp",
         "/api/health",

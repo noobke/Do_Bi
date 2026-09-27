@@ -1,0 +1,25 @@
+{
+  "source": "",
+  "analyzed_at": "",
+  "tokens": 0,
+  "sentence": {
+    "mean": 0.0,
+    "p50": 0.0,
+    "p90": 0.0,
+    "min": 0.0,
+    "max": 0.0,
+    "scale": 80.0
+  },
+  "narrative": {
+    "person": "",
+    "tense": "",
+    "pov_switch": "rare",
+    "anchor": ""
+  },
+  "ratio": [],
+  "preferred_patterns": [],
+  "banned_expressions": [],
+  "lexicon": [],
+  "sample_plain": "",
+  "sample_styled": ""
+}
