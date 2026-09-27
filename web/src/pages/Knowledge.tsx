@@ -145,7 +145,9 @@ const SCOPES: Array<{ key: Scope; label: string }> = [
 /* ---------- 图谱几何（固定 720 宽 viewBox，保证 1:1 不缩字） ---------- */
 
 const VB_W = 720
-const MAX_NODE_W = 142
+// 168 = 10 个汉字 × 13px + 色点占位 + 两侧留白：伏笔标题多为 10~14 字，
+// 节点太窄会把「青铜灯在子时自行熄灭」这类关键信息截掉一半。
+const MAX_NODE_W = 168
 const NODE_H = 44
 const PITCH = 60
 const PAD_X = 40
@@ -606,7 +608,7 @@ export default function Knowledge() {
                 className="seg"
                 role="group"
                 aria-label="条目筛选"
-                style={{ margin: '0 16px 8px', flexWrap: 'wrap' }}
+                style={{ margin: '0 20px 10px', flexWrap: 'wrap' }}
               >
                 {FILTERS.map((f) => (
                   <button
@@ -620,7 +622,9 @@ export default function Knowledge() {
                   </button>
                 ))}
               </div>
-              <div className="list list-scroll">
+              {/* 行自带 8px 内边距，这里再补 12px → 与卡片头/卡身的 20px 齐平，
+                  否则列表文字会贴到卡片边框上 */}
+              <div className="list list-scroll" style={{ padding: '0 12px 12px' }}>
                 {visible.length ? (
                   visible.map((entity) => (
                     <div
@@ -800,7 +804,7 @@ export default function Knowledge() {
                   </div>
                 </div>
 
-                <div className="grid-2" style={{ padding: '0 16px 16px', gap: '0 16px' }}>
+                <div className="grid-2" style={{ padding: '0 12px 12px', gap: '0 16px' }}>
                   <div>
                     <div className="row-sub" style={{ paddingBottom: 4 }}>
                       {`它指向（${detail.stats.outbound}）`}

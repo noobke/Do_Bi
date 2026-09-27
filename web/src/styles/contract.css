@@ -1331,15 +1331,17 @@ svg { display:block; }
 
 /* 知识库双栏：窄栏（找条目）在左，宽栏（看关系）在右。
    DOM 顺序是「找条目」在前——因为窄屏要反过来（先看图再翻清单），
-   而窄屏的先后由 order 决定，不由 DOM 顺序决定。 */
+   而窄屏的先后由 order 决定，不由 DOM 顺序决定。
+   窄栏取 360 而不是全站常见的 340：这一栏要放下 6 个筛选 chip（实测 302px），
+   340 只剩 4px 富余、看着顶边，360 能给到 16px。 */
 .kb-split {
   display:grid; gap:var(--sp-24); align-items:start;
-  grid-template-columns:340px minmax(0,1fr);
+  grid-template-columns:360px minmax(0,1fr);
 }
 .kb-split > .kb-nav  { order:1; }
 .kb-split > .kb-main { order:2; }
-/* 精确的临界宽度是 1392（= 244 侧栏 + 64 页边距 + 340 窄栏 + 24 间距 + 720 图）。
-   留出余量取 1440：1400 上下两栏只剩 8px 富余，纵向滚动条一挤就要横滚了。 */
+/* 精确的临界宽度是 1412（= 244 侧栏 + 64 页边距 + 360 窄栏 + 24 间距 + 720 图）。
+   留出余量取 1440：再窄两栏就放不下 720 宽的图了（图宁可横向滚动也不缩字，见 §59）。 */
 @media (max-width:1439px) {
   .kb-split { grid-template-columns:minmax(0,1fr); }
   .kb-split > .kb-main { order:1; }
