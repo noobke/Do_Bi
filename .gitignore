@@ -1,0 +1,37 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# ---------- Node / 前端 ----------
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------- 密钥 / 环境变量（切勿提交！）----------
+# 只保留模板 .env.example；真实 .env 一律忽略。
+# 历史注意：server/.env 曾被提交过，已用 git rm --cached 停止跟踪。
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---------- 运行时产物 ----------
+server/data/logs/
+*.log
+
+# ---------- 编辑器 / 系统 ----------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
