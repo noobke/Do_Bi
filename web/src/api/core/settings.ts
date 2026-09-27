@@ -187,8 +187,103 @@ export const ROLES: RoleSpec[] = [
   { key: 'steer', label: '实时干预意图解析', model: 'mimo-v2.6-pro', temperature: 0.2, fmt: 'json', max_tokens: 2048, provider: 'MiMo', fallbacks: ['MiMo/mimo-v2.6-flash'] },
 ]
 
+// ---------------------------------------------------------------------------
+// 用户改动持久化（enabled / priority / 模型分工 / 温度）
+//
+// 原版把改动写回 `config/providers.json` 与 `config/model_roles.json`；手机端
+// 没有配置文件，改动存 localStorage，模块加载时覆盖回内联常量（保持数组引用不变）。
+// ---------------------------------------------------------------------------
+
 const KEYS_KEY = 'dobi.settings.keys'
 const MCP_KEY = 'dobi.settings.mcp'
+const ROLES_KEY = 'dobi.settings.roles'
+const PROVIDERS_KEY = 'dobi.settings.providers'
+
+function readJson<T>(key: string): T | null {
+  try {
+    const raw = window.localStorage.getItem(key)
+    return raw ? (JSON.parse(raw) as T) : null
+  } catch {
+    return null
+  }
+}
+
+function writeJson(key: string, value: unknown): void {
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    /* 存储不可用时仅内存态 */
+  }
+}
+
+function applyOverrides(): void {
+  const roles = readJson<RoleSpec[]>(ROLES_KEY)
+  if (Array.isArray(roles) && roles.length) {
+    const byKey = new Map(roles.map((r) => [r.key, r]))
+    for (const role of ROLES) {
+      const saved = byKey.get(role.key)
+      if (saved) Object.assign(role, saved)
+    }
+  }
+  const providers = readJson<ProviderSpec[]>(PROVIDERS_KEY)
+  if (Array.isArray(providers) && providers.length) {
+    const byName = new Map(providers.map((p) => [p.name, p]))
+    for (const prov of PROVIDERS) {
+      const saved = byName.get(prov.name)
+      if (saved) {
+        prov.enabled = saved.enabled
+        prov.priority = saved.priority
+        if (Array.isArray(saved.models) && saved.models.length) prov.models = saved.models
+      }
+    }
+  }
+}
+
+applyOverrides()
+
+/** 保存模型分工改动（设置页改模型 / 服务商 / 温度后调用） */
+export function saveRolesStore(): void {
+  writeJson(ROLES_KEY, ROLES.map((r) => ({ ...r })))
+}
+
+/** 保存服务商改动（启用状态 / 优先级 / 模型清单） */
+export function saveProvidersStore(): void {
+  writeJson(PROVIDERS_KEY, PROVIDERS.map((p) => ({ ...p })))
+}
+
+/** 服务商对外视图（不含密钥本体，只给脱敏指纹） */
+export function providerPublic(spec: ProviderSpec, probe?: Record<string, unknown> | null): Record<string, unknown> {
+  const key = getApiKey(spec.name)
+  return {
+    name: spec.name,
+    base_url: spec.base_url,
+    api_key_ref: spec.api_key_ref,
+    configured: key !== null,
+    fingerprint: key ? maskKey(key) : null,
+    models: spec.models.map((m) => ({ ...m })),
+    priority: spec.priority,
+    enabled: spec.enabled,
+    note: spec.note,
+    probed: probe ?? {
+      ok: false, latencyMs: null, checkedAt: null, error: null,
+      maxTokensField: 'max_tokens', supportsResponseFormat: true,
+      supportsStreamOptions: true, supportsTools: false,
+    },
+  }
+}
+
+/** 模型分工对外视图（镜像 Python ModelRoleSpec.public） */
+export function rolePublic(role: RoleSpec): Record<string, unknown> {
+  const fmtLabel = { json: 'JSON', text: '流式文本', patch: 'JSON Patch' }[role.fmt] ?? role.fmt
+  return {
+    step: role.label,
+    key: role.key,
+    model: role.model,
+    provider: role.provider,
+    temperature: role.temperature.toFixed(2),
+    format: fmtLabel,
+  }
+}
 
 function readKeys(): Record<string, string> {
   try {

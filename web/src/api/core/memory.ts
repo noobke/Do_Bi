@@ -232,6 +232,27 @@ export class MemoryIndex {
     this.reindex()
   }
 
+  /** 片段与记忆规模（镜像 Python `MemoryIndex.stats`）。 */
+  stats(): Record<string, unknown> {
+    this.reindex()
+    const byKind: Record<string, number> = {}
+    for (const doc of this.docs) byKind[doc.kind] = (byKind[doc.kind] ?? 0) + 1
+    let timelineEvents = 0
+    try {
+      const raw = window.localStorage.getItem(`dobi.timeline.${this.store.id}`)
+      const parsed = raw ? (JSON.parse(raw) as unknown) : []
+      if (Array.isArray(parsed)) timelineEvents = parsed.length
+    } catch {
+      /* 存储不可用时按 0 计 */
+    }
+    return {
+      chunks: this.docs.length,
+      byKind,
+      timelineEvents,
+      engine: 'rank_bm25 + 中文 bigram',
+    }
+  }
+
   search(
     query: string,
     opts: { k?: number; kinds?: string[] | null; excludeChapters?: number[]; upToChapter?: number | null } = {},

@@ -163,6 +163,22 @@ function probeFor(prov: ProviderSpec): ProviderProbe {
   return p
 }
 
+/** 只读快照：供设置页回显最近的连通性探测结果（camelCase，可直接展示）。 */
+export function probeSnapshot(name: string): Record<string, unknown> | null {
+  const p = PROBE_STATE.get(name)
+  if (!p) return null
+  return {
+    ok: p.ok,
+    latencyMs: p.latency_ms,
+    checkedAt: p.checked_at,
+    error: p.error,
+    maxTokensField: p.max_tokens_field,
+    supportsResponseFormat: p.supports_response_format,
+    supportsStreamOptions: p.supports_stream_options,
+    supportsTools: p.supports_tools,
+  }
+}
+
 // ==========================================================================
 // 计量回调（Meter 在调用方注册）
 // ==========================================================================
