@@ -1,8 +1,9 @@
-import { Fragment, type ReactNode, useEffect } from 'react'
+import { Fragment, type ReactNode, useEffect, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { Icon, type IconName } from './Icon'
-import { classNames } from '../lib/ui'
+import { classNames, fmtInt, fmtMoney } from '../lib/ui'
 import { useProject } from '../state/project'
+import { getOverview } from '../api/client'
 
 /**
  * App Shell —— 全局唯一的共享布局（设计契约「App Shell + Canonical Nav」）。
@@ -48,10 +49,68 @@ function activeKeyFor(pathname: string): string {
   return NAV_PARENT[first] ?? first
 }
 
+/**
+ * 侧栏底栏只用到总览里的这几个字段。
+ * 数据源与工作台同为 `GET /api/projects/{id}/overview` —— 满足契约「同一指标只能有一个数据来源」，
+ * 不另开接口、也不写死任何数字。
+ */
+interface FootSummary {
+  project: {
+    title: string
+    chaptersDone: number
+    chaptersTotal: number
+    words: number
+  }
+  usage?: {
+    budget?: {
+      used: number
+      total: number
+      unit: string
+      unlimited: boolean
+    }
+  }
+}
+
 function Sidebar() {
   const { pathname } = useLocation()
   const { projectId } = useProject()
   const activeKey = activeKeyFor(pathname)
+
+  const [summary, setSummary] = useState<FootSummary | null>(null)
+  const [loadedId, setLoadedId] = useState<string | null>(null)
+
+  /* 底栏数据随「当前项目」与「切页」刷新：原型里每页都会重新执行 app.js 把 foot-* 填成最新值，
+     这里用 pathname 作依赖还原同一行为。切到别的作品时，旧数据因 loadedId 对不上而不显示，
+     避免短暂张冠李戴；网络失败只维持占位，不阻塞任何页面的主体渲染。 */
+  useEffect(() => {
+    if (!projectId) {
+      setSummary(null)
+      setLoadedId(null)
+      return
+    }
+    let alive = true
+    getOverview(projectId)
+      .then((data) => {
+        if (!alive) return
+        setSummary(data as FootSummary)
+        setLoadedId(projectId)
+      })
+      .catch(() => {
+        if (!alive) return
+        setSummary(null)
+        setLoadedId(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [projectId, pathname])
+
+  const fresh = loadedId === projectId
+  const project = fresh ? summary?.project : undefined
+  const budget = fresh ? (summary?.usage?.budget ?? null) : null
+  const done = project?.chaptersDone ?? 0
+  const total = project?.chaptersTotal ?? 0
+  const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0
 
   return (
     <aside className="sidebar">
@@ -80,20 +139,26 @@ function Sidebar() {
         })}
       </nav>
 
-      {/* 底栏：数据待接入，先用占位（避免出现写死的假值，见契约「同一指标只能有一个数据来源」） */}
+      {/* 底栏结构与原型 index.html 的 .sidebar-foot 一致：当前项目 / 第 X / Y 章 · N 字 / 进度条 / 预算已用 */}
       <div className="sidebar-foot">
         <div className="foot-label">当前项目</div>
-        <div className="foot-title">{projectId ?? '未选择项目'}</div>
+        <div className="foot-title">{project?.title || projectId || '未选择项目'}</div>
         <div className="foot-meta">
-          <span>进度</span>
-          <span>—</span>
+          <span>{project ? `第 ${done} / ${total} 章` : '进度'}</span>
+          <span>{project ? `${fmtInt(project.words)} 字` : '—'}</span>
         </div>
         <div className="progress" style={{ marginTop: 10 }}>
-          <i style={{ width: '0%' }} />
+          <i style={{ width: `${pct}%` }} />
         </div>
         <div className="foot-meta">
           <span>预算已用</span>
-          <span>—</span>
+          <span>
+            {budget
+              ? `${fmtMoney(budget.used, budget.unit)} / ${
+                  budget.unlimited ? '不限' : fmtMoney(budget.total, budget.unit)
+                }`
+              : '—'}
+          </span>
         </div>
       </div>
     </aside>
