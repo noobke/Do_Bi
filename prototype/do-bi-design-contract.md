@@ -240,6 +240,7 @@ bg-texture: 极淡纸纹 = 暖色 radial 光晕 + 极低不透明度纤维纹（
 **4. 图表渲染契约（styles.css §59）：图表永不缩放到低于 1:1**
 ⛔ 禁止让固定 viewBox 的 SVG 图表随容器缩到 1:1 以下——那会让 §57.2 设定的 11px 图表字号名不副实（980 宽图在 755px 容器里只有 0.77×，11px 实际渲染 8.47px）。
 约定：`.tree-wrap` / `.beat-wrap` / `.curve-wrap` / `.vtr-wrap` / `.pflow-wrap` / `.graph-wrap` / `.flow-wrap` / `.tl-wrap` / `.tl2-wrap` / `.struct-wrap` / `.fish-wrap` 一律 `overflow-x:auto`，其内 svg 带 `min-width`（= viewBox 宽）。**空间不足时横向滚动，绝不缩小文字。**
+> **v1.12 修正**：`.vtr-wrap > svg` 的 `min-width` 由 `740px` 改为 `760px`，与批次十一的固定坐标 `W=760` 对齐（原值会让剧情树渲染成 0.974×，11px 字号实际只有 10.7px，与本节「永不缩到 1:1 以下」自相矛盾）。其余容器已是 1:1。
 
 **5. 图表字号的唯一权威层仍是 §57.2**
 修改图表字号**只改 §57.2**，不要改各组件原始声明（原始声明是历史记录，故意保留）。

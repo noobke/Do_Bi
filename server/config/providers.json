@@ -1,0 +1,52 @@
+{
+  "_comment": "服务商清单。api_key_ref 是【环境变量名】，密钥值只存在于 .env / 进程环境，本文件永不写明文。priority 越小越优先，即降级链顺序：主力 → 备用 → 挂起 checkpoint 并提示。price_in / price_out 为【示例参考价，元/百万 token】，请按服务商实际价目核对后维护；留 0 表示不计价。",
+  "providers": [
+    {
+      "name": "DeepSeek",
+      "base_url": "https://api.deepseek.com/v1",
+      "api_key_ref": "DOBI_KEY_DEEPSEEK",
+      "priority": 1,
+      "enabled": true,
+      "note": "主力。JSON 输出与长上下文都稳，成本低。",
+      "models": [
+        { "name": "deepseek-chat", "context_window": 65536, "max_output": 8192, "supports_json": true, "supports_stream": true, "price_in": 2.0, "price_out": 8.0 },
+        { "name": "deepseek-reasoner", "context_window": 65536, "max_output": 8192, "supports_json": true, "supports_stream": true, "price_in": 4.0, "price_out": 16.0 }
+      ]
+    },
+    {
+      "name": "OpenAI",
+      "base_url": "https://api.openai.com/v1",
+      "api_key_ref": "DOBI_KEY_OPENAI",
+      "priority": 2,
+      "enabled": true,
+      "note": "备用。注意部分新模型用 max_completion_tokens 而非 max_tokens，首次调用会自动探测。",
+      "models": [
+        { "name": "gpt-4.1", "context_window": 128000, "max_output": 8192, "supports_json": true, "supports_stream": true, "supports_tools": true, "price_in": 14.0, "price_out": 56.0 },
+        { "name": "gpt-4.1-mini", "context_window": 128000, "max_output": 8192, "supports_json": true, "supports_stream": true, "supports_tools": true, "price_in": 3.0, "price_out": 12.0 }
+      ]
+    },
+    {
+      "name": "通义千问",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key_ref": "DOBI_KEY_DASHSCOPE",
+      "priority": 3,
+      "enabled": true,
+      "note": "审计与摘要档位便宜，适合跑量。",
+      "models": [
+        { "name": "qwen-max", "context_window": 32768, "max_output": 8192, "supports_json": true, "supports_stream": true, "price_in": 20.0, "price_out": 80.0 },
+        { "name": "qwen-plus", "context_window": 131072, "max_output": 8192, "supports_json": true, "supports_stream": true, "price_in": 4.0, "price_out": 12.0 }
+      ]
+    },
+    {
+      "name": "硅基流动",
+      "base_url": "https://api.siliconflow.cn/v1",
+      "api_key_ref": "DOBI_KEY_SILICONFLOW",
+      "priority": 4,
+      "enabled": false,
+      "note": "备选。未启用时完全不参与降级链。",
+      "models": [
+        { "name": "deepseek-ai/DeepSeek-V3", "context_window": 65536, "max_output": 8192, "supports_json": true, "supports_stream": true, "price_in": 2.0, "price_out": 8.0 }
+      ]
+    }
+  ]
+}

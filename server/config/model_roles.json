@@ -1,0 +1,115 @@
+{
+  "_comment": "模型角色分工（规划文档 §6.2）。温度与输出格式按环节性质固定：审计/抽取要低温求稳定，正文要高温求文采。fallbacks 写 '服务商名/模型名'，同环节主备必须都支持该输出格式，否则降级链中途会断。",
+  "roles": [
+    {
+      "key": "architect",
+      "label": "世界观 / 大纲",
+      "model": "deepseek-reasoner",
+      "provider": "DeepSeek",
+      "temperature": 0.75,
+      "fmt": "json",
+      "max_tokens": 8192,
+      "fallbacks": ["OpenAI/gpt-4.1", "通义千问/qwen-max"]
+    },
+    {
+      "key": "chapter_plan",
+      "label": "章纲 + 依赖图与思维链",
+      "model": "deepseek-reasoner",
+      "provider": "DeepSeek",
+      "temperature": 0.60,
+      "fmt": "json",
+      "max_tokens": 6144,
+      "fallbacks": ["OpenAI/gpt-4.1", "通义千问/qwen-max"]
+    },
+    {
+      "key": "writer",
+      "label": "正文生成",
+      "model": "deepseek-chat",
+      "provider": "DeepSeek",
+      "temperature": 0.92,
+      "fmt": "text",
+      "max_tokens": 8192,
+      "fallbacks": ["通义千问/qwen-plus", "OpenAI/gpt-4.1"]
+    },
+    {
+      "key": "audit_l2",
+      "label": "模型审查（多维度）",
+      "model": "qwen-plus",
+      "provider": "通义千问",
+      "temperature": 0.15,
+      "fmt": "json",
+      "max_tokens": 6144,
+      "fallbacks": ["DeepSeek/deepseek-chat"]
+    },
+    {
+      "key": "review",
+      "label": "可举证质量评审",
+      "model": "deepseek-reasoner",
+      "provider": "DeepSeek",
+      "temperature": 0.30,
+      "fmt": "json",
+      "max_tokens": 6144,
+      "fallbacks": ["OpenAI/gpt-4.1"]
+    },
+    {
+      "key": "deai",
+      "label": "去 AI 味改写",
+      "model": "deepseek-chat",
+      "provider": "DeepSeek",
+      "temperature": 0.40,
+      "fmt": "patch",
+      "max_tokens": 6144,
+      "fallbacks": ["OpenAI/gpt-4.1-mini"]
+    },
+    {
+      "key": "style_analyze",
+      "label": "文风仿写分析",
+      "model": "deepseek-reasoner",
+      "provider": "DeepSeek",
+      "temperature": 0.20,
+      "fmt": "json",
+      "max_tokens": 6144,
+      "fallbacks": ["OpenAI/gpt-4.1"]
+    },
+    {
+      "key": "disassemble",
+      "label": "拆书（导入反推）",
+      "model": "deepseek-reasoner",
+      "provider": "DeepSeek",
+      "temperature": 0.30,
+      "fmt": "json",
+      "max_tokens": 8192,
+      "fallbacks": ["OpenAI/gpt-4.1"]
+    },
+    {
+      "key": "archivist",
+      "label": "摘要 / 事实抽取",
+      "model": "gpt-4.1-mini",
+      "provider": "OpenAI",
+      "temperature": 0.10,
+      "fmt": "json",
+      "max_tokens": 4096,
+      "fallbacks": ["通义千问/qwen-plus", "DeepSeek/deepseek-chat"]
+    },
+    {
+      "key": "chat",
+      "label": "对话式共创",
+      "model": "deepseek-chat",
+      "provider": "DeepSeek",
+      "temperature": 0.70,
+      "fmt": "json",
+      "max_tokens": 4096,
+      "fallbacks": ["OpenAI/gpt-4.1-mini"]
+    },
+    {
+      "key": "steer",
+      "label": "实时干预意图解析",
+      "model": "deepseek-chat",
+      "provider": "DeepSeek",
+      "temperature": 0.20,
+      "fmt": "json",
+      "max_tokens": 2048,
+      "fallbacks": ["通义千问/qwen-plus"]
+    }
+  ]
+}
