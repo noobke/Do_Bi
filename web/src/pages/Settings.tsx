@@ -14,7 +14,9 @@ import {
   probeProvider,
   testMcp,
   toggleMcp,
+  updateMcp,
   updateProvider,
+  updateRole,
 } from '../api/client'
 
 /**
@@ -88,6 +90,17 @@ interface McpServer {
   error?: string
 }
 
+/** 外部工具编辑表单（tools 用逗号分隔的文本，提交时再切分） */
+interface McpForm {
+  origin: string | null
+  name: string
+  transport: 'stdio' | 'http'
+  command: string
+  url: string
+  tools: string
+  enabled: boolean
+}
+
 interface McpPayload {
   servers: McpServer[]
   enabledCount: number
@@ -153,6 +166,13 @@ export default function Settings() {
   //: 正在填密钥的服务商名 + 输入框内容（密钥只在内存里过一手，不回显）
   const [keyFor, setKeyFor] = useState<string | null>(null)
   const [keyValue, setKeyValue] = useState('')
+  //: 模型分工：正在保存的环节 / 自定义模型名的环节 / 温度草稿
+  const [roleBusy, setRoleBusy] = useState<string | null>(null)
+  const [customFor, setCustomFor] = useState<string | null>(null)
+  const [customValue, setCustomValue] = useState('')
+  const [tempDraft, setTempDraft] = useState<Record<string, string>>({})
+  //: 外部工具：正在编辑的表单（null = 没有在编辑）
+  const [mcpForm, setMcpForm] = useState<McpForm | null>(null)
 
   const [mcp, setMcp] = useState<McpPayload | null>(null)
   const [mcpBusy, setMcpBusy] = useState<string | null>(null)
@@ -311,6 +331,99 @@ export default function Settings() {
       setBusy(null)
     }
   }, [])
+
+  /** 改某个环节的模型分工。失败时重新拉一次，避免界面停在未保存的状态。 */
+  const saveRole = useCallback(
+    async (r: Role, patch: { provider?: string; model?: string; temperature?: number }) => {
+      setRoleBusy(r.key)
+      try {
+        const res = (await updateRole(r.key, patch)) as { roles: Role[]; note?: string | null }
+        if (res.roles) setRoles(res.roles)
+        if (res.note) toast(res.note, 'warn')
+        else toast(`已更新「${r.step}」`, 'ok')
+      } catch (e) {
+        toast(errMsg(e), 'error')
+        void loadProviders()
+      } finally {
+        setRoleBusy(null)
+      }
+    },
+    [loadProviders],
+  )
+
+  /** 整体保存外部工具清单（新增 / 编辑 / 删除共用）。 */
+  const saveMcpServers = useCallback(async (next: McpServer[]) => {
+    setMcpBusy('save')
+    try {
+      const res = (await updateMcp(next)) as {
+        servers: McpServer[]
+        enabledCount: number
+        healthyCount: number
+      }
+      setMcp((prev) =>
+        prev
+          ? {
+              ...prev,
+              servers: res.servers ?? prev.servers,
+              enabledCount: res.enabledCount ?? prev.enabledCount,
+              healthyCount: res.healthyCount ?? prev.healthyCount,
+            }
+          : prev,
+      )
+      setMcpForm(null)
+      toast('外部工具配置已保存', 'ok')
+    } catch (e) {
+      toast(errMsg(e), 'error')
+    } finally {
+      setMcpBusy(null)
+    }
+  }, [])
+
+  const submitMcpForm = useCallback(() => {
+    if (!mcpForm) return
+    const name = mcpForm.name.trim()
+    if (!name) {
+      toast('请填名称', 'warn')
+      return
+    }
+    if (mcpForm.transport === 'stdio' && !mcpForm.command.trim()) {
+      toast('用 stdio 的话要填启动命令', 'warn')
+      return
+    }
+    if (mcpForm.transport === 'http' && !/^https?:\/\//.test(mcpForm.url.trim())) {
+      toast('http 地址要以 http:// 或 https:// 开头', 'warn')
+      return
+    }
+    const existing = mcp?.servers ?? []
+    const kept = existing.filter((s) => s.name !== mcpForm.origin && s.name !== name)
+    const previous = existing.find((s) => s.name === mcpForm.origin)
+    const next: McpServer[] = [
+      ...kept,
+      {
+        name,
+        transport: mcpForm.transport,
+        command: mcpForm.transport === 'stdio' ? mcpForm.command.trim() : '',
+        url: mcpForm.transport === 'http' ? mcpForm.url.trim() : '',
+        tools: mcpForm.tools
+          .split(/[,，\s]+/)
+          .map((t) => t.trim())
+          .filter(Boolean),
+        enabled: mcpForm.enabled,
+        status: previous?.status ?? 'idle',
+        latency: previous?.latency ?? null,
+        calls: previous?.calls ?? 0,
+      },
+    ]
+    void saveMcpServers(next)
+  }, [mcpForm, mcp, saveMcpServers])
+
+  const removeMcp = useCallback(
+    (s: McpServer) => {
+      const next = (mcp?.servers ?? []).filter((x) => x.name !== s.name)
+      void saveMcpServers(next)
+    },
+    [mcp, saveMcpServers],
+  )
 
   const doToggleMcp = useCallback(async (s: McpServer) => {
     setMcpBusy(`toggle:${s.name}`)
@@ -610,33 +723,154 @@ export default function Settings() {
           <section className="card">
             <div className="card-head">
               <h2>模型分工</h2>
-              <span className="tag tag-quiet">按环节分配</span>
+              <span className="tag tag-quiet">按环节分配 · 可直接改</span>
             </div>
             <div className="card-body">
               <table className="table">
                 <thead>
                   <tr>
                     <th>环节</th>
-                    <th>模型</th>
-                    <th>服务商</th>
-                    <th>温度</th>
+                    <th style={{ minWidth: 190 }}>服务商</th>
+                    <th style={{ minWidth: 210 }}>模型</th>
+                    <th style={{ width: 96 }}>温度</th>
                     <th>输出格式</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {roles.map((r) => (
-                    <tr key={r.key || r.step}>
-                      <td>{r.step}</td>
-                      <td className="mono">{r.model}</td>
-                      <td>{r.provider || '—'}</td>
-                      <td className="mono">{r.temperature}</td>
-                      <td title={r.format}>{formatLabel(r.format)}</td>
-                    </tr>
-                  ))}
+                  {roles.map((r) => {
+                    const owner = providers.find((p) => p.name === r.provider)
+                    // 下拉里出现的模型：该服务商登记的 + 当前这个（可能来自其他服务商或已是自定义名）
+                    const options = [
+                      ...(owner?.models ?? []).map((m) => m.name),
+                      ...(r.model && !(owner?.models ?? []).some((m) => m.name === r.model)
+                        ? [r.model]
+                        : []),
+                    ]
+                    const busyRow = roleBusy === r.key
+                    return (
+                      <tr key={r.key || r.step}>
+                        <td>{r.step}</td>
+                        <td>
+                          <select
+                            className="input"
+                            value={r.provider ?? ''}
+                            disabled={busyRow}
+                            onChange={(e) => {
+                              const name = e.target.value
+                              const next = providers.find((p) => p.name === name)
+                              const firstModel = next?.models[0]?.name
+                              void saveRole(r, {
+                                provider: name,
+                                ...(firstModel ? { model: firstModel } : {}),
+                              })
+                            }}
+                          >
+                            <option value="">自动（按优先级）</option>
+                            {providers.map((p) => (
+                              <option key={p.name} value={p.name}>
+                                {p.name}
+                                {p.configured ? '' : '（未配密钥）'}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>
+                          <select
+                            className="input mono"
+                            value={r.model}
+                            disabled={busyRow}
+                            onChange={(e) => {
+                              const value = e.target.value
+                              if (value === '__custom__') {
+                                setCustomFor(r.key)
+                                setCustomValue(r.model)
+                                return
+                              }
+                              void saveRole(r, { model: value })
+                            }}
+                          >
+                            {options.map((m) => (
+                              <option key={m} value={m}>
+                                {m}
+                              </option>
+                            ))}
+                            <option value="__custom__">自定义模型名…</option>
+                          </select>
+                          {customFor === r.key ? (
+                            <div className="row" style={{ marginTop: 6, gap: 6 }}>
+                              <input
+                                className="input mono"
+                                autoFocus
+                                placeholder="厂商当前可用的模型名"
+                                value={customValue}
+                                onChange={(e) => setCustomValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    void saveRole(r, { model: customValue })
+                                    setCustomFor(null)
+                                  }
+                                  if (e.key === 'Escape') setCustomFor(null)
+                                }}
+                              />
+                              <button
+                                type="button"
+                                className="btn btn-sm"
+                                disabled={busyRow}
+                                onClick={() => {
+                                  void saveRole(r, { model: customValue })
+                                  setCustomFor(null)
+                                }}
+                              >
+                                用这个
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-quiet btn-sm"
+                                onClick={() => setCustomFor(null)}
+                              >
+                                取消
+                              </button>
+                            </div>
+                          ) : null}
+                        </td>
+                        <td>
+                          <input
+                            className="input mono"
+                            type="number"
+                            min={0}
+                            max={2}
+                            step={0.05}
+                            disabled={busyRow}
+                            value={tempDraft[r.key] ?? String(r.temperature)}
+                            onChange={(e) =>
+                              setTempDraft((prev) => ({ ...prev, [r.key]: e.target.value }))
+                            }
+                            onBlur={(e) => {
+                              const raw = e.target.value
+                              const value = Number(raw)
+                              if (raw === '' || Number.isNaN(value)) {
+                                setTempDraft((prev) => {
+                                  const next = { ...prev }
+                                  delete next[r.key]
+                                  return next
+                                })
+                                return
+                              }
+                              if (value === Number(r.temperature)) return
+                              void saveRole(r, { temperature: value })
+                            }}
+                          />
+                        </td>
+                        <td title={r.format}>{formatLabel(r.format)}</td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
               <div className="fs-12 muted" style={{ marginTop: 12 }}>
                 每个环节绑定一个模型：不同的活儿用不同的模型，既省钱也稳。
+                <br />
+                选「自定义模型名…」可以直接填厂商新上的模型，不必改配置文件；换服务商后模型会跟着切到该服务商的第一个。
               </div>
             </div>
           </section>
@@ -812,9 +1046,29 @@ export default function Settings() {
           <section className="card">
             <div className="card-head">
               <h2>外部工具</h2>
-              <span className="tag tag-info">
-                已启用 {mcp?.enabledCount ?? 0} · 正常 {mcp?.healthyCount ?? 0}
-              </span>
+              <div className="row" style={{ gap: 8 }}>
+                <span className="tag tag-info">
+                  已启用 {mcp?.enabledCount ?? 0} · 正常 {mcp?.healthyCount ?? 0}
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  disabled={mcpBusy !== null}
+                  onClick={() =>
+                    setMcpForm({
+                      origin: null,
+                      name: '',
+                      transport: 'stdio',
+                      command: '',
+                      url: '',
+                      tools: '',
+                      enabled: true,
+                    })
+                  }
+                >
+                  新增工具
+                </button>
+              </div>
             </div>
             <div className="card-body" style={{ padding: 0 }}>
               {!mcp || mcp.servers.length === 0 ? (
@@ -879,11 +1133,145 @@ export default function Settings() {
                         >
                           {mcpBusy === `test:${s.name}` ? '测试中…' : '测试'}
                         </button>
+                        <button
+                          type="button"
+                          className="btn btn-quiet btn-sm"
+                          disabled={mcpBusy !== null}
+                          onClick={() =>
+                            setMcpForm({
+                              origin: s.name,
+                              name: s.name,
+                              transport: s.transport === 'http' ? 'http' : 'stdio',
+                              command: s.command ?? '',
+                              url: s.url ?? '',
+                              tools: s.tools.join(', '),
+                              enabled: s.enabled,
+                            })
+                          }
+                        >
+                          编辑
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-quiet btn-sm"
+                          disabled={mcpBusy !== null}
+                          onClick={() => removeMcp(s)}
+                        >
+                          删除
+                        </button>
                       </div>
                     </div>
                   )
                 })
               )}
+              {mcpForm ? (
+                <div className="provider-card" style={{ background: 'var(--paper-2)' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="provider-name">
+                      {mcpForm.origin ? `编辑：${mcpForm.origin}` : '新增外部工具'}
+                    </div>
+                    <div className="row" style={{ gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                      <label className="field-label" htmlFor="mcp-name">
+                        名称
+                      </label>
+                      <input
+                        id="mcp-name"
+                        className="input"
+                        placeholder="例如：本地设定库"
+                        value={mcpForm.name}
+                        onChange={(e) => setMcpForm({ ...mcpForm, name: e.target.value })}
+                      />
+                      <label className="field-label" htmlFor="mcp-transport">
+                        连接方式
+                      </label>
+                      <select
+                        id="mcp-transport"
+                        className="input"
+                        value={mcpForm.transport}
+                        onChange={(e) =>
+                          setMcpForm({ ...mcpForm, transport: e.target.value as 'stdio' | 'http' })
+                        }
+                      >
+                        <option value="stdio">stdio（本机命令）</option>
+                        <option value="http">http（远程地址）</option>
+                      </select>
+                    </div>
+                    <div className="row" style={{ gap: 8, marginTop: 8 }}>
+                      {mcpForm.transport === 'stdio' ? (
+                        <>
+                          <label className="field-label" htmlFor="mcp-command">
+                            启动命令
+                          </label>
+                          <input
+                            id="mcp-command"
+                            className="input mono"
+                            placeholder="python3 mcp/example_server.py"
+                            value={mcpForm.command}
+                            onChange={(e) => setMcpForm({ ...mcpForm, command: e.target.value })}
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <label className="field-label" htmlFor="mcp-url">
+                            服务地址
+                          </label>
+                          <input
+                            id="mcp-url"
+                            className="input mono"
+                            placeholder="https://your-host/mcp"
+                            value={mcpForm.url}
+                            onChange={(e) => setMcpForm({ ...mcpForm, url: e.target.value })}
+                          />
+                        </>
+                      )}
+                    </div>
+                    <div className="row" style={{ gap: 8, marginTop: 8 }}>
+                      <label className="field-label" htmlFor="mcp-tools">
+                        工具名
+                      </label>
+                      <input
+                        id="mcp-tools"
+                        className="input mono"
+                        placeholder="lookup_setting, search_reference"
+                        value={mcpForm.tools}
+                        onChange={(e) => setMcpForm({ ...mcpForm, tools: e.target.value })}
+                      />
+                    </div>
+                    <div className="row" style={{ gap: 10, marginTop: 10 }}>
+                      <button
+                        type="button"
+                        className={classNames('switch', mcpForm.enabled && 'is-on')}
+                        aria-label={mcpForm.enabled ? '停用' : '启用'}
+                        aria-pressed={mcpForm.enabled}
+                        onClick={() => setMcpForm({ ...mcpForm, enabled: !mcpForm.enabled })}
+                      />
+                      <span className="fs-12 muted">
+                        {mcpForm.enabled ? '保存后即参与检索' : '保存但先不启用'}
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        disabled={mcpBusy !== null}
+                        onClick={submitMcpForm}
+                      >
+                        {mcpBusy === 'save' ? '保存中…' : '保存'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-quiet btn-sm"
+                        onClick={() => setMcpForm(null)}
+                      >
+                        取消
+                      </button>
+                    </div>
+                    <div className="fs-12 muted" style={{ marginTop: 8 }}>
+                      stdio 的相对路径以 <span className="mono">server/</span> 为基准（即启动后端的目录）。
+                      项目自带一个可跑通的示例：<span className="mono">python3 mcp/example_server.py</span>，
+                      工具名填 <span className="mono">lookup_setting, search_reference, fetch_history</span>。
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
             <div className="card-foot">
               <span className="fs-12 muted">

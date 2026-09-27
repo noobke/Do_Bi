@@ -2,47 +2,23 @@
   "_comment": "MCP 服务器配置（规划文档 §6.9）。MCP 永远是增强而非依赖：MCP 不可用时全流程自动降级为内置检索，不阻塞主流程。transport 取 stdio 或 http；command 供 stdio 使用，url 供 http 使用。",
   "servers": [
     {
-      "name": "设定库 setting-vault",
+      "name": "本地档案库 local-archive",
       "transport": "stdio",
-      "command": "npx -y @dobi/mcp-setting-vault",
+      "command": "python3 mcp/example_server.py",
       "tools": [
         "lookup_setting",
-        "list_settings"
+        "search_reference",
+        "fetch_history"
       ],
       "enabled": true,
       "status": "ok",
-      "latency": 42,
-      "calls": 128
+      "latency": 437,
+      "calls": 0
     },
     {
       "name": "资料检索 reference-search",
       "transport": "http",
       "url": "https://mcp.local/reference/mcp",
-      "tools": [
-        "search_reference"
-      ],
-      "enabled": true,
-      "status": "failed",
-      "latency": 186,
-      "calls": 47,
-      "error": "外部工具未响应，已改用内置检索"
-    },
-    {
-      "name": "历史存档 archive-local",
-      "transport": "stdio",
-      "command": "node ./mcp/archive.js",
-      "tools": [
-        "fetch_history"
-      ],
-      "enabled": false,
-      "status": "idle",
-      "latency": null,
-      "calls": 0
-    },
-    {
-      "name": "百科拓展 wiki-bridge",
-      "transport": "http",
-      "url": "https://mcp.local/wiki/mcp",
       "tools": [
         "search_reference"
       ],

@@ -47,7 +47,8 @@ class TestBasics:
         assert data["providers"]["configured"] is True
 
     def test_health_without_keys(self, env, monkeypatch):
-        for name in ("DOBI_KEY_DEEPSEEK", "DOBI_KEY_OPENAI", "DOBI_KEY_DASHSCOPE"):
+        for name in ("DOBI_KEY_DEEPSEEK", "DOBI_KEY_MIMO", "DOBI_KEY_OPENAI",
+                     "DOBI_KEY_DASHSCOPE", "DOBI_KEY_SILICONFLOW"):
             monkeypatch.delenv(name, raising=False)
         from dobi.config import reload_config
         reload_config()
@@ -401,8 +402,10 @@ class TestOps:
         """没配密钥时必须明确报 503，而不是静默跑出一个空结果。"""
         from dobi.config import reload_config
         monkeypatch.delenv("DOBI_KEY_DEEPSEEK", raising=False)
+        monkeypatch.delenv("DOBI_KEY_MIMO", raising=False)
         monkeypatch.delenv("DOBI_KEY_OPENAI", raising=False)
         monkeypatch.delenv("DOBI_KEY_DASHSCOPE", raising=False)
+        monkeypatch.delenv("DOBI_KEY_SILICONFLOW", raising=False)
         reload_config()
         resp = http.post(f"/api/projects/{project}/plan", json={})
         assert resp.status_code == 503
@@ -472,20 +475,79 @@ class TestOps:
 
     def test_mcp_is_optional_and_degrades(self, http: TestClient, project: str):
         servers = http.get("/api/settings/mcp").json()
-        assert len(servers["servers"]) == 4
+        assert len(servers["servers"]) == 2
         assert "回落" in servers["note"]
+        assert [s["name"] for s in servers["servers"]] == [
+            "本地档案库 local-archive", "资料检索 reference-search"]
 
-        toggled = http.post("/api/settings/mcp/toggle", json={"name": "archive-local"}).json()
+        # 随附的本地示例服务是真能连上的；短标识 local-archive 也能匹配到
+        tested = http.post("/api/settings/mcp/local-archive/test").json()
+        assert tested["ok"] is True
+        assert {"lookup_setting", "search_reference"} <= set(tested["result"]["tools"])
+
+        # 占位地址必然连不上，但必须给出可读原因，且不抛异常
+        broken = http.post("/api/settings/mcp/reference-search/test").json()
+        assert broken["ok"] is False
+        assert broken["result"]["error"]
+
+        # 切换启用状态
+        toggled = http.post("/api/settings/mcp/toggle",
+                            json={"name": "reference-search"}).json()
         assert toggled["ok"]
-
-        tested = http.post("/api/settings/mcp/wiki-bridge/test").json()
-        assert tested["ok"] is False            # 占位地址必然连不上
-        assert tested["result"]["error"]        # 但必须给出可读原因，且不抛异常
+        assert next(s for s in toggled["servers"]
+                    if s["name"].endswith("reference-search"))["enabled"] is True
 
         # 外部工具不可用时，检索必须自动回落为内置实现
         search = http.get(f"/api/projects/{project}/tools/search",
                           params={"q": "铜灯", "k": 3}).json()
         assert search.get("ok") is True
+
+    def test_update_role_from_settings_page(self, http: TestClient):
+        """模型分工可改：换服务商 / 换模型 / 调温度，立即生效并回显。"""
+        data = http.put("/api/settings/roles/writer",
+                        json={"provider": "MiMo", "model": "mimo-v2.6-flash",
+                              "temperature": 0.5}).json()
+        assert data["ok"] is True
+        writer = next(r for r in data["roles"] if r["key"] == "writer")
+        assert writer["provider"] == "MiMo"
+        assert writer["model"] == "mimo-v2.6-flash"
+        assert writer["temperature"] == "0.50"          # 对外是两位小数字符串
+        assert data["fallbackChain"] == ["DeepSeek", "MiMo"]
+
+        # 目录里没有的模型名也允许填（厂商上新很快），但会给一句提醒
+        noted = http.put("/api/settings/roles/writer",
+                         json={"model": "brand-new-model-x"}).json()
+        assert noted["ok"] is True and noted["note"]
+
+        assert http.put("/api/settings/roles/nope", json={"model": "x"}).status_code == 404
+        assert http.put("/api/settings/roles/writer", json={"model": "   "}).status_code == 400
+
+    def test_update_mcp_servers_crud(self, http: TestClient):
+        """外部工具能新增 / 编辑 / 删除；删光不会回落成出厂默认。"""
+        added = http.put("/api/settings/mcp", json={"servers": [
+            {"name": "本地档案库 local-archive", "transport": "stdio",
+             "command": "python3 mcp/example_server.py",
+             "tools": ["lookup_setting"], "enabled": True},
+            {"name": "我的新工具 my-tool", "transport": "http",
+             "url": "https://example.com/mcp", "tools": ["do_thing"], "enabled": True},
+        ]}).json()
+        assert added["ok"] is True
+        assert [s["name"] for s in added["servers"]] == [
+            "本地档案库 local-archive", "我的新工具 my-tool"]
+
+        # 删光：空清单是合法状态
+        emptied = http.put("/api/settings/mcp", json={"servers": []}).json()
+        assert emptied["servers"] == []
+        assert http.get("/api/settings/mcp").json()["servers"] == []
+
+        # 校验：stdio 缺命令 / http 地址不合法 / 重名
+        assert http.put("/api/settings/mcp", json={"servers": [
+            {"name": "x", "transport": "stdio", "command": ""}]}).status_code == 400
+        assert http.put("/api/settings/mcp", json={"servers": [
+            {"name": "y", "transport": "http", "url": "ftp://bad"}]}).status_code == 400
+        assert http.put("/api/settings/mcp", json={"servers": [
+            {"name": "z", "transport": "stdio", "command": "echo"},
+            {"name": "z", "transport": "stdio", "command": "echo"}]}).status_code == 400
 
 
 # ==========================================================================

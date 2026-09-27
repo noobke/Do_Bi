@@ -9,11 +9,11 @@ from fastapi import APIRouter, Request
 from pydantic import Field
 
 from ...config import (get_settings, load_providers, load_roles, mask,
-                       save_providers, save_secrets)
+                       save_providers, save_roles, save_secrets)
 from ...core.checkpoint import CheckpointManager
 from ...errors import BadRequest, NotConfigured, NotFound
 from ...ingest.disassemble import Disassembler, load as load_disassemble
-from ...integrations.mcp import McpRegistry, ToolGateway
+from ...integrations.mcp import McpRegistry, McpServer, ToolGateway
 from ...orchestrator import BookRunner, Steering
 from ..deps import (get_store, guarded, list_stores, make_client, make_meter,
                     sse_response)
@@ -276,6 +276,72 @@ def get_store_any():
 
 
 # ==========================================================================
+# 设置：模型分工（哪个环节用哪档模型）
+# ==========================================================================
+
+class RoleUpdateBody(ApiBody):
+    model: str | None = None
+    provider: str | None = None
+    temperature: float | None = None
+
+
+@router.put("/settings/roles/{key}")
+def update_role(key: str, body: RoleUpdateBody) -> dict[str, Any]:
+    """给某个环节换模型 / 换服务商 / 调温度。
+
+    `model` 允许写**目录里没有的模型名**（厂商上新很快，不该逼着用户改配置文件），
+    但会做能力校验并回一句提醒。
+    """
+    roles = load_roles()
+    role = roles.get(key)
+    if role is None:
+        raise NotFound(f"没有这个环节：{key}")
+
+    note: str | None = None
+    provider_name = (body.provider or "").strip()
+
+    if body.provider is not None:
+        role.provider = provider_name or None
+
+    if body.model is not None:
+        model_name = body.model.strip()
+        if not model_name:
+            raise BadRequest("模型名不能为空。")
+        role.model = model_name
+
+    if body.temperature is not None:
+        role.temperature = min(2.0, max(0.0, float(body.temperature)))
+
+    # 能力校验：只在该模型能在目录里找到时做；找不到就放行并提醒
+    providers = load_providers()
+    owner = next((p for p in providers if p.name == role.provider), None) \
+        if role.provider else next((p for p in providers if p.model(role.model)), None)
+    if owner is not None:
+        spec = owner.model(role.model)
+        if spec is None:
+            note = (f"「{owner.name}」的模型清单里没有 {role.model}，"
+                    f"将按默认能力尝试；若调用报错请核对模型名。")
+        else:
+            needs = {
+                "json": (spec.supports_json, "结构化输出"),
+                "patch": (spec.supports_json, "结构化输出"),
+                "text": (spec.supports_stream, "流式输出"),
+            }[role.fmt]
+            if not needs[0]:
+                raise BadRequest(
+                    f"{role.label}需要「{needs[1]}」，而 {owner.name} / {role.model} 不支持。"
+                    f"换一个模型，或先把该环节的输出格式调整好。")
+
+    save_roles(roles)
+    return {
+        "ok": True,
+        "note": note,
+        "roles": to_api([r.public() for r in load_roles().values()]),
+        "fallbackChain": [p.name for p in providers if p.enabled and p.configured],
+    }
+
+
+# ==========================================================================
 # 设置：MCP
 # ==========================================================================
 
@@ -308,6 +374,65 @@ async def test_mcp(name: str) -> dict[str, Any]:
     result = await registry.test(name)
     return {"ok": bool(result.get("ok")), "result": result,
             "servers": to_api(registry.servers())}
+
+
+class McpServerBody(ApiBody):
+    name: str = Field(min_length=1, max_length=80)
+    transport: str = "stdio"
+    command: str = ""
+    url: str = ""
+    tools: list[str] = Field(default_factory=list)
+    enabled: bool = False
+
+
+class McpServersBody(ApiBody):
+    servers: list[McpServerBody] = Field(default_factory=list)
+
+
+@router.put("/settings/mcp")
+def update_mcp(body: McpServersBody) -> dict[str, Any]:
+    """整体保存外部工具清单（新增 / 编辑 / 删除都走这里）。
+
+    运行状态（已连接 / 延迟 / 调用次数）按名字继承，编辑配置不会把状态清零。
+    """
+    registry = McpRegistry()
+    known = {s.name: s for s in registry.servers()}
+    seen: set[str] = set()
+    servers: list[McpServer] = []
+
+    for item in body.servers:
+        name = item.name.strip()
+        if name in seen:
+            raise BadRequest(f"外部工具重名了：{name}")
+        seen.add(name)
+        transport = (item.transport or "stdio").strip().lower()
+        if transport not in ("stdio", "http"):
+            raise BadRequest(f"「{name}」的连接方式只能是 stdio 或 http。")
+        command = item.command.strip()
+        url = item.url.strip()
+        if transport == "stdio" and not command:
+            raise BadRequest(f"「{name}」用的是 stdio，必须填启动命令。")
+        if transport == "http" and not url.startswith(("http://", "https://")):
+            raise BadRequest(f"「{name}」用的是 http，地址要以 http:// 或 https:// 开头。")
+
+        old = known.get(name)
+        servers.append(McpServer(
+            name=name, transport=transport,
+            command=command if transport == "stdio" else "",
+            url=url if transport == "http" else "",
+            tools=[t.strip() for t in item.tools if t and t.strip()],
+            enabled=bool(item.enabled),
+            status=old.status if old else "idle",
+            latency=old.latency if old else None,
+            calls=old.calls if old else 0,
+            error=old.error if old else None,
+        ))
+
+    registry.save(servers)
+    return {"ok": True, "servers": to_api(registry.servers()),
+            "enabledCount": sum(1 for s in registry.servers() if s.enabled),
+            "healthyCount": sum(1 for s in registry.servers()
+                                if s.enabled and s.status == "ok")}
 
 
 @router.get("/projects/{project_id}/tools/search")

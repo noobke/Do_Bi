@@ -322,6 +322,9 @@ export const probeProvider = (name: string) =>
   request(`/api/settings/providers/${enc(name)}/probe`, json('POST'))
 export const updateProvider = (name: string, body: unknown) =>
   request(`/api/settings/providers/${enc(name)}`, json('PUT', body))
+/** 给某个环节换模型 / 换服务商 / 调温度（key 见 model_roles.json 的 key 字段） */
+export const updateRole = (key: string, body: unknown) =>
+  request(`/api/settings/roles/${enc(key)}`, json('PUT', body))
 export const getMcp = () => request('/api/settings/mcp')
 export const toggleMcp = (name: string) =>
   request('/api/settings/mcp/toggle', json('POST', { name }))

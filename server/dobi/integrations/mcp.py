@@ -23,7 +23,8 @@ from typing import Any
 
 import httpx
 
-from ..config import CONFIG_DIR, Settings, get_settings
+from .. import config as _config
+from ..config import Settings, get_settings
 from ..core.memory import MemoryIndex
 from ..errors import NotFound
 
@@ -41,8 +42,13 @@ __all__ = [
 
 def _config_file() -> Path:
     """配置文件路径**延迟解析**：这样测试或部署时可以把 `config/` 指到别处，
-    而不会把状态写回仓库里的真实配置。"""
-    return (get_settings().config_dir or CONFIG_DIR) / "mcp.json"
+    而不会把状态写回仓库里的真实配置。
+
+    注意：这里**必须**走 `_config.CONFIG_DIR`（模块属性，可在测试里被替换），
+    若在 import 期就 `from ..config import CONFIG_DIR` 取到值，测试隔离会失效——
+    写入会落到仓库里的真实 `config/mcp.json`。
+    """
+    return (_config.get_settings().config_dir or _config.CONFIG_DIR) / "mcp.json"
 
 
 #: 面向作者的降级提示（不含研发词）
@@ -101,25 +107,17 @@ class McpServer:
         return cls(**data)
 
 
-#: 初始配置（照抄 mock.js 的 4 个服务器；仅把 mock 里的英文报错改成作者能懂的中文）
+#: 兜底配置：只在 `config/mcp.json` **缺失或损坏**时用。
+#: 第 1 条是本项目自带的、真能跑通的示例（见 `server/mcp/example_server.py`）。
 DEFAULT_SERVERS: list[dict[str, Any]] = [
-    {"name": "设定库 setting-vault", "transport": "stdio",
-     "command": "npx -y @dobi/mcp-setting-vault",
-     "tools": ["lookup_setting", "list_settings"],
-     "enabled": True, "status": "ok", "latency": 42, "calls": 128},
+    {"name": "本地档案库 local-archive", "transport": "stdio",
+     "command": "python3 mcp/example_server.py",
+     "tools": ["lookup_setting", "search_reference", "fetch_history"],
+     "enabled": True, "status": "idle", "latency": None, "calls": 0},
     {"name": "资料检索 reference-search", "transport": "http",
      "url": "https://mcp.local/reference/mcp",
      "tools": ["search_reference"],
-     "enabled": True, "status": "ok", "latency": 186, "calls": 47},
-    {"name": "历史存档 archive-local", "transport": "stdio",
-     "command": "node ./mcp/archive.js",
-     "tools": ["fetch_history"],
      "enabled": False, "status": "idle", "latency": None, "calls": 0},
-    {"name": "百科拓展 wiki-bridge", "transport": "http",
-     "url": "https://mcp.local/wiki/mcp",
-     "tools": ["search_reference"],
-     "enabled": False, "status": "failed", "latency": None, "calls": 0,
-     "error": "外部工具未响应，已改用内置检索（上次尝试 2026-09-24 21:02）"},
 ]
 
 
@@ -348,7 +346,9 @@ class McpRegistry:
             except json.JSONDecodeError:
                 raw = None
         items = raw.get("servers") if isinstance(raw, dict) else raw
-        if not isinstance(items, list) or not items:
+        # 注意：**空列表是合法状态**（作者把外部工具全删了），不能回落到默认值，
+        # 否则「删除最后一个」会看起来无效。只有文件缺失/结构不对才用兜底。
+        if not isinstance(items, list):
             items = DEFAULT_SERVERS
         return [McpServer.from_dict(x) for x in items if isinstance(x, dict)]
 

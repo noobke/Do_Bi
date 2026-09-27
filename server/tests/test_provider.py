@@ -56,7 +56,8 @@ def client_with(handler, monkeypatch) -> LLMClient:
 
 class TestCredentials:
     def test_missing_key_raises_not_configured(self, env, monkeypatch):
-        for name in ("DOBI_KEY_DEEPSEEK", "DOBI_KEY_OPENAI", "DOBI_KEY_DASHSCOPE"):
+        for name in ("DOBI_KEY_DEEPSEEK", "DOBI_KEY_MIMO", "DOBI_KEY_OPENAI",
+                     "DOBI_KEY_DASHSCOPE", "DOBI_KEY_SILICONFLOW"):
             monkeypatch.delenv(name, raising=False)
         client = LLMClient()
         assert not client.has_credentials()
@@ -67,7 +68,8 @@ class TestCredentials:
     def test_fallback_chain_order(self, env):
         client = LLMClient()
         names = [p.name for p in client.usable_providers()]
-        assert names == ["DeepSeek", "OpenAI", "通义千问"]   # 按 priority
+        # 按 priority；出厂只启用 DeepSeek 与 MiMo，其余停用不参与降级链
+        assert names == ["DeepSeek", "MiMo"]
         assert "硅基流动" not in names                       # enabled=false
 
     def test_disabled_provider_excluded(self, env):
@@ -116,8 +118,8 @@ class TestRetryAndFallback:
         result = asyncio.run(client.complete("architect", MESSAGES))
 
         assert hits.count("api.deepseek.com") == 2      # 首次 + 1 次重试（DOBI_MAX_RETRIES=1）
-        assert result.provider == "OpenAI"
-        assert result.degraded_from == "DeepSeek/deepseek-reasoner"
+        assert result.provider == "MiMo"                 # 降级到备用服务商
+        assert result.degraded_from == "DeepSeek/deepseek-v4-pro"
 
     def test_auth_error_does_not_retry_but_falls_back(self, env, monkeypatch):
         seen: list[str] = []
@@ -132,8 +134,8 @@ class TestRetryAndFallback:
         client = client_with(handler, monkeypatch)
         import asyncio
         result = asyncio.run(client.complete("architect", MESSAGES))
-        assert result.provider == "OpenAI"
-        assert result.degraded_from == "DeepSeek/deepseek-reasoner"
+        assert result.provider == "MiMo"
+        assert result.degraded_from == "DeepSeek/deepseek-v4-pro"
         # DeepSeek 只被敲了一次（401 不重试）
         assert seen.count("api.deepseek.com") == 1
 

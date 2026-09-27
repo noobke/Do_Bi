@@ -60,7 +60,10 @@ def env(tmp_path, monkeypatch):
                 shutil.copy(_SHIPPED_CONFIG / name, path)
 
     # ---- 密钥与稳定性参数 ----
+    # 出厂默认启用 DeepSeek + MiMo（见 config/providers.json），所以这两个都给上密钥；
+    # OpenAI / 通义千问 出厂是停用状态，给不给密钥都不参与降级链。
     monkeypatch.setenv("DOBI_KEY_DEEPSEEK", "sk-test-deepseek-0001")
+    monkeypatch.setenv("DOBI_KEY_MIMO", "sk-test-mimo-0004")
     monkeypatch.setenv("DOBI_KEY_OPENAI", "sk-test-openai-0002")
     monkeypatch.setenv("DOBI_KEY_DASHSCOPE", "sk-test-dashscope-0003")
     monkeypatch.setenv("DOBI_MAX_RETRIES", "1")

@@ -270,6 +270,24 @@ def save_providers(specs: list[ProviderSpec]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+ROLES_COMMENT = (
+    "模型角色分工（规划文档 §6.2）。温度与输出格式按环节性质固定："
+    "审计/抽取要低温求稳定，正文要高温求文采。fallbacks 写 '服务商名/模型名'，"
+    "同环节主备必须都支持该输出格式，否则降级链中途会断。"
+    "**模型名请以服务商当前可用的名称为准**（厂商会下线旧名）。"
+)
+
+
+def save_roles(roles: dict[str, ModelRoleSpec] | list[ModelRoleSpec]) -> None:
+    """写回 `model_roles.json`。**保持原文件顺序**（设置页表格的行序不变）。"""
+    items = list(roles.values()) if isinstance(roles, dict) else list(roles)
+    path = get_settings().roles_file
+    payload = {"_comment": ROLES_COMMENT,
+               "roles": [r.model_dump() for r in items]}
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
 def reload_config() -> None:
     """配置改动（如设置页写入 providers.json）后调用，清缓存。"""
     get_settings.cache_clear()
