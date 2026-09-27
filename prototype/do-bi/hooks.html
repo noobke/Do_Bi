@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>伏笔看板 · Do_Bi 小说创作台</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="hooks">
+
+<!-- =====================================================================
+     App Shell（冻结）· 与 index.html 逐字一致
+     ===================================================================== -->
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-seal" aria-hidden="true"></span>
+    <span class="brand-name">Do_Bi</span>
+    <span class="brand-sub">小说创作台</span>
+  </div>
+
+  <nav class="nav" aria-label="主导航">
+    <a class="nav-item" data-nav="projects" href="index.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>
+      项目
+    </a>
+    <a class="nav-item" data-nav="workbench" href="workbench.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
+      工作台
+    </a>
+    <a class="nav-item" data-nav="chat" href="chat.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+      共创
+    </a>
+    <a class="nav-item" data-nav="characters" href="characters.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      角色
+    </a>
+    <a class="nav-item" data-nav="hooks" href="hooks.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+      伏笔
+    </a>
+    <a class="nav-item" data-nav="outline" href="outline.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+      结构
+    </a>
+    <a class="nav-item" data-nav="world" href="world.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      世界观
+    </a>
+    <a class="nav-item" data-nav="audit" href="audit.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+      审计
+    </a>
+    <a class="nav-item" data-nav="style" href="style.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>
+      文风
+    </a>
+    <a class="nav-item" data-nav="settings" href="settings.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+      设置
+    </a>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="foot-label">当前项目</div>
+    <div class="foot-title" id="foot-title">雁回关</div>
+    <div class="foot-meta"><span id="foot-progress">第 17 / 60 章</span><span id="foot-words">86,420 字</span></div>
+    <div class="progress" style="margin-top:10px"><i id="foot-bar" style="width:28%"></i></div>
+    <div class="foot-meta"><span>预算已用</span><span id="foot-budget">¥12.60 / ¥80.00</span></div>
+  </div>
+</aside>
+
+<main class="main" id="main">
+  <div class="wrap">
+
+    <!-- topbar -->
+    <header class="topbar" data-reveal>
+      <div>
+        <h1>伏笔看板</h1>
+        <div class="topbar-sub">共 8 条 · 已回收 2 条 · 超期 1 条</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="seg" data-seg="hook-filter" id="hook-filter">
+          <button data-value="all" class="active">全部</button>
+          <button data-value="major">仅主线</button>
+          <button data-value="overdue">仅超期</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="stack-24">
+
+      <!-- 统计 -->
+      <div class="grid-4" id="hook-stats" data-reveal></div>
+
+      <!-- 状态泳道 -->
+      <section class="card" data-reveal>
+        <div class="card-head">
+          <h2>状态泳道</h2>
+          <span class="tag tag-quiet">8 条</span>
+        </div>
+        <div class="card-body">
+          <div class="grid-3">
+            <div class="lane">
+              <div class="lane-head"><span>待回收</span><span class="mono" id="lane-count-planted">—</span></div>
+              <div class="lane-body" id="lane-planted"></div>
+            </div>
+            <div class="lane">
+              <div class="lane-head"><span>已回收</span><span class="mono" id="lane-count-resolved">—</span></div>
+              <div class="lane-body" id="lane-resolved"></div>
+            </div>
+            <div class="lane">
+              <div class="lane-head"><span>超期告警</span><span class="mono" id="lane-count-overdue">—</span></div>
+              <div class="lane-body" id="lane-overdue"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 伏笔时间线 -->
+      <section class="card" data-reveal>
+        <div class="card-head">
+          <h2>伏笔时间线</h2>
+          <span class="tag tag-quiet">第 1 – 20 章</span>
+        </div>
+        <div class="card-body">
+          <div class="timeline" id="hook-timeline"></div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<script src="assets/mock.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = App.$, h = App.h;
+
+  var hooks = [];
+  var filter = 'all';
+
+  var STATUS = {
+    planted:  { tag: 'tag tag-seal',   label: '待回收', cls: '' },
+    resolved: { tag: 'tag tag-ok',     label: '已回收', cls: 'is-resolved' },
+    overdue:  { tag: 'tag tag-danger', label: '超期',   cls: 'is-overdue' }
+  };
+
+  var LANES = [
+    { status: 'planted',  box: '#lane-planted',  count: '#lane-count-planted',  empty: '无待回收伏笔' },
+    { status: 'resolved', box: '#lane-resolved', count: '#lane-count-resolved', empty: '无已回收伏笔' },
+    { status: 'overdue',  box: '#lane-overdue',  count: '#lane-count-overdue',  empty: '无超期伏笔' }
+  ];
+
+  function emptyBox(text) {
+    var el = h('div', { class: 'empty' });
+    el.innerHTML =
+      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/><path d="m9.5 10.5 5 5"/><path d="m14.5 10.5-5 5"/></svg>' +
+      '<span class="fs-12">' + text + '</span>';
+    return el;
+  }
+
+  function hookCard(hk) {
+    var s = STATUS[hk.status];
+    var card = h('div', { class: 'hook-card' + (s.cls ? ' ' + s.cls : '') });
+    card.innerHTML =
+      (hk.importance === 'major' ? '<div style="margin-bottom:8px"><span class="chip">主线</span></div>' : '') +
+      '<div class="hook-text">' + hk.content + '</div>' +
+      '<div class="hook-meta">' +
+        '<span class="mono">' + hk.id + ' · 埋于第 ' + hk.plantedChapter + ' 章</span>' +
+        '<span class="' + s.tag + '">' + s.label + '</span>' +
+      '</div>';
+    return card;
+  }
+
+  /* ---------- 统计条 ---------- */
+  function renderStats(s) {
+    var majorOpen = hooks.filter(function (x) {
+      return x.importance === 'major' && x.status !== 'resolved';
+    }).length;
+    var majorResolved = hooks.filter(function (x) {
+      return x.importance === 'major' && x.status === 'resolved';
+    }).length;
+
+    var defs = [
+      { label: '总伏笔', value: s.total,    hint: '全书追踪 · 回收率 ' + s.rate + '%', alert: false },
+      { label: '已回收', value: s.resolved, hint: '主线 ' + majorResolved + ' 条 · 支线 ' + (s.resolved - majorResolved) + ' 条', alert: false },
+      { label: '待回收', value: s.planted,  hint: '其中主线 ' + majorOpen + ' 条',      alert: false },
+      { label: '超期告警', value: s.overdue, hint: '建议回收章已逾期',                  alert: true }
+    ];
+
+    var box = $('#hook-stats');
+    box.innerHTML = '';
+    defs.forEach(function (d) {
+      var st = h('div', { class: 'stat' });
+      st.innerHTML =
+        '<div class="stat-label">' + d.label + '</div>' +
+        '<div class="stat-value">' +
+          (d.alert ? '<span class="dot" style="background:var(--crimson);vertical-align:middle;margin-right:6px"></span>' : '') +
+          d.value +
+        '</div>' +
+        '<div class="fs-12 muted" style="margin-top:6px">' + d.hint + '</div>';
+      box.appendChild(st);
+    });
+  }
+
+  /* ---------- 状态泳道 ---------- */
+  function renderLanes() {
+    LANES.forEach(function (lane) {
+      var list = hooks.filter(function (x) { return x.status === lane.status; });
+      if (filter === 'major') list = list.filter(function (x) { return x.importance === 'major'; });
+      if (filter === 'overdue' && lane.status !== 'overdue') list = [];
+
+      $(lane.count).textContent = list.length;
+
+      var box = $(lane.box);
+      box.innerHTML = '';
+      if (!list.length) {
+        box.appendChild(emptyBox(lane.status !== 'overdue' && filter === 'overdue' ? '「仅超期」已隐藏本泳道' : lane.empty));
+        return;
+      }
+      list.forEach(function (hk) { box.appendChild(hookCard(hk)); });
+    });
+  }
+
+  /* ---------- 伏笔时间线 ---------- */
+  function renderTimeline() {
+    var byCh = {};
+    hooks.forEach(function (hk) {
+      /* 埋设章固定用 planted 语义色；仅 resolvedChapter 才用 resolved 语义色。
+         同一章既是埋设又是回收时，两个色点叠加显示（下方 offsets 逻辑保证可辨）。 */
+      (byCh[hk.plantedChapter] = byCh[hk.plantedChapter] || []).push('planted');
+      if (hk.status === 'resolved' && hk.resolvedChapter) {
+        (byCh[hk.resolvedChapter] = byCh[hk.resolvedChapter] || []).push('resolved');
+      }
+    });
+
+    var tl = $('#hook-timeline');
+    tl.innerHTML = '';
+    for (var ch = 1; ch <= 20; ch++) {
+      var row = h('div', { class: 'tl-row' });
+      row.innerHTML = '<span class="tl-ch">第 ' + ch + ' 章</span>';
+
+      var track = h('div', { class: 'tl-track' });
+      var dots = byCh[ch] || [];
+      dots.forEach(function (status, i) {
+        var left = (ch - 1) / 19 * 100;
+        if (dots.length > 1) left += (i - (dots.length - 1) / 2) * 4;
+        left = Math.max(2, Math.min(98, left));
+
+        var dot = h('span', {
+          class: 'tl-dot' +
+            (status === 'resolved' ? ' is-resolved' : (status === 'overdue' ? ' is-overdue' : ''))
+        });
+        dot.style.left = left.toFixed(1) + '%';
+        dot.style.transform = 'translateX(-50%)';
+        track.appendChild(dot);
+      });
+
+      row.appendChild(track);
+      tl.appendChild(row);
+    }
+  }
+
+  /* ---------- 筛选联动 ---------- */
+  $('#hook-filter').addEventListener('seg:change', function (e) {
+    filter = e.detail.value;
+    renderLanes();
+  });
+
+  /* ---------- 载入 ---------- */
+  var loadHooks = function () {
+    Promise.all([api.hookStats(), api.listHooks()]).then(function (res) {
+      hooks = res[1];
+      renderStats(res[0]);
+      renderLanes();
+      renderTimeline();
+    }).catch(function (e) {
+      App.fail('#hook-stats', e, loadHooks);
+    });
+  };
+  loadHooks();
+})();
+</script>
+</body>
+</html>

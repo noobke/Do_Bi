@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>设置 · Do_Bi 小说创作台</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="settings">
+
+<!-- =====================================================================
+     App Shell（冻结）· 与 index.html 逐字一致
+     ===================================================================== -->
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-seal" aria-hidden="true"></span>
+    <span class="brand-name">Do_Bi</span>
+    <span class="brand-sub">小说创作台</span>
+  </div>
+
+  <nav class="nav" aria-label="主导航">
+    <a class="nav-item" data-nav="projects" href="index.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>
+      项目
+    </a>
+    <a class="nav-item" data-nav="workbench" href="workbench.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
+      工作台
+    </a>
+    <a class="nav-item" data-nav="chat" href="chat.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+      共创
+    </a>
+    <a class="nav-item" data-nav="characters" href="characters.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      角色
+    </a>
+    <a class="nav-item" data-nav="hooks" href="hooks.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+      伏笔
+    </a>
+    <a class="nav-item" data-nav="outline" href="outline.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+      结构
+    </a>
+    <a class="nav-item" data-nav="world" href="world.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      世界观
+    </a>
+    <a class="nav-item" data-nav="audit" href="audit.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+      审计
+    </a>
+    <a class="nav-item" data-nav="style" href="style.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>
+      文风
+    </a>
+    <a class="nav-item" data-nav="settings" href="settings.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+      设置
+    </a>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="foot-label">当前项目</div>
+    <div class="foot-title" id="foot-title">雁回关</div>
+    <div class="foot-meta"><span id="foot-progress">第 17 / 60 章</span><span id="foot-words">86,420 字</span></div>
+    <div class="progress" style="margin-top:10px"><i id="foot-bar" style="width:28%"></i></div>
+    <div class="foot-meta"><span>预算已用</span><span id="foot-budget">¥12.60 / ¥80.00</span></div>
+  </div>
+</aside>
+
+<main class="main" id="main">
+  <div class="wrap">
+
+    <!-- topbar -->
+    <header class="topbar" data-reveal>
+      <div>
+        <h1>设置</h1>
+        <div class="topbar-sub">模型接入 · 全部通过 API 调用 · 不含本地模型</div>
+      </div>
+      <div class="topbar-actions">
+        <span class="fs-12 muted">开关与列表项改动即时生效；预算等数值项需点此保存</span>
+        <button class="btn btn-primary btn-sm" id="btn-save">保存配置</button>
+      </div>
+    </header>
+
+    <div class="stack-24">
+
+      <!-- 1. Provider -->
+      <section class="card" data-reveal>
+        <div class="card-head">
+          <h2>模型服务（Provider）</h2>
+          <div class="row">
+            <span class="tag tag-info">OpenAI 兼容协议</span>
+            <button class="btn btn-ghost btn-sm" data-open-modal="modal-provider">添加 Provider</button>
+          </div>
+        </div>
+        <div class="card-body" id="provider-list" style="padding:0"></div>
+      </section>
+
+      <!-- 2. 模型角色映射 -->
+      <section class="card" data-reveal>
+        <div class="card-head">
+          <h2>模型角色映射</h2>
+          <span class="tag tag-quiet">按环节分配</span>
+        </div>
+        <div class="card-body" id="role-card-body">
+          <table class="table">
+            <thead>
+              <tr><th>环节</th><th>模型</th><th>温度</th><th>输出格式</th></tr>
+            </thead>
+            <tbody id="role-rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 3. 上下文预算分配 -->
+      <section class="card" data-reveal>
+        <div class="card-head">
+          <h2>上下文预算分配</h2>
+          <span class="tag tag-quiet">默认 128K Token</span>
+        </div>
+        <div class="card-body">
+          <div class="stack-8" id="budget-list"></div>
+          <div class="fs-12 muted" style="margin-top:12px">超出预算时优先裁剪历史摘要，而非报错</div>
+        </div>
+      </section>
+
+      <!-- 4. 成本与熔断 -->
+      <section class="card" data-reveal>
+        <div class="card-head">
+          <h2>成本与熔断</h2>
+          <span class="tag tag-quiet">按章结算</span>
+        </div>
+        <div class="card-body">
+          <div class="field" style="max-width:280px">
+            <label class="field-label" for="budget-total">项目总预算（¥）</label>
+            <input class="input" id="budget-total" type="number" value="80" step="10" min="1">
+            <span class="field-hint">达到阈值将暂停全自动模式并挂起检查点，不会静默消耗</span>
+            <span class="field-hint" id="budget-hint">累计已用 —，预算不得低于累计已用</span>
+          </div>
+
+          <div class="divider"></div>
+
+          <table class="table">
+            <thead>
+              <tr><th>章节</th><th>输入 tok</th><th>输出 tok</th><th>成本</th></tr>
+            </thead>
+            <tbody id="usage-rows"></tbody>
+          </table>
+          <div class="row-between" style="margin-top:12px">
+            <span class="fs-13 muted">合计</span>
+            <span class="mono" id="usage-total">—</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. MCP 扩展 -->
+      <section class="card" id="mcp-card" data-reveal>
+        <div class="card-head">
+          <h2>MCP 扩展</h2>
+          <div class="row">
+            <span class="tag tag-info">可关闭 · 不影响主流程</span>
+            <button class="btn btn-ghost btn-sm" data-open-modal="modal-mcp">添加服务器</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div id="mcp-list"></div>
+        </div>
+        <div class="card-foot">
+          <span class="fs-12 muted">MCP 为增强能力：未配置或连接失败时，全部工具调用自动回落到内置检索，不阻塞主流程。</span>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<!-- 添加 MCP 服务器 -->
+<div class="modal" id="modal-mcp" hidden>
+  <div class="modal-veil"></div>
+  <div class="modal-card">
+    <div class="card-head">
+      <h2>添加 MCP 服务器</h2>
+      <button class="btn btn-quiet btn-sm" data-close-modal>关闭</button>
+    </div>
+    <div class="card-body stack">
+      <p class="fs-13 muted">MCP 服务器用于给 Agent 提供外部工具（如设定库、资料检索、历史存档）。连接失败不影响主流程。</p>
+      <div class="field">
+        <label class="field-label" for="mcp-name">名称</label>
+        <input class="input" id="mcp-name" type="text" placeholder="例如：设定库 setting-vault">
+      </div>
+      <div class="field">
+        <label class="field-label" for="mcp-transport">传输方式</label>
+        <select class="select" id="mcp-transport">
+          <option value="stdio">stdio（本地命令）</option>
+          <option value="http">http（远程端点）</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label" for="mcp-target">命令或 URL</label>
+        <input class="input" id="mcp-target" type="text" placeholder="npx -y @dobi/mcp-setting-vault">
+        <span class="field-hint">stdio 填可执行命令；http 填 MCP 端点 URL。</span>
+      </div>
+    </div>
+    <div class="card-foot row" style="justify-content:flex-end">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="btn-add-mcp">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- 添加 Provider -->
+<div class="modal" id="modal-provider" hidden>
+  <div class="modal-veil"></div>
+  <div class="modal-card">
+    <div class="card-head">
+      <h2>添加 Provider</h2>
+      <button class="btn btn-quiet btn-sm" data-close-modal>关闭</button>
+    </div>
+    <div class="card-body stack">
+      <div class="field">
+        <label class="field-label" for="pv-name">名称</label>
+        <input class="input" id="pv-name" type="text" placeholder="例如 DeepSeek">
+      </div>
+      <div class="field">
+        <label class="field-label" for="pv-url">Base URL</label>
+        <input class="input" id="pv-url" type="text" placeholder="https://api.deepseek.com/v1">
+      </div>
+      <div class="field">
+        <label class="field-label" for="pv-key">API Key</label>
+        <input class="input" id="pv-key" type="password" autocomplete="off">
+        <span class="field-hint">密钥仅存服务端环境变量，前端不落盘</span>
+      </div>
+      <div class="field">
+        <label class="field-label" for="pv-model">默认模型</label>
+        <input class="input" id="pv-model" type="text" placeholder="deepseek-chat">
+      </div>
+    </div>
+    <div class="card-foot row" style="justify-content:flex-end">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="btn-add-provider">添加</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/mock.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = App.$, h = App.h;
+  var budgetUsed = 0;   /* 项目累计已用（getProject），预算下限校验的唯一依据 */
+  var usageSum = 0;     /* 下方用量明细表的合计，仅供对照 */
+
+  function syncBudgetHint() {
+    var bh = $('#budget-hint');
+    if (!bh) return;
+    bh.textContent = '累计已用 ' + App.fmtMoney(budgetUsed) +
+      (usageSum ? '（本表明细 ' + App.fmtMoney(usageSum) + '）' : '') + '，预算不得低于累计已用';
+  }
+  api.getProject().then(function (p) { budgetUsed = p.budgetUsed; syncBudgetHint(); });
+
+  /* ---------- 顶栏：保存配置 ---------- */
+  $('#btn-save').addEventListener('click', function () {
+    var btn = this;
+    var val = Number($('#budget-total').value);
+    if (!val || val < budgetUsed) {
+      App.toast('预算不得低于已用成本 ' + App.fmtMoney(budgetUsed), 'warn');
+      $('#budget-total').focus();
+      return;
+    }
+    App.loading(btn, true, '保存中…');
+    setTimeout(function () {
+      App.loading(btn, false);
+      App.toast('配置已保存（演示）', 'ok');
+    }, 600);
+  });
+
+  /* ---------- 1. Provider 列表 ---------- */
+  var loadProviders = function () {
+    api.listProviders().then(function (list) {
+      var box = $('#provider-list');
+      list.forEach(function (p) {
+        var rowEl = h('div', { class: 'provider-card' });
+        rowEl.innerHTML =
+          '<div>' +
+            '<div class="provider-name">' + p.name + '</div>' +
+            '<div class="provider-url mono">' + p.baseUrl + '</div>' +
+          '</div>';
+
+        var right = h('div', { class: 'row' });
+        right.innerHTML = p.configured
+          ? '<span class="tag tag-ok">已配置</span>'
+          : '<span class="tag tag-quiet">未配置</span>';
+
+        var test = h('button', { class: 'btn btn-quiet btn-sm', text: '测试连接' });
+        if (!p.configured) test.disabled = true;
+        test.addEventListener('click', function () {
+          App.loading(test, true, '测试中…');
+          setTimeout(function () {
+            App.loading(test, false);
+            App.toast('连接正常：' + p.name + '（演示）', 'ok');
+          }, 800);
+        });
+        right.appendChild(test);
+
+        rowEl.appendChild(right);
+        box.appendChild(rowEl);
+      });
+    }).catch(function (e) {
+      App.fail('#provider-list', e, loadProviders);
+    });
+  };
+  loadProviders();
+
+  /* ---------- 2. 模型角色映射 ---------- */
+  var loadModelRoles = function () {
+    api.listModelRoles().then(function (list) {
+      var tb = $('#role-rows');
+      list.forEach(function (r) {
+        var tr = h('tr');
+        tr.innerHTML =
+          '<td>' + r.step + '</td>' +
+          '<td class="mono">' + r.model + '</td>' +
+          '<td class="mono">' + r.temperature + '</td>' +
+          '<td>' + r.format + '</td>';
+        tb.appendChild(tr);
+      });
+    }).catch(function (e) {
+      App.fail('#role-card-body', e, loadModelRoles);
+    });
+  };
+  loadModelRoles();
+
+  /* ---------- 3. 上下文预算分配 ---------- */
+  var loadBudgetSplit = function () {
+    api.listBudgetSplit().then(function (list) {
+      var box = $('#budget-list');
+      list.forEach(function (b) {
+        var item = h('div');
+        item.innerHTML =
+          '<div class="row-between fs-13"><span>' + b.label + '</span><span class="mono">' + b.pct + '%</span></div>' +
+          '<div class="progress" style="margin-top:6px"><i style="width:' + b.pct + '%"></i></div>';
+        box.appendChild(item);
+      });
+    }).catch(function (e) {
+      App.fail('#budget-list', e, loadBudgetSplit);
+    });
+  };
+  loadBudgetSplit();
+
+  /* ---------- 4. 成本统计 ---------- */
+  var loadUsage = function () {
+    api.listUsage().then(function (rows) {
+      var tb = $('#usage-rows');
+      var total = 0;
+      rows.forEach(function (u) {
+        total += u.cost;
+        var tr = h('tr');
+        tr.innerHTML =
+          '<td>第 ' + u.chapter + ' 章</td>' +
+          '<td class="mono">' + App.fmtInt(u.promptTokens) + '</td>' +
+          '<td class="mono">' + App.fmtInt(u.completionTokens) + '</td>' +
+          '<td class="mono">' + App.fmtMoney(u.cost) + '</td>';
+        tb.appendChild(tr);
+      });
+      $('#usage-total').textContent = App.fmtMoney(total);
+      usageSum = total;
+      syncBudgetHint();
+    }).catch(function (e) {
+      App.fail('#usage-rows', e, loadUsage);
+    });
+  };
+  loadUsage();
+
+  /* ---------- 模态：添加 Provider ---------- */
+  $('#btn-add-provider').addEventListener('click', function () {
+    var btn = this;
+    App.loading(btn, true, '添加中…');
+    setTimeout(function () {
+      App.loading(btn, false);
+      $('#modal-provider').hidden = true;
+      App.toast('已添加 Provider（演示）', 'ok');
+    }, 500);
+  });
+
+  /* ---------- 5. MCP 扩展列表 ---------- */
+  function renderMcp() {
+    api.listMcpServers().then(function (list) {
+      var box = $('#mcp-list');
+      box.innerHTML = '';
+      list.forEach(function (s) {
+        var rowEl = h('div', { class: 'provider-card' });
+
+        var left = h('div');
+        var leftHtml =
+          '<div class="provider-name">' + s.name + '</div>' +
+          '<div class="provider-url mono">' + (s.transport === 'stdio' ? s.command : s.url) + '</div>';
+        if (s.tools && s.tools.length) {
+          leftHtml += '<div class="wrap-row" style="margin-top:8px">' +
+            s.tools.map(function (t) { return '<span class="chip">' + t + '</span>'; }).join('') +
+            '</div>';
+        }
+        if (s.error) {
+          leftHtml += '<div class="fs-12" style="color:var(--crimson);margin-top:6px">' + s.error + '</div>';
+        }
+        left.innerHTML = leftHtml;
+
+        var right = h('div', { class: 'row' });
+
+        var sw = h('button', { class: 'switch' + (s.enabled ? ' is-on' : ''), 'aria-label': '启用/停用' });
+        sw.addEventListener('click', function () {
+          api.toggleMcp(s.name).then(function () {
+            renderMcp();
+            App.toast((s.enabled ? '已停用：' : '已启用：') + s.name, 'ok');
+          });
+        });
+        right.appendChild(sw);
+
+        if (s.status === 'ok') {
+          right.insertAdjacentHTML('beforeend', '<span class="tag tag-ok">已连接 · ' + s.latency + 'ms</span>');
+        } else if (s.status === 'idle') {
+          right.insertAdjacentHTML('beforeend', '<span class="tag tag-quiet">已停用</span>');
+        } else if (s.status === 'failed') {
+          right.insertAdjacentHTML('beforeend', '<span class="tag tag-danger">连接失败</span>');
+        }
+
+        var test = h('button', { class: 'btn btn-quiet btn-sm', text: '测试' });
+        test.addEventListener('click', function () {
+          App.loading(test, true, '测试中…');
+          api.testMcp(s.name).then(function (r) {
+            App.loading(test, false);
+            App.toast('连接正常：' + s.name + '（' + r.latency + 'ms，演示）', 'ok');
+          });
+        });
+        right.appendChild(test);
+
+        rowEl.appendChild(left);
+        rowEl.appendChild(right);
+        box.appendChild(rowEl);
+      });
+    }).catch(function (e) {
+      App.fail('#mcp-list', e, renderMcp);
+    });
+  }
+  renderMcp();
+
+  /* ---------- 模态：添加 MCP 服务器 ---------- */
+  $('#btn-add-mcp').addEventListener('click', function () {
+    var btn = this;
+    var name = $('#mcp-name').value.trim();
+    var target = $('#mcp-target').value.trim();
+    if (!name || !target) {
+      App.toast('先填写名称与命令/URL', 'warn');
+      return;
+    }
+    App.loading(btn, true, '添加中…');
+    setTimeout(function () {
+      $('#modal-mcp').hidden = true;
+      $('#mcp-name').value = '';
+      $('#mcp-target').value = '';
+      App.toast('已添加 MCP 服务器（演示）', 'ok');
+      App.loading(btn, false);
+    }, 500);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>文风档案 · Do_Bi 小说创作台</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="style">
+
+<!-- =====================================================================
+     App Shell（冻结）· 逐字复制自 index.html
+     ===================================================================== -->
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-seal" aria-hidden="true"></span>
+    <span class="brand-name">Do_Bi</span>
+    <span class="brand-sub">小说创作台</span>
+  </div>
+
+  <nav class="nav" aria-label="主导航">
+    <a class="nav-item" data-nav="projects" href="index.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>
+      项目
+    </a>
+    <a class="nav-item" data-nav="workbench" href="workbench.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
+      工作台
+    </a>
+    <a class="nav-item" data-nav="chat" href="chat.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+      共创
+    </a>
+    <a class="nav-item" data-nav="characters" href="characters.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      角色
+    </a>
+    <a class="nav-item" data-nav="hooks" href="hooks.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+      伏笔
+    </a>
+    <a class="nav-item" data-nav="outline" href="outline.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+      结构
+    </a>
+    <a class="nav-item" data-nav="world" href="world.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      世界观
+    </a>
+    <a class="nav-item" data-nav="audit" href="audit.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+      审计
+    </a>
+    <a class="nav-item" data-nav="style" href="style.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>
+      文风
+    </a>
+    <a class="nav-item" data-nav="settings" href="settings.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+      设置
+    </a>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="foot-label">当前项目</div>
+    <div class="foot-title" id="foot-title">雁回关</div>
+    <div class="foot-meta"><span id="foot-progress">第 17 / 60 章</span><span id="foot-words">86,420 字</span></div>
+    <div class="progress" style="margin-top:10px"><i id="foot-bar" style="width:28%"></i></div>
+    <div class="foot-meta"><span>预算已用</span><span id="foot-budget">¥12.60 / ¥80.00</span></div>
+  </div>
+</aside>
+
+<main class="main" id="main">
+  <div class="wrap">
+
+    <!-- topbar -->
+    <header class="topbar" data-reveal>
+      <div>
+        <h1>文风档案</h1>
+        <div class="topbar-sub" id="topbar-sub">当前文风：寒江独钓 · 从样本提取 · 每次生成都会带上这份文风</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" data-open-modal="modal-extract">提取文风</button>
+        <button class="btn btn-primary btn-sm" id="btn-goto-selector">选择文风</button>
+        <button class="btn btn-ghost btn-sm" id="btn-export">导出文风档案</button>
+      </div>
+    </header>
+
+    <!-- 0 · 当前文风 -->
+    <section class="card" data-reveal style="margin-bottom:24px">
+      <div class="card-head">
+        <h2>当前文风</h2>
+        <div class="row">
+          <span class="tag tag-ok" id="cur-state">已应用</span>
+          <button class="btn btn-ghost btn-sm" data-open-modal="modal-extract">重新提取</button>
+        </div>
+      </div>
+      <div class="card-body" id="cur-body"></div>
+    </section>
+
+    <div class="stack-24">
+
+      <!-- 1 · 三张特征卡 -->
+      <div class="grid-3">
+
+        <div class="card" data-reveal>
+          <div class="card-head"><h2>句式特征</h2></div>
+          <div class="card-body">
+            <div class="stack">
+              <div class="stack-8">
+                <div class="row-between fs-13"><span class="muted">分析来源</span><span class="mono fs-12" id="sp-source">—</span></div>
+                <div class="row-between fs-13"><span class="muted">分析时间</span><span class="mono fs-12" id="sp-at">—</span></div>
+                <div class="row-between fs-13"><span class="muted">消耗额度</span><span class="mono fs-12" id="sp-tokens">—</span></div>
+              </div>
+              <div class="fs-12 muted">句长区间（80 字为满格）</div>
+              <div class="rangebar" id="sp-rangebar" title="p50 / p90 句长刻度">
+                <i id="sp-range" style="left:22.5%;width:35%"></i>
+                <b id="sp-mean" style="left:26.75%"></b>
+              </div>
+              <div class="fs-12 muted" id="sp-length-legend" style="display:flex;justify-content:space-between;margin-top:2px"><span>偏短</span><span>中等</span><span>偏长</span></div>
+              <div class="fs-12 muted" id="sp-sentence-line">—</div>
+              <div class="divider"></div>
+              <div class="fs-13">优先句式</div>
+              <div class="trait-list" id="sp-patterns"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" data-reveal>
+          <div class="card-head"><h2>叙述视角与词法</h2></div>
+          <div class="card-body">
+            <div class="stack">
+              <div class="wrap-row">
+                <span class="chip" id="sp-person">—</span>
+                <span class="chip" id="sp-tense">—</span>
+                <span class="chip">视角切换：<span id="sp-pov">—</span></span>
+              </div>
+              <div class="fs-12 muted" id="sp-anchor">—</div>
+              <div class="divider"></div>
+              <div class="list" id="sp-lexicon"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" data-reveal>
+          <div class="card-head"><h2>描写 · 对话 · 动作 比例</h2></div>
+          <div class="card-body">
+            <div class="stack">
+              <div class="stackbar" id="sp-ratio"></div>
+              <div class="stackbar-legend" id="sp-ratio-legend"></div>
+              <div class="fs-12 muted" title="L1 第 13 条规则">描写与对话的比例偏离你的文风时会被提示</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 2 · 选择文风 -->
+      <section class="card" id="style-selector" data-reveal style="margin-bottom:24px">
+        <div class="card-head">
+          <h2>选择文风</h2>
+          <div class="seg" data-seg="style-cat" id="style-cat"></div>
+        </div>
+        <div class="card-body">
+          <div class="fs-12 muted" style="margin-bottom:16px">样段是选择文风最可靠的依据——设置文案会骗人，输出不会。</div>
+          <div class="style-grid" id="preset-grid"></div>
+        </div>
+      </section>
+
+      <!-- 3 · 禁用表达 -->
+      <div class="card" data-reveal>
+        <div class="card-head">
+          <h2>禁用表达</h2>
+          <span class="tag tag-quiet" id="banned-tag">—</span>
+        </div>
+        <div class="card-body">
+          <div class="stack">
+            <div class="fs-12 muted" title="L1 第 4 条「禁用句式命中」· spot-fix 定点修复">命中后只定点改写有问题的句子</div>
+            <div class="wrap-row" id="banned-list"></div>
+            <div class="row">
+              <input class="input" id="banned-input" placeholder="新增一条禁用表达，回车确认" style="max-width:320px">
+              <button class="btn btn-ghost btn-sm" id="btn-add-banned">添加</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 · 注入预览 -->
+      <div class="card" data-reveal>
+        <div class="card-head">
+          <h2>注入预览</h2>
+          <span class="tag tag-info" id="inject-tag">必选 · 不消耗额度</span>
+        </div>
+        <div class="card-body">
+          <div class="stack">
+            <div class="fs-13 muted">每次生成都会带上这段上下文；因体量小，不占用检索配额，也不参与相关性竞争</div>
+            <div class="mono-block" id="inject-text"></div>
+            <div class="divider"></div>
+            <div class="fs-13">试写对比</div>
+            <div class="grid-2">
+              <div class="stack-8">
+                <div class="fs-12 muted">通用文风（未注入）</div>
+                <div class="ms-text" id="sample-plain"></div>
+              </div>
+              <div class="stack-8">
+                <div class="fs-12 muted">注入档案后</div>
+                <div class="ms-text" id="sample-styled"></div>
+              </div>
+            </div>
+            <div class="fs-12 muted" title="L2 模型审查 · L1 规则校验">同时作为 模型审查「文风偏移」与 规则校验第 13 条的对照基准</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- 提取文风 -->
+<div class="modal" id="modal-extract" hidden>
+  <div class="modal-veil"></div>
+  <div class="modal-card">
+    <div class="card-head">
+      <h2>提取文风</h2>
+      <button class="btn btn-quiet btn-sm" data-close-modal>关闭</button>
+    </div>
+    <div class="card-body stack">
+      <p class="fs-13 muted">提取会读样本的行文特征（句长分布、叙述视角、描写与对话比例、高频句式、套语），生成一份文风档案（可导出），作为每次生成的必选上下文。</p>
+      <div class="fs-13">选择提取来源</div>
+      <div class="src-list" id="src-list"></div>
+      <div class="field">
+        <label class="field-label" for="src-paste">或直接粘贴样本</label>
+        <textarea class="textarea" id="src-paste" placeholder="粘贴 8000 字以上同风格文本，效果更稳。留空则只用上面勾选的来源。"></textarea>
+        <span class="field-hint">样本越纯净（单一作者、同一文体），提取结果越可用。</span>
+      </div>
+    </div>
+    <div class="card-foot row" style="justify-content:flex-end">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="btn-extract">开始提取</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/mock.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = App.$, h = App.h;
+
+  /* ---------- 句式特征 ---------- */
+  function renderSentence(p) {
+    var s = p.sentence;
+    var scale = s.scale || 80;
+    var p50 = s.p50 / scale * 100;
+    var p90 = s.p90 / scale * 100;
+    var mean = s.mean / scale * 100;
+
+    $('#sp-source').textContent = p.source;
+    $('#sp-at').textContent = p.analyzedAt;
+    $('#sp-tokens').textContent = App.fmtInt(p.tokens);
+
+    var range = $('#sp-range');
+    range.style.left = p50 + '%';
+    range.style.width = (p90 - p50) + '%';
+    $('#sp-mean').style.left = mean + '%';
+
+    $('#sp-rangebar').title = 'p50 ' + s.p50 + ' 字 · p90 ' + s.p90 + ' 字';
+    $('#sp-sentence-line').textContent =
+      '一半句子短于 ' + s.p50 + ' 字 · 九成句子短于 ' + s.p90 + ' 字 · 平均 ' + s.mean + ' 字';
+
+    var box = $('#sp-patterns');
+    box.innerHTML = '';
+    p.patterns.forEach(function (t) {
+      var el = h('div', { class: 'trait' });
+      el.innerHTML = '<i></i><span>' + t + '</span>';
+      box.appendChild(el);
+    });
+  }
+
+  /* ---------- 叙述视角与词法 ---------- */
+  function renderNarrative(p) {
+    var n = p.narrative;
+    $('#sp-person').textContent = n.person;
+    $('#sp-tense').textContent = n.tense;
+    $('#sp-pov').textContent = n.povSwitch;
+    $('#sp-anchor').textContent = n.anchor;
+
+    var box = $('#sp-lexicon');
+    box.innerHTML = '';
+    p.lexicon.forEach(function (row) {
+      var el = h('div', { class: 'list-row' });
+      el.innerHTML = '<div class="row-main"><div class="row-title">' + row.key +
+        '</div><div class="row-sub">' + row.value + '</div></div>';
+      box.appendChild(el);
+    });
+  }
+
+  /* ---------- 比例 ---------- */
+  function renderRatio(p) {
+    var bar = $('#sp-ratio');
+    var legend = $('#sp-ratio-legend');
+    bar.innerHTML = '';
+    legend.innerHTML = '';
+    p.ratio.forEach(function (it) {
+      var seg = h('i');
+      seg.style.width = it.pct + '%';
+      seg.style.background = it.color;
+      bar.appendChild(seg);
+
+      var item = h('span', { class: 'legend-item' });
+      var swatch = h('span', { class: 'legend-swatch is-node' });
+      swatch.style.background = it.color;
+      swatch.style.border = 'none';
+      item.appendChild(swatch);
+      item.appendChild(h('span', { text: it.label + ' ' + it.pct + '%' }));
+      legend.appendChild(item);
+    });
+  }
+
+  /* ---------- 禁用表达 ---------- */
+  function renderBanned(list) {
+    var box = $('#banned-list');
+    box.innerHTML = '';
+    list.forEach(function (expr) {
+      var chip = h('span', { class: 'chip-removable' });
+      chip.appendChild(h('span', { text: expr }));
+      var x = h('button', { class: 'chip-x', 'aria-label': '移除', text: '×' });
+      x.addEventListener('click', function () {
+        api.removeBanned(expr).then(function (next) {
+          App.toast('已移除：' + expr, 'ok');
+          renderBanned(next);
+        });
+      });
+      chip.appendChild(x);
+      box.appendChild(chip);
+    });
+    $('#banned-tag').textContent = list.length + ' 条';
+  }
+
+  function addBanned() {
+    var input = $('#banned-input');
+    var v = input.value.trim();
+    if (!v) return;
+    api.addBanned(v).then(function (list) {
+      input.value = '';
+      renderBanned(list);
+      App.toast('已新增禁用表达：' + v, 'ok');
+    });
+  }
+
+  /* ---------- 注入预览 ---------- */
+  function renderInjection(p) {
+    $('#inject-tag').textContent = '必选 · 不消耗额度';
+    $('#inject-text').textContent = p.injection.text;
+    $('#sample-plain').textContent = p.sample.plain;
+    $('#sample-styled').textContent = p.sample.styled;
+  }
+
+  /* ---------- 加载 / 重渲染整页 ---------- */
+  function load() {
+    return Promise.all([api.getStyleProfile(), api.listStylePresets()]).then(function (res) {
+      var p = res[0];
+      currentPresets = res[1];
+      renderSentence(p);
+      renderNarrative(p);
+      renderRatio(p);
+      renderBanned(p.banned);
+      renderInjection(p);
+      renderCurrentStyle();
+      setTopbarSub();
+      renderCategories();
+      renderPresetGrid('全部');
+    }).catch(function (e) {
+      App.fail('#preset-grid', e, load);
+    });
+  }
+
+  $('#btn-export').addEventListener('click', function () {
+    App.toast('已导出 style_profile.json（演示）', 'ok');
+  });
+
+  $('#btn-add-banned').addEventListener('click', addBanned);
+  $('#banned-input').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') addBanned();
+  });
+
+  /* ---------- 当前文风 ---------- */
+  var currentPresets = [];
+
+  function appliedPreset() {
+    return currentPresets.filter(function (p) { return p.applied; })[0];
+  }
+
+  function setTopbarSub() {
+    var sub = $('#topbar-sub');
+    if (!sub) return;
+    var p = appliedPreset();
+    sub.textContent = p
+      ? '当前文风：' + p.name + ' · 每次生成都会带上这份文风'
+      : '尚未选择文风 · 提取或选择一份档案后，每次生成都会自动带上它';
+  }
+
+  function gotoSelector() {
+    var el = $('#style-selector');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderCurrentStyle() {
+    var body = $('#cur-body');
+    if (!body) return;
+    body.innerHTML = '';
+
+    var p = appliedPreset();
+    if (!p) {
+      body.appendChild(h('div', { class: 'empty' },
+        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>' +
+        '<div class="fs-13">尚未选择文风</div>'));
+      $('#cur-state').textContent = '未应用';
+      $('#cur-state').className = 'tag tag-quiet';
+      return;
+    }
+    $('#cur-state').textContent = '已应用';
+    $('#cur-state').className = 'tag tag-ok';
+
+    body.appendChild(h('div', { class: 'row-between' },
+      '<div class="style-name">' + p.name + '</div>' +
+      '<span class="tag tag-quiet">' + p.category + '</span>'));
+    body.appendChild(h('div', { class: 'fs-12 muted', style: 'margin-top:4px' }, p.tagline));
+    body.appendChild(h('div', { class: 'style-sample', style: 'border:1px solid var(--line);border-radius:var(--r-sm);margin-top:12px' }, p.sample));
+    body.appendChild(h('div', { class: 'row', style: 'margin-top:12px' },
+      '<a class="btn btn-ghost btn-sm" id="btn-cur-goto">更换文风</a>' +
+      '<button class="btn btn-quiet btn-sm" id="btn-cur-reanalyze">重新分析当前</button>'));
+
+    $('#btn-cur-goto').addEventListener('click', gotoSelector);
+    $('#btn-cur-reanalyze').addEventListener('click', function () {
+      var btn = this;
+      App.loading(btn, true, '分析中…');
+      api.analyzeStyle().then(function () {
+        App.loading(btn, false);
+        return load();
+      }).then(function () {
+        App.toast('已重新分析当前文风样本', 'ok');
+      });
+    });
+  }
+
+  /* ---------- 选择文风 ---------- */
+  function activeCat() {
+    var b = $('#style-cat button.active');
+    return b ? b.dataset.value : '全部';
+  }
+
+  function renderCategories() {
+    var box = $('#style-cat');
+    if (!box) return;
+    api.listStyleCategories().then(function (cats) {
+      box.innerHTML = '';
+      cats.forEach(function (c, i) {
+        var b = h('button', { 'data-value': c, text: c });
+        if (i === 0) b.classList.add('active');
+        box.appendChild(b);
+      });
+    });
+  }
+
+  function renderPresetGrid(cat) {
+    var grid = $('#preset-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    currentPresets
+      .filter(function (p) { return !cat || cat === '全部' || p.category === cat; })
+      .forEach(function (p) {
+        var card = h('div', { class: 'style-card' + (p.applied ? ' is-applied' : '') });
+        var action = p.applied
+          ? '<button class="btn btn-ghost btn-sm" disabled>当前使用中</button>'
+          : '<button class="btn btn-primary btn-sm" data-apply="' + p.id + '">应用</button>';
+        card.innerHTML =
+          '<div class="style-card-head">' +
+            '<div><div class="style-name">' + p.name + '</div>' +
+            '<div class="style-tagline">' + p.tagline + '</div></div>' +
+            '<span class="tag tag-quiet">' + p.category + '</span>' +
+          '</div>' +
+          '<div class="style-sample">' + p.sample + '</div>' +
+          '<div class="style-foot">' +
+            '<span class="fs-12 muted">样段节选</span>' +
+            action +
+          '</div>';
+        grid.appendChild(card);
+      });
+
+    App.$$('[data-apply]', grid).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.dataset.apply;
+        var p = currentPresets.filter(function (x) { return x.id === id; })[0];
+        App.loading(btn, true, '应用中…');
+        api.applyStylePreset(id).then(function () {
+          App.loading(btn, false);
+          return refreshSelection();
+        }).then(function () {
+          App.toast('已应用文风：' + (p ? p.name : ''), 'ok');
+        });
+      });
+    });
+  }
+
+  function refreshSelection() {
+    return api.listStylePresets().then(function (list) {
+      currentPresets = list;
+      renderCurrentStyle();
+      setTopbarSub();
+      renderPresetGrid(activeCat());
+    });
+  }
+
+  /* ---------- 提取来源 ---------- */
+  function renderSources() {
+    return api.listStyleSources().then(function (list) {
+      var box = $('#src-list');
+      if (!box) return;
+      box.innerHTML = '';
+      list.forEach(function (s) {
+        var row = h('label', { class: 'src-row' });
+        var cb = h('input', { type: 'checkbox', 'data-id': s.id });
+        cb.checked = !!s.checked;
+        row.appendChild(cb);
+        row.appendChild(h('div', { class: 'src-main' },
+          '<div class="row-title">' + s.label + '</div>' +
+          '<div class="row-sub">' + s.hint + '</div>'));
+        box.appendChild(row);
+      });
+    }).catch(function (e) {
+      App.fail('#src-list', e, renderSources);
+    });
+  }
+
+  /* ---------- 新按钮绑定 ---------- */
+  $('#btn-goto-selector').addEventListener('click', function () {
+    gotoSelector();
+    App.toast('已定位到文风选择器', 'ok');
+  });
+
+  /* #style-cat 的点击与 seg:change 派发统一由 app.js 的事件委托处理（支持动态注入的按钮） */
+  $('#style-cat').addEventListener('seg:change', function (e) {
+    renderPresetGrid(e.detail.value);
+  });
+
+  $('#btn-extract').addEventListener('click', function () {
+    var btn = this;
+    var ids = App.$$('#src-list input[type="checkbox"]')
+      .filter(function (c) { return c.checked; })
+      .map(function (c) { return c.dataset.id; });
+    var paste = $('#src-paste').value.trim();
+    if (!ids.length && !paste) {
+      App.toast('至少选择一个来源，或粘贴一段样本', 'warn');
+      return;
+    }
+    App.loading(btn, true, '提取中…');
+    api.extractStyle(ids).then(function () {
+      $('#modal-extract').hidden = true;
+      return refreshSelection();
+    }).then(function () {
+      App.toast('提取完成，文风档案已更新' + (paste ? '（已包含粘贴样本）' : ''), 'ok');
+      App.loading(btn, false);
+    });
+  });
+
+  renderSources();
+
+  load();
+})();
+</script>
+</body>
+</html>

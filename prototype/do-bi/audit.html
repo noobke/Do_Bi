@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>审计报告 · Do_Bi 小说创作台</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="audit">
+
+<!-- =====================================================================
+     App Shell（冻结）· 逐字复制自 index.html
+     ===================================================================== -->
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-seal" aria-hidden="true"></span>
+    <span class="brand-name">Do_Bi</span>
+    <span class="brand-sub">小说创作台</span>
+  </div>
+
+  <nav class="nav" aria-label="主导航">
+    <a class="nav-item" data-nav="projects" href="index.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>
+      项目
+    </a>
+    <a class="nav-item" data-nav="workbench" href="workbench.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
+      工作台
+    </a>
+    <a class="nav-item" data-nav="chat" href="chat.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+      共创
+    </a>
+    <a class="nav-item" data-nav="characters" href="characters.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      角色
+    </a>
+    <a class="nav-item" data-nav="hooks" href="hooks.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+      伏笔
+    </a>
+    <a class="nav-item" data-nav="outline" href="outline.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+      结构
+    </a>
+    <a class="nav-item" data-nav="world" href="world.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      世界观
+    </a>
+    <a class="nav-item" data-nav="audit" href="audit.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+      审计
+    </a>
+    <a class="nav-item" data-nav="style" href="style.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>
+      文风
+    </a>
+    <a class="nav-item" data-nav="settings" href="settings.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+      设置
+    </a>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="foot-label">当前项目</div>
+    <div class="foot-title" id="foot-title">雁回关</div>
+    <div class="foot-meta"><span id="foot-progress">第 17 / 60 章</span><span id="foot-words">86,420 字</span></div>
+    <div class="progress" style="margin-top:10px"><i id="foot-bar" style="width:28%"></i></div>
+    <div class="foot-meta"><span>预算已用</span><span id="foot-budget">¥12.60 / ¥80.00</span></div>
+  </div>
+</aside>
+
+<main class="main" id="main">
+  <div class="wrap">
+
+    <!-- topbar -->
+    <header class="topbar" data-reveal>
+      <div>
+        <h1>审计报告</h1>
+        <div class="topbar-sub"><a href="chapter.html#17" id="audit-sub-link">第 17 章 · 雪落雁回</a> · 1 处重点待裁定</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="seg" data-seg="severity" id="severity-seg">
+          <button data-value="all" class="active">全部</button>
+          <button data-value="major">仅重点</button>
+          <button data-value="minor">仅建议</button>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-reaudit">重新审计</button>
+      </div>
+    </header>
+
+    <div class="stack-24">
+
+      <!-- 统计条 -->
+      <div class="grid-4">
+        <div class="stat" data-reveal>
+          <div class="stat-label" title="L1 确定性规则">规则校验违规</div>
+          <div class="stat-value" id="stat-l1">3</div>
+          <div class="fs-12 muted" id="stat-l1-sub">13 条规则中命中</div>
+        </div>
+        <div class="stat" data-reveal>
+          <div class="stat-label" title="L2 模型审查">模型审查发现</div>
+          <div class="stat-value" id="stat-l2">5</div>
+          <div class="fs-12 muted" id="stat-l2-sub">含 2 处重点</div>
+        </div>
+        <div class="stat" data-reveal>
+          <div class="stat-label">已修订</div>
+          <div class="stat-value" id="stat-fixed">1</div>
+          <div class="fs-12 muted">本次会话</div>
+        </div>
+        <div class="stat" data-reveal>
+          <div class="stat-label">审计通过率</div>
+          <div class="stat-value" id="stat-rate">88%</div>
+          <div class="fs-12 muted">目标 ≥ 90%</div>
+        </div>
+      </div>
+
+      <!-- 主体：左 L1/L2/去 AI 味 · 右 评审/补丁 -->
+      <div class="split">
+
+        <div class="stack-24" data-reveal>
+
+          <!-- L1 确定性规则 -->
+          <div class="card" id="l1-card">
+            <div class="card-head">
+              <h2 title="L1 确定性规则">规则校验 · 13 条</h2>
+              <span class="tag tag-warn" id="l1-tag">命中 3 条</span>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div id="l1-list"></div>
+            </div>
+            <div class="card-foot">
+              <div class="fs-12 muted" title="L1 确定性规则 · spot-fix 定点修复">规则校验为零成本确定性规则，命中后只定点改写违规句，不整段重写</div>
+            </div>
+          </div>
+
+          <!-- L2 维度审计 -->
+          <div class="card" id="finding-card">
+            <div class="card-head">
+              <h2 title="L2 维度审计">模型审查</h2>
+              <span class="tag tag-quiet" id="finding-tag">5 条</span>
+            </div>
+            <div class="card-body">
+              <div class="stack-8" id="finding-list"></div>
+            </div>
+          </div>
+
+          <!-- 反 AIGC -->
+          <div class="card" id="deai-card">
+            <div class="card-head">
+              <h2>反 AIGC · 去 AI 味</h2>
+              <span class="tag tag-warn">3 项待处理</span>
+            </div>
+            <div class="card-body">
+              <div class="stack">
+                <div class="fs-13 muted" title="L1 规则校验">先跑不需模型判断的规则校验（零成本）；改写后必须重跑规则校验，确认没有引入新问题</div>
+                <div>
+                  <div class="rule-row is-hit"><span class="rule-name">禁用句式命中</span><span class="rule-count">心中一凛</span></div>
+                  <div class="rule-row is-hit"><span class="rule-name">连续「了／的」字句</span><span class="rule-count">2/2</span></div>
+                  <div class="rule-row is-hit"><span class="rule-name">词汇疲劳</span><span class="rule-count">仿佛 6/3</span></div>
+                </div>
+                <div class="row">
+                  <button class="btn btn-primary btn-sm" id="btn-deai">执行定点修复</button>
+                  <button class="btn btn-ghost btn-sm" id="btn-deai-rules">查看改写规则</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="stack-24" data-reveal>
+
+          <!-- 可举证质量评审 -->
+          <div class="card" id="review-card">
+            <div class="card-head">
+              <h2>可举证质量评审</h2>
+              <span class="tag tag-info">7 维 · 均引原文</span>
+            </div>
+            <div class="card-body">
+              <div class="stack" id="review-list"></div>
+              <div class="divider"></div>
+              <div class="fs-12 muted">无原文证据的结论会被直接丢弃，不进入报告</div>
+            </div>
+          </div>
+
+          <!-- 修订补丁预览 -->
+          <div class="card" id="diff-card">
+            <div class="card-head">
+              <h2>修订补丁预览</h2>
+              <span class="tag tag-quiet">2 个补丁</span>
+            </div>
+            <div class="card-body">
+              <div class="stack" id="diff-card-list"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="assets/mock.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = App.$, h = App.h;
+  var report = null;
+  var sevFilter = 'all';
+  var openDiffs = {};
+  var sevTag = { blocker: ['tag-danger', '阻塞定稿'], major: ['tag-warn', '重点'], minor: ['tag-quiet', '建议'] };
+
+  function findDiff(dim, diffs) {
+    return diffs.filter(function (d) { return d.dim === dim; })[0];
+  }
+
+  function diffEl(d) {
+    var el = h('div', { class: 'diff' });
+    var head = h('div', { class: 'diff-head' });
+    head.innerHTML = '<span class="mono fs-12">' + d.dim + '</span><span class="tag tag-quiet">改写补丁</span>';
+    el.appendChild(head);
+    d.before.forEach(function (line) {
+      var l = h('div', { class: 'diff-line is-del' });
+      l.innerHTML = '<span class="diff-gutter">-</span><span class="diff-text">' + line + '</span>';
+      el.appendChild(l);
+    });
+    d.after.forEach(function (line) {
+      var l = h('div', { class: 'diff-line is-add' });
+      l.innerHTML = '<span class="diff-gutter">+</span><span class="diff-text">' + line + '</span>';
+      el.appendChild(l);
+    });
+    return el;
+  }
+
+  /* ---------- 统计条 ---------- */
+  function renderStats(r) {
+    var major = r.findings.filter(function (f) { return f.severity === 'major'; }).length;
+    $('#stat-l1').textContent = r.stats.l1;
+    $('#stat-l1-sub').textContent = r.l1.length + ' 条规则中命中';
+    $('#stat-l2').textContent = r.stats.l2;
+    $('#stat-l2-sub').textContent = '含 ' + major + ' 处重点';
+    $('#stat-fixed').textContent = r.stats.fixed;
+    $('#stat-rate').textContent = r.stats.passRate + '%';
+  }
+
+  /* ---------- L1 规则清单 ---------- */
+  function renderL1(r) {
+    var box = $('#l1-list');
+    box.innerHTML = '';
+    r.l1.forEach(function (row) {
+      var el = h('div', { class: 'rule-row' + (row.isHit ? ' is-hit' : '') });
+      el.innerHTML = '<span class="rule-name">' + row.rule + '</span>' +
+        '<span class="rule-count">' + (row.isHit ? row.hit + ' · ' + row.count + '/' + row.threshold : row.count) + '</span>';
+      box.appendChild(el);
+    });
+    var hits = r.l1.filter(function (x) { return x.isHit; }).length;
+    $('#l1-tag').textContent = '命中 ' + hits + ' 条';
+  }
+
+  /* ---------- L2 发现清单 ---------- */
+  function renderFindings(r) {
+    var box = $('#finding-list');
+    box.innerHTML = '';
+    var list = r.findings.filter(function (f) {
+      return sevFilter === 'all' || f.severity === sevFilter;
+    });
+    $('#finding-tag').textContent = list.length + ' 条';
+
+    if (!list.length) {
+      var empty = h('div', { class: 'empty' });
+      empty.innerHTML =
+        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>' +
+        '<div class="fs-13">当前筛选下无发现</div>';
+      box.appendChild(empty);
+      return;
+    }
+
+    list.forEach(function (f) {
+      var item = h('div', { class: 'audit-item sev-' + f.severity });
+      var t = sevTag[f.severity] || ['tag-quiet', f.severity];
+      item.innerHTML =
+        '<div class="row-between">' +
+          '<span class="fs-13" style="font-weight:500">' + f.dim + '</span>' +
+          (f.decision === 'accept' ? '<span class="tag tag-ok">已修订</span>'
+            : f.decision === 'ignore' ? '<span class="tag tag-quiet">已忽略</span>'
+            : '<span class="tag ' + t[0] + '">' + t[1] + '</span>') +
+        '</div>' +
+        '<div class="audit-evidence">' + f.evidence + '</div>' +
+        '<div class="audit-fix">' + f.suggestion + '</div>';
+
+      var actions = h('div', { class: 'row' });
+      if (f.decision === 'accept' || f.decision === 'ignore') {
+        var stateTag = h('span', {
+          class: 'tag ' + (f.decision === 'accept' ? 'tag-ok' : 'tag-quiet'),
+          text: f.decision === 'accept' ? '已接受' : '已忽略'
+        });
+        var undo = h('button', { class: 'btn btn-quiet btn-sm', text: '撤回' });
+        undo.addEventListener('click', function () { decide(f.dim, null); });
+        actions.appendChild(stateTag);
+        actions.appendChild(undo);
+      } else {
+        var ok = h('button', { class: 'btn btn-primary btn-sm', text: '接受修订' });
+        var no = h('button', { class: 'btn btn-ghost btn-sm', text: '忽略' });
+        var dv = h('button', { class: 'btn btn-quiet btn-sm', text: openDiffs[f.dim] ? '收起 diff' : '查看 diff' });
+        ok.addEventListener('click', function () { decide(f.dim, 'accept'); });
+        no.addEventListener('click', function () { decide(f.dim, 'ignore'); });
+        dv.addEventListener('click', function () { toggleDiff(f.dim); });
+        actions.appendChild(ok);
+        actions.appendChild(no);
+        actions.appendChild(dv);
+      }
+
+      var footer = h('div', { class: 'row-between', style: 'margin-top:10px' });
+      var refWrap = h('span', { class: 'row' });
+      refWrap.innerHTML = '<span class="fs-12 muted">证据位置：</span><span class="mono fs-12">' + f.ref + '</span>';
+      footer.appendChild(refWrap);
+      footer.appendChild(actions);
+      item.appendChild(footer);
+      box.appendChild(item);
+
+      if (openDiffs[f.dim]) {
+        var d = findDiff(f.dim, r.diffs);
+        if (d) box.appendChild(diffEl(d));
+      }
+    });
+  }
+
+  /* ---------- 可举证质量评审 ---------- */
+  function renderReview(r) {
+    var box = $('#review-list');
+    box.innerHTML = '';
+    r.review.forEach(function (it, i) {
+      if (i > 0) box.appendChild(h('div', { class: 'divider', style: 'margin:0' }));
+      var wrap = h('div', { class: 'stack-8' });
+      var row = h('div', { class: 'score-row' });
+      row.innerHTML = '<span class="score-name">' + it.dim + '</span>' +
+        '<span class="score-bar"><i style="width:' + it.score + '%"></i></span>' +
+        '<span class="score-val">' + it.score + '</span>';
+      wrap.appendChild(row);
+      wrap.appendChild(h('div', { class: 'audit-evidence', text: it.evidence }));
+      if (it.note) wrap.appendChild(h('div', { class: 'fs-12 muted', text: it.note }));
+      box.appendChild(wrap);
+    });
+  }
+
+  /* ---------- 修订补丁预览 ---------- */
+  function renderDiffs(r) {
+    var box = $('#diff-card-list');
+    box.innerHTML = '';
+    r.diffs.forEach(function (d) { box.appendChild(diffEl(d)); });
+  }
+
+  /* ---------- 决策 / diff 折叠 ---------- */
+  function decide(dim, action) {
+    api.decideFinding(dim, action).then(function () {
+      var msg = action === 'accept' ? '已接受修订：' + dim
+        : (action === 'ignore' ? '已忽略：' + dim : '已撤回决策：' + dim);
+      App.toast(msg);
+      return load();
+    });
+  }
+
+  function toggleDiff(dim) {
+    if (!report) return;
+    if (!openDiffs[dim]) {
+      if (!findDiff(dim, report.diffs)) { App.toast('本条暂无补丁预览'); return; }
+      openDiffs[dim] = true;
+    } else {
+      delete openDiffs[dim];
+    }
+    renderFindings(report);
+  }
+
+  /* ---------- 加载 / 重渲染 ---------- */
+  function load() {
+    return api.getAuditReport().then(function (r) {
+      report = r;
+      renderStats(r);
+      renderL1(r);
+      renderFindings(r);
+      renderReview(r);
+      renderDiffs(r);
+      /* topbar 副标题链回被审章节（章号取自数据，不写死） */
+      var subLink = $('#audit-sub-link');
+      if (subLink) {
+        subLink.href = 'chapter.html#' + r.chapter;
+        subLink.textContent = '第 ' + r.chapter + ' 章 · ' + r.title;
+      }
+    }).catch(function (e) {
+      App.fail('#finding-list', e, load);
+    });
+  }
+
+  $('#severity-seg').addEventListener('seg:change', function (e) {
+    sevFilter = e.detail.value;
+    if (report) renderFindings(report);
+  });
+
+  $('#btn-reaudit').addEventListener('click', function () {
+    var btn = this;
+    App.loading(btn, true, '审计中…');
+    api.runFullAudit().then(function () {
+      App.loading(btn, false);
+      return load();
+    }).then(function () {
+      App.toast('审计完成：3 项规则校验命中，5 条模型审查发现');
+    });
+  });
+
+  $('#btn-deai').addEventListener('click', function () {
+    var btn = this;
+    App.loading(btn, true, '修复中…');
+    setTimeout(function () {
+      App.loading(btn, false);
+      App.toast('已完成 3 处定点修复，正在重跑规则校验 …');
+    }, 900);
+  });
+
+  $('#btn-deai-rules').addEventListener('click', function () {
+    App.toast('改写规则：短句收尾成段 / 器物替代形容词 / 去口语化（演示）');
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>

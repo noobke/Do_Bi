@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>世界观 · Do_Bi 小说创作台</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="world">
+
+<!-- =====================================================================
+     App Shell（冻结）· 与 index.html 逐字一致
+     ===================================================================== -->
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-seal" aria-hidden="true"></span>
+    <span class="brand-name">Do_Bi</span>
+    <span class="brand-sub">小说创作台</span>
+  </div>
+
+  <nav class="nav" aria-label="主导航">
+    <a class="nav-item" data-nav="projects" href="index.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>
+      项目
+    </a>
+    <a class="nav-item" data-nav="workbench" href="workbench.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
+      工作台
+    </a>
+    <a class="nav-item" data-nav="chat" href="chat.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+      共创
+    </a>
+    <a class="nav-item" data-nav="characters" href="characters.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      角色
+    </a>
+    <a class="nav-item" data-nav="hooks" href="hooks.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+      伏笔
+    </a>
+    <a class="nav-item" data-nav="outline" href="outline.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+      结构
+    </a>
+    <a class="nav-item" data-nav="world" href="world.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      世界观
+    </a>
+    <a class="nav-item" data-nav="audit" href="audit.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+      审计
+    </a>
+    <a class="nav-item" data-nav="style" href="style.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>
+      文风
+    </a>
+    <a class="nav-item" data-nav="settings" href="settings.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+      设置
+    </a>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="foot-label">当前项目</div>
+    <div class="foot-title" id="foot-title">雁回关</div>
+    <div class="foot-meta"><span id="foot-progress">第 17 / 60 章</span><span id="foot-words">86,420 字</span></div>
+    <div class="progress" style="margin-top:10px"><i id="foot-bar" style="width:28%"></i></div>
+    <div class="foot-meta"><span>预算已用</span><span id="foot-budget">¥12.60 / ¥80.00</span></div>
+  </div>
+</aside>
+
+<main class="main" id="main">
+  <div class="wrap">
+
+    <!-- topbar -->
+    <header class="topbar" data-reveal>
+      <div>
+        <h1>世界观</h1>
+        <div class="topbar-sub" id="topbar-sub">— 条设定 · — 条硬约束 · — 处冲突待裁定</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="seg" data-seg="world-cat" id="world-cat">
+          <button data-value="全部" class="active">全部</button>
+          <button data-value="器物">器物</button>
+          <button data-value="体系">体系</button>
+          <button data-value="地理">地理</button>
+          <button data-value="组织">组织</button>
+          <button data-value="历史">历史</button>
+        </div>
+        <button class="btn btn-primary btn-sm" id="btn-new-rule">新增设定</button>
+      </div>
+    </header>
+
+    <div class="stack-24">
+
+      <!-- 1 · 统计 -->
+      <div class="grid-4" id="world-stats" data-reveal></div>
+
+      <!-- 2 · 冲突待裁定 -->
+      <section class="card" id="conflict-card" data-reveal hidden>
+        <div class="card-head">
+          <h2>冲突待裁定</h2>
+          <span class="tag tag-danger" id="conflict-count">1 处</span>
+        </div>
+        <div class="card-body">
+          <div class="stack" id="conflict-body"></div>
+        </div>
+      </section>
+
+      <!-- 3 · 设定清单 + 交叉视图 -->
+      <div class="split">
+
+        <!-- 左：设定清单 -->
+        <section class="card" data-reveal>
+          <div class="card-head">
+            <h2>设定清单</h2>
+            <span class="tag tag-quiet" id="rule-count">—</span>
+          </div>
+          <div class="card-body">
+            <div id="world-list"></div>
+          </div>
+        </section>
+
+        <!-- 右：设定 × 情节线 + 写作约束提示 -->
+        <aside class="stack-24" data-reveal>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>设定 × 情节线对齐</h2>
+              <span class="tag tag-quiet">交叉视图</span>
+            </div>
+            <div class="card-body" style="padding:0">
+              <div class="list" id="world-refs"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h2>写作约束提示</h2>
+            </div>
+            <div class="card-body">
+              <div class="stack-8">
+                <div class="fs-12 muted">本页对应真相文件 world.md；设定按分类归入其中。</div>
+                <div class="fs-13 muted">硬约束不可被 AI 修改，会被注入生成上下文；生成内容与硬约束冲突时会阻塞定稿，需先裁定</div>
+                <div class="fs-13 muted">软设定为倾向性约定，仅在审计时提示，冲突不阻塞</div>
+                <div class="fs-13 muted">新增或修改设定走 Proposal → Validate → Commit 提案流程，不会静默覆盖</div>
+                <div class="mono-block"># world.md  ·  北境文脉
+
+## 器物
+[hard] 铜灯须以血引方燃          # refs: 4, 17  &lt;冲突&gt;
+
+## 体系
+[hard] 文脉以「名」为薪           # refs: 3, 19
+[soft] 刀法分沉、滞、断三境        # 未使用</div>
+              </div>
+            </div>
+          </div>
+
+        </aside>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="assets/mock.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = App.$, $$ = App.$$, h = App.h;
+
+  var KIND_LABEL = { hard: '硬约束', soft: '软设定' };
+
+  var BOOK_SVG = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>';
+
+  var state = { settings: [], plots: [], filter: '全部' };
+
+  function trunc(s, n) {
+    s = String(s == null ? '' : s);
+    return s.length > n ? s.slice(0, n) + '…' : s;
+  }
+
+  function refChips(refs) {
+    if (!refs || !refs.length) return '<span class="fs-12 muted">尚未被任何章节引用</span>';
+    return '<div class="ref-chips">' + refs.map(function (n) {
+      return '<span class="ref-chip">第 ' + n + ' 章</span>';
+    }).join('') + '</div>';
+  }
+
+  function statusTag(w) {
+    if (w.status === 'conflict') return '<span class="tag tag-danger">冲突待裁定</span>';
+    if (w.status === 'unused')   return '<span class="tag tag-warn">尚未使用</span>';
+    return '<span class="tag tag-ok">生效中</span>';
+  }
+
+  /* ---------- topbar ---------- */
+  function renderTopbar() {
+    var list = state.settings;
+    var hard = list.filter(function (w) { return w.kind === 'hard'; }).length;
+    var conflict = list.filter(function (w) { return w.status === 'conflict'; }).length;
+    $('#topbar-sub').textContent =
+      list.length + ' 条设定 · ' + hard + ' 条硬约束 · ' + conflict + ' 处冲突待裁定';
+  }
+
+  /* ---------- 1 · 统计 ---------- */
+  function renderStats() {
+    var list = state.settings;
+    var hard = list.filter(function (w) { return w.kind === 'hard'; }).length;
+    var soft = list.filter(function (w) { return w.kind === 'soft'; }).length;
+    var used = list.filter(function (w) { return w.refs && w.refs.length; }).length;
+    var unused = list.filter(function (w) { return w.status === 'unused'; }).length;
+
+    var box = $('#world-stats');
+    box.innerHTML = '';
+    [
+      { label: '硬约束',   value: hard,   hint: '不可被 AI 修改' },
+      { label: '软设定',   value: soft,   hint: '倾向性约定，冲突只提示' },
+      { label: '已被引用', value: used,   hint: '被正文章节引用过' },
+      { label: '尚未使用', value: unused, hint: '已写入，尚未出现在正文' }
+    ].forEach(function (d) {
+      box.appendChild(h('div', { class: 'stat' },
+        '<div class="stat-label">' + d.label + '</div>' +
+        '<div class="stat-value fs-20">' + d.value + '</div>' +
+        '<div class="fs-12 muted" style="margin-top:4px">' + d.hint + '</div>'));
+    });
+  }
+
+  /* ---------- 2 · 冲突待裁定 ---------- */
+  function resolve(id, keepText, btn) {
+    App.loading(btn, true, '裁定中…');
+    api.resolveWorldConflict(id, keepText ? 'keep_text' : 'keep_rule').then(function () {
+      App.loading(btn, false);
+      return api.listWorldSettings();
+    }).then(function (list) {
+      state.settings = list;
+      renderAll();
+      App.toast('已裁定：' + (keepText ? '改写规则' : '修改正文'));
+    });
+  }
+
+  function conflictRule(w) {
+    var rc = h('div', { class: 'rule-card is-conflict' });
+    rc.innerHTML =
+      '<div class="rule-text">' + w.rule + '</div>' +
+      '<div class="rule-meta">' +
+        '<span class="row">' +
+          '<span class="chip">' + KIND_LABEL[w.kind] + '</span>' +
+          '<span class="chip">' + w.category + '</span>' +
+        '</span>' +
+        '<span class="tag tag-danger">冲突</span>' +
+      '</div>' +
+      refChips(w.refs) +
+      (w.note ? '<div class="fs-12 muted" style="margin-top:8px">' + w.note + '</div>' : '');
+
+    var row = h('div', { class: 'row', style: 'margin-top:12px' });
+    var bText = h('button', { class: 'btn btn-primary btn-sm', text: '保留正文，改写规则' });
+    var bRule = h('button', { class: 'btn btn-ghost btn-sm', text: '按规则修改正文' });
+    /* 「改为软设定」原本只出现在下方清单行；裁定入口统一收在本卡片，避免同一冲突有两套入口 */
+    var bSoft = h('button', { class: 'btn btn-quiet btn-sm', text: '改为软设定' });
+    bText.addEventListener('click', function () { resolve(w.id, true, bText); });
+    bRule.addEventListener('click', function () { resolve(w.id, false, bRule); });
+    bSoft.addEventListener('click', function () { setKind(w, bSoft); });
+    row.appendChild(bText);
+    row.appendChild(bRule);
+    row.appendChild(bSoft);
+    rc.appendChild(row);
+    return rc;
+  }
+
+  function renderConflict() {
+    var conflicts = state.settings.filter(function (w) { return w.status === 'conflict'; });
+    var card = $('#conflict-card');
+    card.hidden = conflicts.length === 0;
+    if (!conflicts.length) return;
+
+    $('#conflict-count').textContent = conflicts.length + ' 处';
+    var box = $('#conflict-body');
+    box.innerHTML = '';
+    conflicts.forEach(function (w) { box.appendChild(conflictRule(w)); });
+  }
+
+  /* ---------- 3 · 设定清单 ---------- */
+  function setKind(w, btn) {
+    var next = w.kind === 'hard' ? 'soft' : 'hard';
+    App.loading(btn, true, '处理中…');
+    api.setWorldRuleKind(w.id, next).then(function () {
+      App.loading(btn, false);
+      return api.listWorldSettings();
+    }).then(function (list) {
+      state.settings = list;
+      renderAll();
+      App.toast('已改为' + KIND_LABEL[next]);
+    });
+  }
+
+  function ruleCard(w) {
+    var cls = 'rule-card' +
+      (w.status === 'conflict' ? ' is-conflict' : '') +
+      (w.kind === 'soft' ? ' is-soft' : '') +
+      (w.status === 'unused' ? ' is-unused' : '');
+
+    var rc = h('div', { class: cls });
+
+    /* 冲突项的证据与建议已在上方「冲突待裁定」卡片中完整呈现（含裁定入口），
+       此处降级为一行：仅标题 + 锚点，不再重复输出证据（note）与建议文本 */
+    if (w.status === 'conflict') {
+      rc.innerHTML =
+        '<div class="rule-text">' + w.rule + '</div>' +
+        '<div style="margin-top:8px"><a class="btn btn-quiet btn-sm" href="#conflict-card">见上方待裁定</a></div>';
+      return rc;
+    }
+
+    rc.innerHTML =
+      '<div class="rule-text">' + w.rule + '</div>' +
+      '<div class="rule-meta">' +
+        '<span class="chip">' + KIND_LABEL[w.kind] + '</span>' +
+        statusTag(w) +
+      '</div>' +
+      refChips(w.refs) +
+      (w.note ? '<div class="fs-12 muted" style="margin-top:8px">' + w.note + '</div>' : '');
+
+    var row = h('div', { class: 'row', style: 'margin-top:10px' });
+    var bKind = h('button', {
+      class: 'btn btn-quiet btn-sm',
+      'data-kind': w.id,
+      text: w.kind === 'hard' ? '改为软设定' : '改为硬约束'
+    });
+    var bRefs = h('button', { class: 'btn btn-quiet btn-sm', 'data-refs': w.id, text: '查看引用章' });
+    bKind.addEventListener('click', function () { setKind(w, bKind); });
+    bRefs.addEventListener('click', function () {
+      if (!w.refs || !w.refs.length) { App.toast('尚未被引用'); return; }
+      App.toast(w.refs.map(function (n) { return '第 ' + n + ' 章'; }).join('、'));
+    });
+    row.appendChild(bKind);
+    row.appendChild(bRefs);
+    rc.appendChild(row);
+    return rc;
+  }
+
+  function renderList() {
+    var list = state.settings.filter(function (w) {
+      return state.filter === '全部' || w.category === state.filter;
+    });
+    $('#rule-count').textContent = list.length + ' 条';
+
+    var box = $('#world-list');
+    box.innerHTML = '';
+
+    if (!list.length) {
+      var e = h('div', { class: 'empty' });
+      e.innerHTML = BOOK_SVG + '<span class="fs-12">该分类下暂无设定</span>';
+      box.appendChild(e);
+      return;
+    }
+
+    var cats = [];
+    list.forEach(function (w) { if (cats.indexOf(w.category) < 0) cats.push(w.category); });
+
+    cats.forEach(function (cat) {
+      var group = list.filter(function (w) { return w.category === cat; });
+
+      var bar = h('div', { class: 'cat-bar' });
+      bar.innerHTML =
+        '<span class="cat-name">' + cat + '</span>' +
+        '<span class="mono fs-12">' + group.length + ' 条</span>';
+      box.appendChild(bar);
+
+      var stack = h('div', { class: 'stack-8', style: 'margin-top:12px;margin-bottom:20px' });
+      group.forEach(function (w) { stack.appendChild(ruleCard(w)); });
+      box.appendChild(stack);
+    });
+  }
+
+  /* ---------- 3 · 右 · 设定 × 情节线对齐 ---------- */
+  function renderRefs() {
+    var list = state.settings.filter(function (w) { return w.refs && w.refs.length; });
+    var box = $('#world-refs');
+    box.innerHTML = '';
+
+    if (!list.length) {
+      var e = h('div', { class: 'empty' });
+      e.innerHTML = BOOK_SVG + '<span class="fs-12">暂无被引用的设定</span>';
+      box.appendChild(e);
+      return;
+    }
+
+    list.forEach(function (w) {
+      var matched = state.plots.filter(function (pl) {
+        return pl.active.some(function (c) { return w.refs.indexOf(c) >= 0; });
+      });
+
+      var chips = matched.slice(0, 2).map(function (pl) {
+        return '<span class="chip" style="border-left:3px solid ' + pl.color + '">' + pl.name + '</span>';
+      }).join('');
+      if (matched.length > 2) chips += '<span class="chip">+' + (matched.length - 2) + '</span>';
+
+      var row = h('div', { class: 'list-row' });
+      row.innerHTML =
+        '<div class="row-main">' +
+          '<div class="row-title">' + trunc(w.rule, 16) + '</div>' +
+          '<div class="row-sub"><span class="mono">第 ' + w.refs.join('、') + ' 章</span></div>' +
+        '</div>' +
+        '<div class="wrap-row">' + chips + '</div>';
+      App.clickable(row, function () {
+        App.toast('规则与线的交叉关系（演示）');
+      });
+      box.appendChild(row);
+    });
+  }
+
+  /* ---------- 全量渲染 ---------- */
+  function renderAll() {
+    renderTopbar();
+    renderStats();
+    renderConflict();
+    renderList();
+    renderRefs();
+  }
+
+  /* ---------- 事件 ---------- */
+  $('#btn-new-rule').addEventListener('click', function () {
+    App.toast('新增设定（演示）');
+  });
+
+  $('#world-cat').addEventListener('seg:change', function (e) {
+    state.filter = e.detail.value;
+    renderList();
+  });
+
+  /* ---------- 载入 ---------- */
+  var loadWorld = function () {
+    Promise.all([api.listWorldSettings(), api.getPlotlines()]).then(function (r) {
+      state.settings = r[0];
+      state.plots = r[1];
+      renderAll();
+    }).catch(function (e) {
+      App.fail('#world-list', e, loadWorld);
+    });
+  };
+  loadWorld();
+})();
+</script>
+</body>
+</html>

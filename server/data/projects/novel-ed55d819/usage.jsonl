@@ -1,0 +1,1 @@
+{"chapter": 0, "step": "plan", "role": "chat", "provider": "DeepSeek", "model": "deepseek-flash", "prompt_tokens": 467, "completion_tokens": 846, "total_tokens": 1313, "cost": 0.0077, "latency_ms": 5472, "attempts": 1, "ts": "2026-09-27T15:33:28+00:00"}

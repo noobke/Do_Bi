@@ -1,0 +1,132 @@
+{
+  "_comment": "服务商清单。api_key_ref 是【环境变量名】，密钥值只存在于 .env / 进程环境，本文件永不写明文。priority 越小越优先，即降级链顺序：主力 → 备用 → 挂起 checkpoint 并提示。price_in / price_out 为【示例参考价，元/百万 token】，请按服务商实际价目核对后维护；留 0 表示不计价。模型名请以厂商【当前可用】的为准——厂商会下线旧名（例如 DeepSeek 的 deepseek-chat / deepseek-reasoner 已于 2026-07 下线）。",
+  "providers": [
+    {
+      "name": "DeepSeek",
+      "base_url": "https://api.deepseek.com/v1",
+      "api_key_ref": "DOBI_KEY_DEEPSEEK",
+      "priority": 1,
+      "enabled": true,
+      "note": "主力。当前可用：deepseek-flash（非思考，便宜）/ deepseek-v4-pro（强推理）。价格取高峰时段与未命中缓存，偏保守。",
+      "models": [
+        {
+          "name": "deepseek-flash",
+          "context_window": 1048576,
+          "max_output": 131072,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": true,
+          "price_in": 2.0,
+          "price_out": 8.0,
+          "note": "DeepSeek-V4.1-Flash。日常正文与抽取档位。"
+        },
+        {
+          "name": "deepseek-v4-pro",
+          "context_window": 1048576,
+          "max_output": 393216,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": true,
+          "price_in": 9.0,
+          "price_out": 27.0,
+          "note": "强推理档位。大纲、评审这类要动脑的环节用它。"
+        }
+      ]
+    },
+    {
+      "name": "MiMo",
+      "base_url": "https://api.xiaomimimo.com/v1",
+      "api_key_ref": "DOBI_KEY_MIMO",
+      "priority": 2,
+      "enabled": true,
+      "note": "小米 MiMo，OpenAI 兼容。上下文 1M，便宜档用 flash。国内按量价（未命中缓存，元/百万 token）：pro 3/6，flash 1/2。",
+      "models": [
+        {
+          "name": "mimo-v2.6-pro",
+          "context_window": 1048576,
+          "max_output": 131072,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": true,
+          "price_in": 3.0,
+          "price_out": 6.0,
+          "note": "旗舰推理档。"
+        },
+        {
+          "name": "mimo-v2.6-flash",
+          "context_window": 1048576,
+          "max_output": 131072,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": true,
+          "price_in": 1.0,
+          "price_out": 2.0,
+          "note": "高性价比档，适合跑量。"
+        }
+      ]
+    },
+    {
+      "name": "通义千问",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key_ref": "DOBI_KEY_DASHSCOPE",
+      "priority": 3,
+      "enabled": false,
+      "note": "未配密钥，先停用。qwen-max / qwen-plus 是旧名，已换成 qwen3-max；填好密钥并按百炼当前文档核对模型名后再启用。",
+      "models": [
+        {
+          "name": "qwen3-max",
+          "context_window": 262144,
+          "max_output": 65536,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": true,
+          "price_in": 2.5,
+          "price_out": 10.0,
+          "note": "价格按输入 ≤32k 档。"
+        }
+      ]
+    },
+    {
+      "name": "OpenAI",
+      "base_url": "https://api.openai.com/v1",
+      "api_key_ref": "DOBI_KEY_OPENAI",
+      "priority": 4,
+      "enabled": false,
+      "note": "未配密钥，先停用。gpt-4.1 系列已过时；下面的模型名是示例，务必按 OpenAI 当前费率表核对后再启用（价格未填，留 0 表示不计价）。",
+      "models": [
+        {
+          "name": "gpt-5.5",
+          "context_window": 400000,
+          "max_output": 128000,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": true,
+          "price_in": 0.0,
+          "price_out": 0.0,
+          "note": "示例名，请核对。"
+        }
+      ]
+    },
+    {
+      "name": "硅基流动",
+      "base_url": "https://api.siliconflow.cn/v1",
+      "api_key_ref": "DOBI_KEY_SILICONFLOW",
+      "priority": 5,
+      "enabled": false,
+      "note": "备选。未启用时完全不参与降级链。模型名请按站内可用清单核对。",
+      "models": [
+        {
+          "name": "deepseek-ai/DeepSeek-V4",
+          "context_window": 131072,
+          "max_output": 32768,
+          "supports_json": true,
+          "supports_stream": true,
+          "supports_tools": false,
+          "price_in": 2.0,
+          "price_out": 8.0,
+          "note": "示例名，请核对。"
+        }
+      ]
+    }
+  ]
+}

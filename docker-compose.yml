@@ -1,0 +1,46 @@
+# Do_Bi 一键部署（Docker Compose）
+#
+#   启动： ./scripts/deploy-docker.sh          （等价于 docker compose up -d --build）
+#   访问： http://localhost:8080
+#
+# 架构：web(nginx) 托管前端 dist，并把 /api 同源反代到 api(uvicorn:8000)。
+# 后端不做静态托管，所以「同源反代」是硬要求，不能省。
+
+name: dobi
+
+services:
+  api:
+    build:
+      context: ./server
+    image: dobi-api:local
+    restart: unless-stopped
+    # 数据 / 配置 / 密钥都挂到宿主机的 server/ 下：容器重建不丢，且可直接编辑。
+    # 注意：./server/.env 必须已存在（用 scripts/deploy-docker.sh 会自动从
+    # .env.example 生成）；若文件不存在，Docker 会把它建成目录，导致配置读不到。
+    volumes:
+      - ./server/data:/app/data
+      - ./server/config:/app/config
+      - ./server/.env:/app/.env
+    expose:
+      - "8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3).status == 200 else 1)"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  web:
+    build:
+      context: ./web
+    image: dobi-web:local
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${DOBI_WEB_PORT:-8080}:80"

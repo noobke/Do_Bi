@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的作品 · Do_Bi 小说创作台</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="projects">
+
+<!-- =====================================================================
+     App Shell（冻结）· 其余页面必须从本文件逐字复制侧栏整块（aside.sidebar）
+     ===================================================================== -->
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-seal" aria-hidden="true"></span>
+    <span class="brand-name">Do_Bi</span>
+    <span class="brand-sub">小说创作台</span>
+  </div>
+
+  <nav class="nav" aria-label="主导航">
+    <a class="nav-item" data-nav="projects" href="index.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>
+      项目
+    </a>
+    <a class="nav-item" data-nav="workbench" href="workbench.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
+      工作台
+    </a>
+    <a class="nav-item" data-nav="chat" href="chat.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+      共创
+    </a>
+    <a class="nav-item" data-nav="characters" href="characters.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      角色
+    </a>
+    <a class="nav-item" data-nav="hooks" href="hooks.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+      伏笔
+    </a>
+    <a class="nav-item" data-nav="outline" href="outline.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+      结构
+    </a>
+    <a class="nav-item" data-nav="world" href="world.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      世界观
+    </a>
+    <a class="nav-item" data-nav="audit" href="audit.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+      审计
+    </a>
+    <a class="nav-item" data-nav="style" href="style.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>
+      文风
+    </a>
+    <a class="nav-item" data-nav="settings" href="settings.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+      设置
+    </a>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="foot-label">当前项目</div>
+    <div class="foot-title" id="foot-title">雁回关</div>
+    <div class="foot-meta"><span id="foot-progress">第 17 / 60 章</span><span id="foot-words">86,420 字</span></div>
+    <div class="progress" style="margin-top:10px"><i id="foot-bar" style="width:28%"></i></div>
+    <div class="foot-meta"><span>预算已用</span><span id="foot-budget">¥12.60 / ¥80.00</span></div>
+  </div>
+</aside>
+
+<main class="main" id="main">
+  <div class="wrap">
+
+    <!-- topbar -->
+    <header class="topbar" data-reveal>
+      <div>
+        <h1>我的作品</h1>
+        <div class="topbar-sub" id="topbar-sub">— 个作品 · 累计 — 字</div>
+      </div>
+      <div class="topbar-actions">
+        <a class="btn btn-ghost btn-sm" href="disassemble.html">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          导入作品拆书
+        </a>
+        <button class="btn btn-primary btn-sm" data-open-modal="modal-new-proj">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          新建作品
+        </button>
+      </div>
+    </header>
+
+    <!-- 汇总统计 -->
+    <div class="grid-4 stack-24" id="sum-stats" data-reveal style="margin-bottom:24px"></div>
+
+    <!-- 继续创作 -->
+    <section class="card" data-reveal style="margin-bottom:24px">
+      <div class="card-head">
+        <h2>继续创作</h2>
+        <span class="tag tag-info">当前作品</span>
+      </div>
+      <div class="card-body" id="current-body"></div>
+      <div class="card-foot row-between">
+        <span class="fs-12 muted" id="current-updated">—</span>
+        <div class="row">
+          <a class="btn btn-ghost btn-sm" href="outline.html">查看章纲</a>
+          <a class="btn btn-primary btn-sm" href="workbench.html">进入工作台</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 全部作品 -->
+    <section class="card" data-reveal style="margin-bottom:24px">
+      <div class="card-head">
+        <h2>全部作品</h2>
+        <span class="tag tag-quiet" id="proj-count">—</span>
+      </div>
+      <div class="card-body">
+        <div class="proj-grid" id="proj-grid"></div>
+      </div>
+    </section>
+
+    <!-- 最近生成记录 -->
+    <section class="card" data-reveal>
+      <div class="card-head">
+        <h2>最近生成记录</h2>
+        <span class="tag tag-quiet">本会话</span>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="list" id="recent-list"></div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- 新建作品 -->
+<div class="modal" id="modal-new-proj" hidden>
+  <div class="modal-veil"></div>
+  <div class="modal-card">
+    <div class="card-head">
+      <h2>新建作品</h2>
+      <button class="btn btn-quiet btn-sm" data-close-modal>关闭</button>
+    </div>
+    <div class="card-body stack">
+      <p class="fs-13 muted">不用先填设定表。给一个名字和一句话灵感即可，剩下的在「共创对话」里边聊边立。</p>
+      <div class="field">
+        <label class="field-label" for="np-title">作品名</label>
+        <input class="input" id="np-title" type="text" placeholder="例如：雁回关">
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label class="field-label" for="np-genre">题材</label>
+          <select class="select" id="np-genre">
+            <option>古风悬疑</option>
+            <option>玄幻</option>
+            <option>武侠</option>
+            <option>科幻</option>
+            <option>都市</option>
+            <option>待定</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label" for="np-scale">篇幅</label>
+          <select class="select" id="np-scale">
+            <option>短篇 · 约 20 章</option>
+            <option selected>中篇 · 约 40 章</option>
+            <option>长篇 · 约 60 章</option>
+            <option>连载 · 约 120 章</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="np-idea">一句话灵感</label>
+        <textarea class="textarea" id="np-idea" placeholder="例如：一个北境小吏追查失踪案，发现王朝正在被「文脉」的力量吞噬。"></textarea>
+        <span class="field-hint">这句话会作为共创对话的开场，第一条追问会围绕它展开。</span>
+      </div>
+    </div>
+    <div class="card-foot row" style="justify-content:flex-end">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="btn-create">创建并开始立项</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/mock.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = App.$, $$ = App.$$, h = App.h;
+  var state = { projects: [] };
+
+  var MODE_LABEL = { 'auto': '全自动', 'semi-auto': '半自动', 'manual': '手动逐步' };
+
+  function percent(done, total) {
+    return total ? Math.round(done / total * 100) : 0;
+  }
+
+  /* ---------- 汇总统计 ---------- */
+  function renderSummary(list) {
+    var words = list.reduce(function (s, p) { return s + p.words; }, 0);
+    var hTotal = list.reduce(function (s, p) { return s + p.hooksTotal; }, 0);
+    var hDone = list.reduce(function (s, p) { return s + p.hooksResolved; }, 0);
+    var cost = list.reduce(function (s, p) { return s + p.budgetUsed; }, 0);
+    var rate = hTotal ? Math.round(hDone / hTotal * 100) : 0;
+
+    $('#topbar-sub').textContent = list.length + ' 个作品 · 累计 ' + App.fmtInt(words) + ' 字';
+
+    var box = $('#sum-stats');
+    box.innerHTML = '';
+    [
+      { label: '作品数', value: list.length, hint: '其中 ' + list.filter(function (p) { return p.chaptersDone > 0; }).length + ' 个进行中' },
+      { label: '累计字数', value: App.fmtInt(words), hint: '全部作品合计' },
+      { label: '伏笔回收率', value: rate + '%', hint: '已回收 ' + hDone + ' / ' + hTotal + ' 条' },
+      { label: '累计成本', value: '¥' + cost.toFixed(2), hint: '按 API 用量计' }
+    ].forEach(function (d) {
+      box.appendChild(h('div', { class: 'stat' }, 
+        '<div class="stat-label">' + d.label + '</div>' +
+        '<div class="stat-value fs-20">' + d.value + '</div>' +
+        '<div class="fs-12 muted" style="margin-top:4px">' + d.hint + '</div>'));
+    });
+  }
+
+  /* ---------- 继续创作 ---------- */
+  function renderCurrent(list) {
+    var p = list.filter(function (x) { return x.isCurrent; })[0] || list[0];
+    if (!p) {
+      /* 0 个作品：给出引导卡，而不是空白 */
+      var empty = h('div', { class: 'empty' },
+        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>' +
+        '<div class="fs-16 serif">还没有作品</div>' +
+        '<div class="fs-13">从一个名字和一句话灵感开始</div>');
+      var newBtn = h('button', { class: 'btn btn-primary btn-sm', text: '新建作品' });
+      newBtn.addEventListener('click', function () { $('#modal-new-proj').hidden = false; });
+      empty.appendChild(newBtn);
+      var curBody = $('#current-body');
+      curBody.innerHTML = '';
+      curBody.appendChild(empty);
+      $('#current-updated').textContent = '—';
+      return;
+    }
+    $('#current-updated').textContent = '最后更新 ' + p.updatedAt;
+
+    var body = $('#current-body');
+    body.innerHTML = '';
+    body.appendChild(h('div', { class: 'row-between', style: 'align-items:flex-start;gap:32px;flex-wrap:wrap' },
+      '<div style="flex:1;min-width:260px">' +
+        '<div class="proj-title">' + p.title + '</div>' +
+        '<div class="proj-sub">' + p.genre + ' · ' + MODE_LABEL[p.mode] + '</div>' +
+        '<div class="proj-logline" style="margin-top:10px">' + p.logline + '</div>' +
+      '</div>' +
+      '<div class="grid-2" style="gap:12px;min-width:280px;flex:0 0 auto">' +
+        '<div class="stat"><div class="stat-label">进度</div><div class="stat-value fs-16">第 ' + p.chaptersDone + ' / ' + p.chaptersTotal + ' 章</div></div>' +
+        '<div class="stat"><div class="stat-label">字数</div><div class="stat-value fs-16">' + App.fmtInt(p.words) + '</div></div>' +
+        '<div class="stat"><div class="stat-label">伏笔回收</div><div class="stat-value fs-16">' + p.hooksResolved + ' / ' + p.hooksTotal + '</div></div>' +
+        '<div class="stat"><div class="stat-label">审计通过率</div><div class="stat-value fs-16">' + p.auditPass + '%</div></div>' +
+      '</div>'));
+
+    var wrap = h('div', { style: 'margin-top:20px' });
+    wrap.innerHTML =
+      '<div class="row-between fs-12 muted"><span>章节进度</span><span class="mono">' + percent(p.chaptersDone, p.chaptersTotal) + '%</span></div>' +
+      '<div class="progress" style="margin-top:8px"><i style="width:' + percent(p.chaptersDone, p.chaptersTotal) + '%"></i></div>' +
+      '<div class="row-between fs-12 muted" style="margin-top:16px"><span>预算已用</span><span class="mono">' + '¥' + p.budgetUsed.toFixed(2) + ' / ¥' + p.budgetTotal.toFixed(2) + '</span></div>' +
+      '<div class="progress" style="margin-top:8px"><i style="width:' + percent(p.budgetUsed, p.budgetTotal) + '%"></i></div>';
+    body.appendChild(wrap);
+  }
+
+  /* ---------- 全部作品 ---------- */
+  function renderProjects(list) {
+    $('#proj-count').textContent = list.length + ' 个';
+    var grid = $('#proj-grid');
+    grid.innerHTML = '';
+
+    list.forEach(function (p) {
+      var card = h('div', { class: 'proj-card' + (p.isCurrent ? ' is-current' : '') });
+      var spineCls = 'proj-spine' + (p.spine > 1 ? ' is-' + p.spine : '');
+      var started = p.chaptersDone > 0;
+
+      card.innerHTML =
+        '<div class="' + spineCls + '"></div>' +
+        '<div class="proj-body">' +
+          '<div class="proj-head">' +
+            '<div><div class="proj-title">' + p.title + '</div>' +
+            '<div class="proj-sub">' + p.genre + ' · ' + MODE_LABEL[p.mode] + '</div></div>' +
+            (p.isCurrent ? '<span class="tag tag-info">当前</span>'
+                         : (started ? '' : '<span class="tag tag-quiet">未开始</span>')) +
+          '</div>' +
+          '<div class="proj-logline">' + p.logline + '</div>' +
+          '<div class="proj-stats">' +
+            '<span>第 ' + p.chaptersDone + ' / ' + p.chaptersTotal + ' 章</span>' +
+            '<span>' + App.fmtInt(p.words) + ' 字</span>' +
+            '<span>伏笔 ' + p.hooksResolved + '/' + p.hooksTotal + '</span>' +
+            (started ? '<span>审计 ' + p.auditPass + '%</span>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="proj-foot">' +
+          '<span class="fs-12 muted">' + p.updatedAt + '</span>' +
+          (started ? '<a class="btn btn-ghost btn-sm" href="workbench.html">打开</a>'
+                   : '<a class="btn btn-primary btn-sm" href="chat.html">开始立项</a>') +
+        '</div>';
+      grid.appendChild(card);
+    });
+
+    var add = h('button', { class: 'proj-new', id: 'btn-new-proj-2' });
+    add.innerHTML =
+      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>' +
+      '<strong>新建作品</strong>' +
+      '<span class="fs-12">从一个名字和一句话灵感开始，不填表</span>';
+    add.addEventListener('click', function () { $('#modal-new-proj').hidden = false; });
+    grid.appendChild(add);
+  }
+
+  /* ---------- 最近生成记录 ---------- */
+  function renderRecent() {
+    Promise.all([api.listUsage(), api.listChapters()]).then(function (res) {
+      var rows = res[0];
+      var chapters = res[1];
+      var dateOf = {};
+      chapters.forEach(function (c) { dateOf[c.n] = c.updated; });
+
+      var box = $('#recent-list');
+      box.innerHTML = '';
+
+      var list = rows.slice().reverse();
+      if (!list.length) {
+        box.appendChild(h('div', { class: 'empty' },
+          '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>' +
+          '<div class="fs-13">本会话还没有生成记录</div>'));
+        return;
+      }
+
+      list.forEach(function (u, i) {
+        var r = h('div', { class: 'list-row' });
+        r.innerHTML =
+          /* 日期取自章节数据的 updated 字段；缺失时留空占位 */
+          '<span class="mono fs-12 muted" style="width:64px;flex:none">' + (dateOf[u.chapter] || '—') + '</span>' +
+          '<span class="row-main"><span class="row-title">第 ' + u.chapter + ' 章 · 生成 + 审计</span>' +
+          '<span class="row-sub mono">输入 ' + App.fmtInt(u.promptTokens) + ' tok · 输出 ' + App.fmtInt(u.completionTokens) + ' tok</span></span>' +
+          /* 同属当前作品，标签只在首行出现一次，避免逐行重复 */
+          (i === 0 ? '<span class="tag tag-info">雁回关</span>' : '') +
+          '<span class="mono fs-13" style="width:56px;text-align:right">' + App.fmtMoney(u.cost) + '</span>';
+        box.appendChild(r);
+      });
+    }).catch(function (e) {
+      App.fail('#recent-list', e, renderRecent);
+    });
+  }
+
+  /* ---------- 载入 ---------- */
+  function load() {
+    api.listProjects().then(function (list) {
+      state.projects = list;
+      renderSummary(list);
+      renderCurrent(list);
+      renderProjects(list);
+    }).catch(function (e) {
+      App.fail('#proj-grid', e, load);
+    });
+  }
+  load();
+  renderRecent();
+
+  /* ---------- 新建 ---------- */
+  $$('[data-open-modal="modal-new-proj"]').forEach(function (b) {
+    b.addEventListener('click', function () { $('#modal-new-proj').hidden = false; });
+  });
+
+  $('#btn-create').addEventListener('click', function () {
+    var btn = this;
+    var title = $('#np-title').value.trim();
+    if (!title) { App.toast('先给作品起个名字', 'warn'); return; }
+    App.loading(btn, true, '创建中…');
+    api.createProject(title).then(function () {
+      App.loading(btn, false);
+      $('#modal-new-proj').hidden = true;
+      $('#np-title').value = '';
+      $('#np-idea').value = '';
+      load();
+      App.toast('已创建《' + title + '》，前往共创对话开始立项', 'ok');
+    });
+  });
+})();
+</script>
+</body>
+</html>

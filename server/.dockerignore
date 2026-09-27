@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+tests/
+
+# 运行时数据与密钥：由 compose 用卷挂载，绝不进镜像层
+.env
+data/

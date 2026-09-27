@@ -1,0 +1,28 @@
+{
+  "rules": [
+    {
+      "id": "rule_001",
+      "category": "器物",
+      "kind": "hard",
+      "rule": "青铜灯灭时，亡者复归；灯只随持有者的死而灭",
+      "refs": [
+        1,
+        2
+      ],
+      "note": "",
+      "status": "ok"
+    },
+    {
+      "id": "rule_002",
+      "category": "体系",
+      "kind": "soft",
+      "rule": "文脉之力以记忆为食，被取走记忆的人会忘记至亲",
+      "refs": [
+        3
+      ],
+      "note": "",
+      "status": "ok"
+    }
+  ],
+  "updated_at": "2026-09-27T05:28:24+00:00"
+}

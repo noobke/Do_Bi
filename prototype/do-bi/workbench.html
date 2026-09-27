@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>写作工作台 · Do_Bi 小说创作台</title>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="workbench">
+
+<!-- =====================================================================
+     App Shell（冻结）· 其余页面必须从本文件逐字复制侧栏整块（aside.sidebar）
+     ===================================================================== -->
+<aside class="sidebar">
+  <div class="brand">
+    <span class="brand-seal" aria-hidden="true"></span>
+    <span class="brand-name">Do_Bi</span>
+    <span class="brand-sub">小说创作台</span>
+  </div>
+
+  <nav class="nav" aria-label="主导航">
+    <a class="nav-item" data-nav="projects" href="index.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>
+      项目
+    </a>
+    <a class="nav-item" data-nav="workbench" href="workbench.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>
+      工作台
+    </a>
+    <a class="nav-item" data-nav="chat" href="chat.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
+      共创
+    </a>
+    <a class="nav-item" data-nav="characters" href="characters.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      角色
+    </a>
+    <a class="nav-item" data-nav="hooks" href="hooks.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+      伏笔
+    </a>
+    <a class="nav-item" data-nav="outline" href="outline.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+      结构
+    </a>
+    <a class="nav-item" data-nav="world" href="world.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+      世界观
+    </a>
+    <a class="nav-item" data-nav="audit" href="audit.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+      审计
+    </a>
+    <a class="nav-item" data-nav="style" href="style.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>
+      文风
+    </a>
+    <a class="nav-item" data-nav="settings" href="settings.html">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+      设置
+    </a>
+  </nav>
+
+  <div class="sidebar-foot">
+    <div class="foot-label">当前项目</div>
+    <div class="foot-title" id="foot-title">雁回关</div>
+    <div class="foot-meta"><span id="foot-progress">第 17 / 60 章</span><span id="foot-words">86,420 字</span></div>
+    <div class="progress" style="margin-top:10px"><i id="foot-bar" style="width:28%"></i></div>
+    <div class="foot-meta"><span>预算已用</span><span id="foot-budget">¥12.60 / ¥80.00</span></div>
+  </div>
+</aside>
+
+<main class="main" id="main">
+  <div class="wrap">
+
+    <!-- topbar -->
+    <header class="topbar" data-reveal>
+      <div>
+        <h1>写作工作台</h1>
+        <div class="topbar-sub" id="topbar-sub">《雁回关》· 古风悬疑 · 第 17 / 60 章</div>
+      </div>
+      <div class="topbar-actions">
+        <span class="fs-12 muted" id="mode-hint">半自动 · 章纲与审计报告需确认</span>
+        <div class="seg" data-seg="mode" id="mode-seg">
+          <button data-value="auto">全自动</button>
+          <button data-value="semi-auto" class="active">半自动</button>
+          <button data-value="manual">手动逐步</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="workbench">
+
+      <!-- ============ 左栏：章节目录 ============ -->
+      <section class="card col-left" data-reveal>
+        <div class="card-head">
+          <h2>章节目录</h2>
+          <span class="tag tag-quiet" id="chapter-count">—</span>
+        </div>
+        <div class="list" id="chapter-list"></div>
+        <div class="card-foot">
+          <button class="btn btn-ghost btn-sm btn-block" id="btn-rolling">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+            生成下一卷骨架
+          </button>
+        </div>
+      </section>
+
+      <!-- ============ 中栏：手稿 ============ -->
+      <section class="manuscript" data-reveal>
+        <div class="ms-head">
+          <div>
+            <div class="ms-title" id="ms-title-line">第 17 章 · 雪落雁回</div>
+            <div class="ms-meta" id="ms-meta">5,240 字 · 已生成 · 待审计</div>
+          </div>
+          <div class="row">
+            <button class="btn btn-ghost btn-sm" id="btn-stop" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+              停止
+            </button>
+            <button class="btn btn-ghost btn-sm" id="btn-gen">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v4"/><path d="M12 17v4"/><path d="M3 12h4"/><path d="M17 12h4"/><path d="m6.3 6.3 2.8 2.8"/><path d="m14.9 14.9 2.8 2.8"/><path d="m17.7 6.3-2.8 2.8"/><path d="m9.1 14.9-2.8 2.8"/></svg>
+              重新生成本章
+            </button>
+            <button class="btn btn-primary btn-sm" id="btn-commit">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              定稿
+            </button>
+          </div>
+        </div>
+        <div class="ms-body" id="ms-body"></div>
+      </section>
+
+      <!-- ============ 右栏：助手 ============ -->
+      <aside class="col-right stack-24">
+
+        <!-- 本章状态 -->
+        <div class="card" data-reveal>
+          <div class="card-head">
+            <h2>本章状态</h2>
+            <span class="tag tag-warn" id="state-tag">待审计</span>
+          </div>
+          <div class="card-body grid-2" style="gap:12px">
+            <div class="stat"><div class="stat-label">字数</div><div class="stat-value fs-20" id="stat-words">—</div></div>
+            <div class="stat"><div class="stat-label">本章成本</div><div class="stat-value fs-20" id="stat-cost">—</div></div>
+            <div class="stat"><div class="stat-label">规则违规</div><div class="stat-value fs-20" id="stat-rules">—</div></div>
+            <div class="stat"><div class="stat-label">待修订项</div><div class="stat-value fs-20" id="stat-open">—</div></div>
+          </div>
+        </div>
+
+        <!-- 助手 / 审计 -->
+        <div class="aside-panel" data-reveal>
+          <div class="aside-head">
+            <div class="tabs" data-tabs id="aside-tabs">
+              <button class="tab active" data-tab="audit">审计</button>
+              <button class="tab" data-tab="tools">助手</button>
+              <button class="tab" data-tab="cost">成本</button>
+            </div>
+          </div>
+          <div class="aside-body">
+
+            <div class="tabpanel active" data-panel="audit">
+              <div class="row-between" style="margin-bottom:12px">
+                <span class="fs-12 muted">L1 规则 + L2 维度审计</span>
+                <button class="btn btn-quiet btn-sm" id="btn-audit">重新审计</button>
+              </div>
+              <div class="stack-8" id="audit-list"></div>
+            </div>
+
+            <div class="tabpanel" data-panel="tools">
+              <div class="stack-8">
+                <span class="fs-12 muted" title="演示：真实版本会作用于你选中的段落">对本章执行</span>
+                <div class="wrap-row">
+                  <button class="btn btn-ghost btn-sm" data-tool="续写">续写</button>
+                  <button class="btn btn-ghost btn-sm" data-tool="润色">润色</button>
+                  <button class="btn btn-ghost btn-sm" data-tool="扩写">扩写</button>
+                  <button class="btn btn-ghost btn-sm" data-tool="去 AI 味">去 AI 味</button>
+                  <button class="btn btn-ghost btn-sm" data-tool="查设定">查设定</button>
+                </div>
+                <div class="field" style="margin-top:8px">
+                  <label class="field-label" for="chat-input">补充指令（可选）</label>
+                  <textarea class="textarea" id="chat-input" placeholder="例如：这一章节奏太慢，把追查部分压缩到三段以内"></textarea>
+                  <span class="field-hint">指令会随上下文一起进入本次生成，不影响项目设定。</span>
+                </div>
+                <button class="btn btn-primary btn-sm btn-block" id="btn-apply">应用</button>
+              </div>
+            </div>
+
+            <div class="tabpanel" data-panel="cost">
+              <div class="stack-8">
+                <span class="fs-12 muted">最近四次调用</span>
+                <div class="list" id="usage-list"></div>
+                <div class="divider" style="margin:12px 0"></div>
+                <div class="row-between fs-13"><span class="muted">本项目累计</span><span class="mono" id="usage-total">—</span></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 待确认项（干预策略） -->
+        <div class="card" data-reveal>
+          <div class="card-head">
+            <h2>待你确认</h2>
+            <span class="tag tag-info">2 项</span>
+          </div>
+          <div class="list">
+            <div class="list-row">
+              <div class="row-main">
+                <div class="row-title">第 18 章章纲</div>
+                <div class="row-sub">半自动模式下需确认后才开始生成正文</div>
+              </div>
+              <a class="btn btn-ghost btn-sm" href="chapter.html#18">查看</a>
+            </div>
+            <div class="list-row">
+              <div class="row-main">
+                <div class="row-title">真相文件写入提案</div>
+                <div class="row-sub">新增事实 3 条 · 修改角色状态 1 处</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" data-open-modal="modal-commit">审阅</button>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+  </div>
+</main>
+
+<!-- 定稿：Proposal → Validate → Commit -->
+<div class="modal" id="modal-commit" hidden>
+  <div class="modal-veil"></div>
+  <div class="modal-card">
+    <div class="card-head">
+      <h2>写入真相文件</h2>
+      <button class="btn btn-quiet btn-sm" data-close-modal>关闭</button>
+    </div>
+    <div class="card-body stack">
+      <p class="fs-13 muted">定稿后，本章将沉淀为可检索资产。以下提案经校验器检查后才写入，冲突项会降级为待人工确认，不会自动入正史。</p>
+
+      <div>
+        <div class="fs-13" style="font-weight:500;margin-bottom:8px">1 · 校验通过（将写入）</div>
+        <div class="card card-pad stack-8">
+          <div class="fs-13"><span class="tag tag-ok">事实</span> 沈砚获得青铜灯</div>
+          <div class="fs-13"><span class="tag tag-ok">状态</span> 沈砚 状态：左臂有刀伤，未愈</div>
+          <div class="fs-13"><span class="tag tag-ok">伏笔</span> hook_007 第一次显性呼应</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="fs-13" style="font-weight:500;margin-bottom:8px">2 · 冲突（需人工裁定）</div>
+        <div class="audit-item sev-major">
+          <div class="row-between"><span class="fs-13">与 world.md 冲突</span><span class="tag tag-warn">重点</span></div>
+          <div class="audit-evidence">「铜灯须以血引方燃」vs 正文「灯没有点，可灯芯是亮的」</div>
+          <div class="audit-fix">建议：保留正文，将 world.md 规则改为「铜灯可自行燃起，但会反噬持灯者」</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-foot row" style="justify-content:flex-end">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="btn-commit-confirm">确认写入并标记已定稿</button>
+    </div>
+  </div>
+</div>
+
+<!-- 重新生成：已有正文时二次确认 -->
+<div class="modal" id="modal-regen" hidden>
+  <div class="modal-veil"></div>
+  <div class="modal-card">
+    <div class="card-head">
+      <h2>重新生成本章</h2>
+      <button class="btn btn-quiet btn-sm" data-close-modal>关闭</button>
+    </div>
+    <div class="card-body">
+      <p class="fs-13 muted" id="regen-msg">将先清空当前正文，再重新生成。</p>
+    </div>
+    <div class="card-foot row" style="justify-content:flex-end">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="btn-regen-confirm">确认重新生成</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/mock.js"></script>
+<script src="assets/api.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = App.$, $$ = App.$$, h = App.h;
+  var M = window.MOCK;
+  var state = { chapter: 17, mode: 'semi-auto', chaptersTotal: 0, chapterList: null, msWords: 0 };
+  var usageRows = [];   /* api.listUsage() 结果，作为「本章成本」的唯一来源 */
+
+  var modeHint = {
+    'auto': '全自动 · 全流程自动执行，仅在阻塞时暂停',
+    'semi-auto': '半自动 · 章纲与审计报告需确认',
+    'manual': '手动逐步 · 每个环节都停下等待确认'
+  };
+  var chTag = {
+    done:  ['tag-ok', '已完成'],
+    audit: ['tag-warn', '待审计'],
+    draft: ['tag-info', '草稿'],
+    todo:  ['tag-quiet', '未写']
+  };
+
+  /* 章节目录卡头：「共 N 章 · 显示 a–b」由项目总章数与实际渲染的章节行共同派生，
+     避免写死数字与真实列表不符（列表只渲染第 14–20 章） */
+  function renderChapterCount() {
+    var list = state.chapterList;
+    if (!list || !list.length || !state.chaptersTotal) return;
+    var nums = list.map(function (c) { return c.n; });
+    var min = Math.min.apply(null, nums), max = Math.max.apply(null, nums);
+    $('#chapter-count').textContent = '共 ' + state.chaptersTotal + ' 章 · 显示 ' + min + '–' + max;
+  }
+
+  /* ---------- 侧栏 / 顶栏 ---------- */
+  var loadProject = function () {
+    api.getProject().then(function (p) {
+      $('#foot-title').textContent = p.title;
+      $('#foot-progress').textContent = '第 ' + p.chaptersDone + ' / ' + p.chaptersTotal + ' 章';
+      $('#foot-words').textContent = App.fmtInt(p.words) + ' 字';
+      $('#foot-budget').textContent = p.costUnit + p.budgetUsed.toFixed(2) + ' / ' + p.costUnit + p.budgetTotal.toFixed(2);
+      $('#foot-bar').style.width = Math.round(p.chaptersDone / p.chaptersTotal * 100) + '%';
+      $('#topbar-sub').textContent = '《' + p.title + '》· ' + p.genre + ' · 第 ' + p.chaptersDone + ' / ' + p.chaptersTotal + ' 章';
+      state.chaptersTotal = p.chaptersTotal;
+      renderChapterCount();
+    }).catch(function (e) {
+      App.fail('#topbar-sub', e, loadProject);
+    });
+  };
+  loadProject();
+
+  /* ---------- 章节目录 ---------- */
+  var loadChapters = function () {
+    api.listChapters().then(function (list) {
+      var box = $('#chapter-list');
+      state.chapterList = list;
+      renderChapterCount();
+      list.forEach(function (c) {
+        var t = chTag[c.status];
+        var row = h('div', { class: 'list-row' + (c.n === state.chapter ? ' is-active' : ''), 'data-ch': c.n });
+        row.innerHTML =
+          '<span class="mono fs-12 muted" style="width:22px;flex:none">' + c.n + '</span>' +
+          '<span class="row-main"><span class="row-title">' + c.title + '</span>' +
+          '<span class="row-sub">' + (c.words ? App.fmtInt(c.words) + ' 字 · ' + c.updated : '未开始') + '</span></span>' +
+          '<span class="tag ' + t[0] + '">' + t[1] + '</span>';
+        App.clickable(row, function () {
+          if (state.chapter === c.n) return;
+          state.chapter = c.n;
+          $$('#chapter-list .list-row').forEach(function (r) { r.classList.toggle('is-active', Number(r.dataset.ch) === c.n); });
+          renderManuscript();
+          renderAudit();
+          App.toast('已切换至第 ' + c.n + ' 章：' + c.title);
+        });
+        box.appendChild(row);
+      });
+    }).catch(function (e) {
+      App.fail('#chapter-list', e, loadChapters);
+    });
+  };
+  loadChapters();
+
+  /* ---------- 手稿 ---------- */
+  var EMPTY_ICON = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v6h6"/><path d="M9 15h6"/></svg>';
+
+  /* 「本章成本」唯一来源：usage 行；无记录显示 — */
+  function refreshChapterStats() {
+    var u = usageRows.filter(function (x) { return x.chapter === state.chapter; })[0];
+    $('#stat-cost').textContent = u ? App.fmtMoney(u.cost) : '—';
+  }
+
+  function renderManuscript() {
+    api.getManuscript(state.chapter).then(function (ms) {
+      var t = chTag[ms.status] || chTag.todo;
+      var body = $('#ms-body');
+
+      $('#ms-title-line').textContent = '第 ' + ms.n + ' 章 · ' + (ms.title || '（未命名）');
+      $('#ms-meta').textContent = ms.words
+        ? App.fmtInt(ms.words) + ' 字 · 已生成 · ' + t[1]
+        : '尚未生成正文 · ' + t[1];
+      $('#state-tag').className = 'tag ' + t[0];
+      $('#state-tag').textContent = t[1];
+      $('#stat-words').textContent = ms.words ? App.fmtInt(ms.words) : '—';
+      state.msWords = ms.words || 0;   /* 供定稿后重写 #ms-meta 使用，避免写死字数 */
+      refreshChapterStats();
+
+      body.innerHTML = '';
+      if (!ms.paragraphs.length) {
+        body.innerHTML =
+          '<div class="empty">' + EMPTY_ICON +
+            '<span class="fs-12">第 ' + ms.n + ' 章尚未生成正文</span>' +
+            '<span class="fs-12 muted">点上方「重新生成本章」开始生成；章纲未定时，先到「结构」页确认本章节拍</span>' +
+          '</div>';
+        return;
+      }
+      ms.paragraphs.forEach(function (p) {
+        var cls = p.mark === 'hl' ? 'hl' : (p.mark === 'hz' ? 'hz' : '');
+        var line = h('div', { class: 'ms-line' });
+        line.innerHTML =
+          '<div class="ms-gutter">' + p.gutter + '</div>' +
+          '<div class="ms-text">' + (cls ? '<span class="' + cls + '">' + p.text + '</span>' : p.text) + '</div>';
+        body.appendChild(line);
+        if (p.note) {
+          body.appendChild(h('div', { class: 'ms-note', text: p.note }));
+        }
+      });
+    }).catch(function (e) {
+      App.fail('#ms-body', e, renderManuscript);
+    });
+  }
+  renderManuscript();
+
+  /* ---------- 生成（模拟流式，可中途停止） ---------- */
+  var genJob = null;
+
+  function startGeneration() {
+    var btn = $('#btn-gen');
+    var body = $('#ms-body');
+    if (genJob) genJob.cancel();
+    body.innerHTML = '';
+    App.loading(btn, true, '生成中…');
+    $('#btn-stop').disabled = false;
+    genJob = api.generateChapter(state.chapter, function (p) {
+      var line = h('div', { class: 'ms-line' });
+      line.innerHTML =
+        '<div class="ms-gutter">' + p.gutter + '</div>' +
+        '<div class="ms-text">' + p.text + '</div>';
+      body.appendChild(line);
+      if (p.note) body.appendChild(h('div', { class: 'ms-note', text: p.note }));
+      body.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    });
+    genJob.then(function (res) {
+      App.loading(btn, false);
+      $('#btn-stop').disabled = true;
+      genJob = null;
+      if (res.cancelled) {
+        App.toast('已停止生成，已保留前 ' + res.done + ' 段');
+      } else {
+        App.toast('第 ' + state.chapter + ' 章已生成，等待审计');
+      }
+    });
+  }
+
+  /* 已有正文时必须二次确认 —— 重新生成会先清空当前正文，且不可撤销 */
+  $('#btn-gen').addEventListener('click', function () {
+    var n = $('#ms-body').querySelectorAll('.ms-line').length;
+    if (!n) { startGeneration(); return; }
+    $('#regen-msg').textContent =
+      '将先清空第 ' + state.chapter + ' 章已生成的 ' + n + ' 段正文，再重新生成。此操作不可撤销。';
+    $('#modal-regen').hidden = false;
+  });
+
+  $('#btn-regen-confirm').addEventListener('click', function () {
+    $('#modal-regen').hidden = true;
+    startGeneration();
+  });
+
+  $('#btn-stop').addEventListener('click', function () {
+    if (genJob) genJob.cancel();
+    this.disabled = true;
+  });
+
+  /* ---------- 审计列表 ---------- */
+  /* 严重度一律用作者语言，不出现 blocker / major / minor 英文 */
+  var sevTag = {
+    blocker: ['tag-danger', '阻塞定稿'],
+    major:   ['tag-warn',  '重点'],
+    minor:   ['tag-quiet', '建议']
+  };
+
+  function renderAudit() {
+    api.getAudit(state.chapter).then(function (a) {
+      var box = $('#audit-list');
+      box.innerHTML = '';
+      var open = 0;
+      a.items.forEach(function (it) {
+        var decided = it.decision === 'accept' || it.decision === 'ignore';
+        if (!decided) open++;
+        var t = sevTag[it.severity];
+        var card = h('div', { class: 'audit-item sev-' + it.severity });
+        var stateTag = it.decision === 'accept' ? '<span class="tag tag-ok">已修订</span>'
+                     : it.decision === 'ignore' ? '<span class="tag tag-quiet">已忽略</span>'
+                     : '<span class="tag ' + t[0] + '">' + t[1] + '</span>';
+        card.innerHTML =
+          '<div class="row-between">' +
+            '<span class="fs-13" style="font-weight:500">' + it.dim + '</span>' + stateTag +
+          '</div>' +
+          '<div class="audit-evidence">' + it.evidence + '</div>' +
+          '<div class="audit-fix">' + it.suggestion + '</div>';
+
+        var act = h('div', { class: 'row', style: 'margin-top:10px' });
+        if (!decided) {
+          var ok = h('button', { class: 'btn btn-primary btn-sm', text: '接受修订' });
+          var no = h('button', { class: 'btn btn-ghost btn-sm', text: '忽略' });
+          ok.addEventListener('click', function () {
+            api.resolveAuditItem(state.chapter, it.dim, 'accept').then(function () {
+              App.toast('已接受「' + it.dim + '」的修订建议');
+              renderAudit();
+            });
+          });
+          no.addEventListener('click', function () {
+            api.resolveAuditItem(state.chapter, it.dim, 'ignore').then(function () {
+              App.toast('已忽略「' + it.dim + '」，原文保留');
+              renderAudit();
+            });
+          });
+          act.appendChild(ok); act.appendChild(no);
+        } else {
+          var undo = h('button', { class: 'btn btn-quiet btn-sm', text: '撤回' });
+          undo.addEventListener('click', function () {
+            api.resolveAuditItem(state.chapter, it.dim, null).then(function () {
+              App.toast('已撤回决策：' + it.dim);
+              renderAudit();
+            });
+          });
+          act.appendChild(undo);
+        }
+        card.appendChild(act);
+        box.appendChild(card);
+      });
+      $('#stat-open').textContent = open;
+    }).catch(function (e) {
+      App.fail('#audit-list', e, renderAudit);
+    });
+    api.listRules().then(function (rules) {
+      $('#stat-rules').textContent = rules.reduce(function (s, r) { return s + r.hit; }, 0);
+    });
+  }
+  renderAudit();
+
+  $('#btn-audit').addEventListener('click', function () {
+    App.loading(this, true, '审计中…');
+    var self = this;
+    api.runAudit(state.chapter).then(function (a) {
+      App.loading(self, false);
+      renderAudit();
+      var open = a.items.filter(function (x) { return !x.decision; }).length;
+      App.toast('审计完成：' + open + ' 项待处理，' + (a.items.length - open) + ' 项已处理');
+    });
+  });
+
+  /* ---------- 成本 ---------- */
+  var loadUsage = function () {
+    api.listUsage().then(function (rows) {
+      usageRows = rows;
+      refreshChapterStats();
+      var box = $('#usage-list'), total = 0;
+      rows.slice().reverse().forEach(function (u) {
+        total += u.cost;
+        var r = h('div', { class: 'list-row' });
+        r.innerHTML =
+          '<span class="row-main"><span class="row-title">第 ' + u.chapter + ' 章</span>' +
+          '<span class="row-sub mono">' + App.fmtInt(u.promptTokens) + ' / ' + App.fmtInt(u.completionTokens) + ' tok</span></span>' +
+          '<span class="mono fs-13">' + App.fmtMoney(u.cost) + '</span>';
+        box.appendChild(r);
+      });
+      $('#usage-total').textContent = App.fmtMoney(total) + ' （本次会话）';
+    }).catch(function (e) {
+      App.fail('#usage-list', e, loadUsage);
+    });
+  };
+  loadUsage();
+
+  /* ---------- 干预模式 ---------- */
+  $('#mode-seg').addEventListener('seg:change', function (e) {
+    state.mode = e.detail.value;
+    $('#mode-hint').textContent = modeHint[state.mode] || '';
+    api.setMode(state.mode).then(function () {
+      App.toast('干预模式已切换：' + $('#mode-seg .active').textContent);
+    });
+  });
+
+  /* ---------- 助手工具 ---------- */
+  $$('[data-tool]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      App.toast('已加入指令：' + b.dataset.tool + '（演示，不调用真实模型）');
+    });
+  });
+  $('#btn-apply').addEventListener('click', function () {
+    App.toast('指令已应用（演示）');
+  });
+
+  $('#btn-rolling').addEventListener('click', function () {
+    App.loading(this, true, '规划中…');
+    var self = this;
+    setTimeout(function () {
+      App.loading(self, false);
+      App.toast('已生成第 4 卷骨架弧：目标 + 预计 14 章');
+    }, 900);
+  });
+
+  $('#btn-commit').addEventListener('click', function () {
+    $('#modal-commit').hidden = false;
+  });
+  $('#btn-commit-confirm').addEventListener('click', function () {
+    $('#modal-commit').hidden = true;
+    $('#state-tag').className = 'tag tag-ok';
+    $('#state-tag').textContent = '已定稿';
+    /* 手稿头部的状态要同步：用当前章节实际字数拼接，不再显示「待审计」 */
+    $('#ms-meta').textContent =
+      (state.msWords ? App.fmtInt(state.msWords) + ' 字 · ' : '') + '已定稿';
+    /* 定稿会改变待处理项数量，重跑一次审计列表让「待修订项」等数字同步 */
+    renderAudit();
+    App.toast('已定稿，真相文件已更新');
+  });
+})();
+</script>
+</body>
+</html>
