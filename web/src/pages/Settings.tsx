@@ -173,6 +173,13 @@ export default function Settings() {
   const [tempDraft, setTempDraft] = useState<Record<string, string>>({})
   //: 外部工具：正在编辑的表单（null = 没有在编辑）
   const [mcpForm, setMcpForm] = useState<McpForm | null>(null)
+  //: 「添加服务商」模态：后端暂不支持在线新增，这里只用于对照检查并产出「本地配置片段」
+  const [addOpen, setAddOpen] = useState(false)
+  const [addName, setAddName] = useState('')
+  const [addUrl, setAddUrl] = useState('')
+  const [addModel, setAddModel] = useState('')
+  //: 总预算的本地预览草稿（后端没有「改总预算」的写接口，此值只在本页生效）
+  const [budgetDraft, setBudgetDraft] = useState('')
 
   const [mcp, setMcp] = useState<McpPayload | null>(null)
   const [mcpBusy, setMcpBusy] = useState<string | null>(null)
@@ -473,6 +480,70 @@ export default function Settings() {
     return Math.max(0, Math.min(100, Math.round((b.ratio ?? 0) * 100)))
   }, [usage])
 
+  //: 首次拿到账本时，用账本里的总预算作为「本地预览」的初值，仅作对照
+  useEffect(() => {
+    if (usage && budgetDraft === '') {
+      setBudgetDraft(usage.budget.unlimited ? '' : String(usage.budget.total || ''))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usage])
+
+  //: 本地预览：只根据页码里键入的总预算重新算一遍余量/比例，不写服务器
+  const budgetLocal = useMemo(() => {
+    if (!usage) return null
+    const used = usage.budget.used
+    const unit = usage.budget.unit
+    const raw = Number(budgetDraft)
+    const total = Number.isFinite(raw) && raw > 0 ? raw : 0
+    const unlimited = total <= 0
+    const remaining = unlimited ? 0 : Math.max(0, total - used)
+    const ratio = unlimited ? 0 : used / total
+    const pct = Math.max(0, Math.min(100, Math.round(ratio * 100)))
+    const level = unlimited ? 'ok' : used >= total ? 'exceeded' : ratio >= 0.8 ? 'warning' : 'ok'
+    return { used, unit, total, unlimited, remaining, pct, level }
+  }, [usage, budgetDraft])
+
+  //: 「本地配置片段」：按填写的名称/地址/默认模型拼一段可直接贴进配置文件的片段
+  const providerSnippet = useMemo(() => {
+    const name = addName.trim().replace(/\s+/g, '')
+    const slug = name ? name.replace(/[^A-Za-z0-9\u4e00-\u9fa5]/g, '') : ''
+    const envName = slug ? `DOBI_KEY_${slug.toUpperCase()}` : 'DOBI_KEY_新服务商'
+    const entry: Record<string, unknown> = {
+      name: name || '新服务商',
+      base_url: addUrl.trim() || 'https://api.example.com/v1',
+      api_key_ref: envName,
+      priority: providers.length + 1,
+      enabled: true,
+      note: '按实际情况修改后再粘贴。',
+    }
+    if (addModel.trim()) {
+      entry.models = [
+        {
+          name: addModel.trim(),
+          context_window: 131072,
+          max_output: 32768,
+          supports_json: true,
+          supports_stream: true,
+          supports_tools: false,
+          price_in: 0,
+          price_out: 0,
+          note: '示例名，请按厂商当前可用清单核对。',
+        },
+      ]
+    }
+    return JSON.stringify({ providers: [entry] }, null, 2)
+  }, [addName, addUrl, addModel, providers.length])
+
+  //: 复制上面生成的配置片段（只复制文本，不触发任何新增）
+  const copySnippet = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(providerSnippet)
+      toast('配置片段已复制，请贴进本地配置文件', 'ok')
+    } catch {
+      toast('复制失败，请手动选中上面的片段复制', 'warn')
+    }
+  }, [providerSnippet])
+
   return (
     <>
       <TopBar title="设置" sub="模型接入 · 全部在线调用 · 不含本地模型" />
@@ -499,7 +570,16 @@ export default function Settings() {
           <section className="card">
             <div className="card-head">
               <h2>模型服务</h2>
-              <span className="tag tag-quiet">兼容 OpenAI</span>
+              <div className="row" style={{ gap: 8 }}>
+                <span className="tag tag-quiet">兼容 OpenAI</span>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setAddOpen(true)}
+                >
+                  添加服务商
+                </button>
+              </div>
             </div>
             <div className="card-body" style={{ padding: 0 }}>
               {providers.length === 0 ? (
@@ -972,6 +1052,50 @@ export default function Settings() {
                     </div>
                   </div>
 
+                  {/* 本地预览的可编辑总预算：后端没有「改总预算」的写接口，此值只在本页生效 */}
+                  <div className="field" style={{ maxWidth: 340 }}>
+                    <div className="row-between">
+                      <label className="field-label" htmlFor="budget-total-edit">
+                        总预算（本地预览）
+                      </label>
+                      {budgetLocal ? (
+                        budgetLocal.unlimited ? (
+                          <span className="tag tag-quiet">不限上限</span>
+                        ) : budgetLocal.level === 'exceeded' ? (
+                          <span className="tag tag-danger">已超出</span>
+                        ) : budgetLocal.level === 'warning' ? (
+                          <span className="tag tag-warn">接近上限</span>
+                        ) : (
+                          <span className="tag tag-ok">正常</span>
+                        )
+                      ) : null}
+                    </div>
+                    <input
+                      id="budget-total-edit"
+                      className="input mono"
+                      type="number"
+                      step={10}
+                      min={0}
+                      value={budgetDraft}
+                      onChange={(e) => setBudgetDraft(e.target.value)}
+                    />
+                    {budgetLocal && !budgetLocal.unlimited ? (
+                      <span className="field-hint">
+                        本地预览：已用 {fmtMoney(budgetLocal.used, budgetLocal.unit)} ／{' '}
+                        {fmtMoney(budgetLocal.total, budgetLocal.unit)}，余量{' '}
+                        {fmtMoney(budgetLocal.remaining, budgetLocal.unit)}
+                      </span>
+                    ) : (
+                      <span className="field-hint">填 0 或留空表示不限上限</span>
+                    )}
+                    <span
+                      className="field-hint"
+                      title="后端没有提供修改总预算的写接口；填写的数值只影响本页预览，不会被同步到服务器账本"
+                    >
+                      此改动只在本页生效，实际以本地账本为准；刷新后仍以账本数值为准。
+                    </span>
+                  </div>
+
                   <div className="grid-3">
                     <div className="stat">
                       <div className="stat-label">调用次数</div>
@@ -1286,6 +1410,88 @@ export default function Settings() {
           </section>
         </div>
       )}
+
+      {/* 「添加服务商」：后端暂不支持在线新增，此模态用于对照检查并产出「本地配置片段」 */}
+      {addOpen ? (
+        <div className="modal">
+          <div className="modal-veil" onClick={() => setAddOpen(false)} />
+          <div className="modal-card">
+            <div className="card-head">
+              <h2>添加服务商</h2>
+              <button type="button" className="btn btn-quiet btn-sm" onClick={() => setAddOpen(false)}>
+                关闭
+              </button>
+            </div>
+            <div className="card-body stack">
+              <div className="honest-note">
+                目前暂不支持在页面上直接新增服务商——新增服务商需要先在本地配置文件里声明
+                （名称、服务地址、默认模型等），再回到本页列表点「填写密钥」保存，密钥写入服务端后即可启用。
+                下面表单用于把要新增的内容拼成一段可直接贴进配置文件的片段。
+              </div>
+              <div className="field">
+                <label className="field-label" htmlFor="pv-name">
+                  名称
+                </label>
+                <input
+                  id="pv-name"
+                  className="input"
+                  type="text"
+                  placeholder="例如 DeepSeek"
+                  value={addName}
+                  onChange={(e) => setAddName(e.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label className="field-label" htmlFor="pv-url">
+                  服务地址
+                </label>
+                <input
+                  id="pv-url"
+                  className="input mono"
+                  type="text"
+                  placeholder="https://api.deepseek.com/v1"
+                  value={addUrl}
+                  onChange={(e) => setAddUrl(e.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label className="field-label" htmlFor="pv-model">
+                  默认模型
+                </label>
+                <input
+                  id="pv-model"
+                  className="input mono"
+                  type="text"
+                  placeholder="deepseek-chat"
+                  value={addModel}
+                  onChange={(e) => setAddModel(e.target.value)}
+                />
+              </div>
+              <div className="field">
+                <span className="field-label">配置片段（随上面内容实时更新，可贴进本地配置文件）</span>
+                <pre
+                  className="mono-block"
+                  title="本地配置文件：server/config/providers.json；密钥值只填在服务端的密钥文件里，不写进此片段"
+                >
+                  {providerSnippet}
+                </pre>
+              </div>
+              <div className="fs-12 muted">
+                密钥值得在本地配置文件声明好之后，回到本页列表点「填写密钥」保存到服务端；
+                本页只显示「已配置 / 未配置」与脱敏指纹，永不接触明文。
+              </div>
+            </div>
+            <div className="card-foot row" style={{ justifyContent: 'flex-end' }}>
+              <button type="button" className="btn btn-ghost" onClick={() => setAddOpen(false)}>
+                取消
+              </button>
+              <button type="button" className="btn btn-primary" onClick={() => void copySnippet()}>
+                复制配置片段
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   )
 }

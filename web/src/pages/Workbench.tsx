@@ -8,6 +8,7 @@ import { classNames, fmtInt, fmtMoney, toast } from '../lib/ui'
 import { useProject } from '../state/project'
 import {
   commitChapter,
+  decideFinding,
   generateChapter,
   getChapter,
   getOverview,
@@ -117,6 +118,7 @@ interface AuditItem {
   evidence: string
   suggestion: string
   ref: string
+  patch?: string
   fixed: boolean
   decision: string | null
 }
@@ -199,6 +201,13 @@ export default function Workbench() {
   const [streamText, setStreamText] = useState('')
   const [stepLabel, setStepLabel] = useState('')
   const [busy, setBusy] = useState<StepKind | null>(null)
+
+  /** 正在处理哪条审查发现（`dim`），避免并发决策 */
+  const [auditing, setAuditing] = useState<string | null>(null)
+
+  /** 定稿确认弹窗（null=关）。写毕可能把部分提案降级为待人工确认，用 `commitPend` 透出 */
+  const [commitOpen, setCommitOpen] = useState<number | null>(null)
+  const [commitPend, setCommitPend] = useState<{ id: string; kind: string }[] | null>(null)
 
   const [steerText, setSteerText] = useState('')
   const [steerModal, setSteerModal] = useState<{ id: string; message: string; intent: SteerIntent } | null>(
@@ -388,18 +397,66 @@ export default function Workbench() {
                 : kind === 'revise'
                   ? runRevise
                   : commitChapter
-        const res = (await fn(projectId, n)) as { note?: string; status?: string; message?: string }
+        const res = (await fn(projectId, n)) as {
+          note?: string
+          status?: string
+          message?: string
+          detail?: { pending?: unknown[] }
+        }
         const label = STEP_BUTTONS.find((s) => s.key === kind)?.label ?? ''
         toast(res?.note || res?.status || `${label}完成`, 'ok')
         await loadOverview()
         await loadChapter(n)
+        return res
       } catch (e) {
         toast(errMsg(e), 'error')
+        return undefined
       } finally {
         setBusy(null)
       }
     },
     [projectId, loadOverview, loadChapter],
+  )
+
+  /** 定稿确认：弹出「确认写入并标记已定稿」，写毕把降级为待人工确认的提案透出 */
+  const confirmCommit = useCallback(async () => {
+    if (commitOpen == null) return
+    const n = commitOpen
+    setCommitOpen(null)
+    const res = await runAction(n, 'commit')
+    const pend = res?.detail?.pending
+    if (Array.isArray(pend) && pend.length) {
+      setCommitPend(pend as { id: string; kind: string }[])
+    }
+  }, [commitOpen, runAction])
+
+  /** 处置一条审查发现：接受修订 / 忽略 / 撤回（语义与审计页一致，复用 `decideFinding`） */
+  const decideAudit = useCallback(
+    async (dim: string, action: 'accept' | 'ignore' | null, n: number) => {
+      if (!projectId) return
+      setAuditing(dim)
+      try {
+        const res = (await decideFinding(projectId, n, dim, action)) as {
+          status?: string
+          message?: string
+        }
+        setAudit((prev) =>
+          prev.map((it) =>
+            it.dim === dim
+              ? { ...it, decision: action, fixed: action === 'accept' && !!it.patch }
+              : it,
+          ),
+        )
+        const msg =
+          res?.message ?? (action === 'accept' ? '已接受修订' : action === 'ignore' ? '已忽略' : '已撤回决策')
+        toast(res?.status === 'ok' ? msg : `已记录：${dim}`, 'ok')
+      } catch (e) {
+        toast(errMsg(e), 'error')
+      } finally {
+        setAuditing(null)
+      }
+    },
+    [projectId],
   )
 
   const changeMode = useCallback(
@@ -673,7 +730,11 @@ export default function Workbench() {
                         type="button"
                         className="btn btn-ghost btn-sm"
                         disabled={generating || busy !== null || !words || current == null}
-                        onClick={() => current != null && void runAction(current, s.key)}
+                        onClick={() =>
+                          s.key === 'commit'
+                            ? current != null && setCommitOpen(current)
+                            : current != null && void runAction(current, s.key)
+                        }
                       >
                         <Icon name={s.icon} size={16} />
                         {busy === s.key ? `${s.label}中…` : s.label}
@@ -757,8 +818,10 @@ export default function Workbench() {
                 </div>
                 <div className="card-body stack-8">
                   {audit.length ? (
-                    audit.slice(0, 3).map((it) => {
+                    audit.map((it) => {
                       const t = SEVERITY[it.severity] ?? SEVERITY.minor
+                      const decided = it.decision === 'accept' || it.decision === 'ignore'
+                      const working = auditing === it.dim
                       return (
                         <div key={it.dim} className={classNames('audit-item', `sev-${it.severity}`)}>
                           <div className="row-between">
@@ -766,6 +829,53 @@ export default function Workbench() {
                             <span className={classNames('tag', t[0])} title={it.severity}>
                               {t[1]}
                             </span>
+                          </div>
+                          {it.evidence ? (
+                            <div className="audit-evidence" title="原文证据（可举证）">
+                              {it.evidence}
+                            </div>
+                          ) : null}
+                          <div className="row-between" style={{ marginTop: 8 }}>
+                            <span className="row">
+                              {decided ? (
+                                <span className="tag tag-quiet">
+                                  {it.decision === 'accept' ? '已接受修订' : '已忽略'}
+                                </span>
+                              ) : (
+                                <span className="fs-12 muted">待处置</span>
+                              )}
+                            </span>
+                            <div className="row">
+                              {decided ? (
+                                <button
+                                  type="button"
+                                  className="btn btn-quiet btn-sm"
+                                  disabled={working || current == null}
+                                  onClick={() => void decideAudit(it.dim, null, current as number)}
+                                >
+                                  撤回
+                                </button>
+                              ) : (
+                                <>
+                                  <button
+                                    type="button"
+                                    className="btn btn-primary btn-sm"
+                                    disabled={working || current == null}
+                                    onClick={() => void decideAudit(it.dim, 'accept', current as number)}
+                                  >
+                                    {working ? '处理中…' : '接受'}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-ghost btn-sm"
+                                    disabled={working || current == null}
+                                    onClick={() => void decideAudit(it.dim, 'ignore', current as number)}
+                                  >
+                                    忽略
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                       )
@@ -856,6 +966,70 @@ export default function Workbench() {
                   确认执行
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {commitOpen != null ? (
+        <div className="modal">
+          <div className="modal-veil" onClick={() => setCommitOpen(null)} />
+          <div className="modal-card">
+            <div className="card-head">
+              <h2>定稿第 {commitOpen} 章</h2>
+              <button type="button" className="btn btn-quiet btn-sm" onClick={() => setCommitOpen(null)}>
+                关闭
+              </button>
+            </div>
+            <div className="card-body stack-8">
+              <p className="fs-13">
+                定稿会把本章的摘要、事实、伏笔与依赖关系写入真相文件；冲突项会被校验器拦下、降级为待人工确认，不会自动入正史。
+              </p>
+              <div className="fs-12 muted">尚未通过「审查」的章节不能直接定稿（这是有意为之）。</div>
+            </div>
+            <div className="card-foot row-between">
+              <span className="fs-12 muted">确认后不可撤销地标记为已定稿</span>
+              <div className="row">
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setCommitOpen(null)}>
+                  再想想
+                </button>
+                <button type="button" className="btn btn-primary btn-sm" onClick={() => void confirmCommit()}>
+                  确认写入并标记已定稿
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {commitPend ? (
+        <div className="modal">
+          <div className="modal-veil" onClick={() => setCommitPend(null)} />
+          <div className="modal-card">
+            <div className="card-head">
+              <h2>有 {commitPend.length} 项需人工确认</h2>
+              <button type="button" className="btn btn-quiet btn-sm" onClick={() => setCommitPend(null)}>
+                关闭
+              </button>
+            </div>
+            <div className="card-body stack-8">
+              <p className="fs-13">这次定稿中有几项提案触到了冲突，未自动写入，留给你逐条裁定：</p>
+              <div className="list">
+                {commitPend.map((p) => (
+                  <div key={p.id} className="list-row">
+                    <div className="row-main">
+                      <div className="row-title">{p.id}</div>
+                      <div className="row-sub">{p.kind}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="card-foot row-between">
+              <span className="fs-12 muted">其余内容已正常归档，不因这几项而回滚</span>
+              <button type="button" className="btn btn-primary btn-sm" onClick={() => setCommitPend(null)}>
+                知道了
+              </button>
             </div>
           </div>
         </div>

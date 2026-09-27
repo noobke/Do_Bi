@@ -138,7 +138,11 @@ export default function Disassemble() {
   const [runStage, setRunStage] = useState(0)
   const [tab, setTab] = useState<TabKey>('chars')
   const [busy, setBusy] = useState<string | null>(null)
-  const [confirmOpen, setConfirmOpen] = useState(false)
+  /** 批量确认弹窗：`mode` 区分是「全部接受」还是「全部拒绝」 */
+  const [confirm, setConfirm] = useState<{ open: boolean; mode: 'accept' | 'reject' }>({
+    open: false,
+    mode: 'accept',
+  })
 
   const load = useCallback(async () => {
     if (!projectId) return
@@ -277,11 +281,59 @@ export default function Disassemble() {
     }
     setData((prev) => (prev ? { ...prev, proposals: updated } : prev))
     setBusy(null)
-    setConfirmOpen(false)
+    setConfirm({ open: false, mode: 'accept' })
     if (failed.length > 0) {
       toast(`${failed.length} 条未写入：${failed[0]}`, 'warn')
     } else {
       toast('已接受全部提案', 'ok')
+    }
+  }, [projectId, data])
+
+  /**
+   * 全部拒绝：把当前尚未决定的提案**逐条串行**拒绝。
+   * 串行而非并发，天然避免重复点击 / 竞态；每处理完一条就即时刷新该条状态，
+   * 全部结束后用一次汇总提示告知作者结果。
+   */
+  const rejectAll = useCallback(async () => {
+    const id = projectId
+    if (!id || !data) return
+    setBusy('all')
+    let rejected = 0
+    const failed: string[] = []
+    for (const p of data.proposals) {
+      if (p.decision !== null) continue // 已采纳 / 已拒绝的跳过，不重复处理
+      try {
+        const res = (await decideProposal(id, p.id, 'reject')) as {
+          ok: boolean
+          decision?: 'accept' | 'ignore' | null
+          message?: string
+        }
+        if (res.ok) {
+          rejected += 1
+          // 即时更新该条 UI 状态，作者能实时看到哪条被拒绝
+          setData((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  proposals: prev.proposals.map((x) =>
+                    x.id === p.id ? { ...x, decision: res.decision ?? 'ignore' } : x,
+                  ),
+                }
+              : prev,
+          )
+        } else {
+          failed.push(`${p.kind}：${res.message || '未拒绝'}`)
+        }
+      } catch (e) {
+        failed.push(`${p.kind}：${errMsg(e)}`)
+      }
+    }
+    setBusy(null)
+    setConfirm({ open: false, mode: 'accept' })
+    if (failed.length > 0) {
+      toast(`已拒绝 ${rejected} 条，${failed.length} 条未处理：${failed[0]}`, 'warn')
+    } else {
+      toast(`已拒绝 ${rejected} 条`, 'ok')
     }
   }, [projectId, data])
 
@@ -633,7 +685,16 @@ export default function Disassemble() {
                 <button
                   type="button"
                   className="btn btn-ghost btn-sm"
-                  onClick={() => setConfirmOpen(true)}
+                  title="把尚未决定的提案全部标记为拒绝，不写入真相文件"
+                  onClick={() => setConfirm({ open: true, mode: 'reject' })}
+                  disabled={busy !== null || pending === 0}
+                >
+                  全部拒绝
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setConfirm({ open: true, mode: 'accept' })}
                   disabled={busy !== null || proposals.length === 0}
                 >
                   全部接受
@@ -713,35 +774,46 @@ export default function Disassemble() {
         </div>
       )}
 
-      {/* 全部接受二次确认 */}
-      {confirmOpen ? (
+      {/* 批量接受 / 拒绝二次确认 */}
+      {confirm.open ? (
         <div className="modal">
-          <div className="modal-veil" onClick={() => (busy ? undefined : setConfirmOpen(false))} />
+          <div className="modal-veil" onClick={() => (busy ? undefined : setConfirm({ ...confirm, open: false }))} />
           <div className="modal-card">
             <div className="card-head">
-              <h2>全部接受提案</h2>
+              <h2>{confirm.mode === 'reject' ? '全部拒绝提案' : '全部接受提案'}</h2>
               <button
                 type="button"
                 className="btn btn-quiet btn-sm"
-                onClick={() => setConfirmOpen(false)}
+                onClick={() => setConfirm({ ...confirm, open: false })}
                 disabled={busy !== null}
               >
                 关闭
               </button>
             </div>
             <div className="card-body stack">
-              <p className="fs-13 muted">
-                将接受全部 {proposals.length} 条提案，写入角色 / 世界观 / 伏笔 / 文风，可能影响已有设定。
-              </p>
-              <p className="fs-12 muted">
-                写入会逐条经校验；校验不过的条目会原样回报原因，不会静默覆盖。
-              </p>
+              {confirm.mode === 'reject' ? (
+                <>
+                  <p className="fs-13 muted">
+                    将把全部 {pending} 条尚未决定的提案标记为拒绝，不写入真相文件；已采纳的条目会保留，不受影响。
+                  </p>
+                  <p className="fs-12 muted">逐条标记，过程中可看到处理进度；个别失败会单独告知原因。</p>
+                </>
+              ) : (
+                <>
+                  <p className="fs-13 muted">
+                    将接受全部 {proposals.length} 条提案，写入角色 / 世界观 / 伏笔 / 文风，可能影响已有设定。
+                  </p>
+                  <p className="fs-12 muted">
+                    写入会逐条经校验；校验不过的条目会原样回报原因，不会静默覆盖。
+                  </p>
+                </>
+              )}
             </div>
             <div className="card-foot row" style={{ justifyContent: 'flex-end' }}>
               <button
                 type="button"
                 className="btn btn-ghost"
-                onClick={() => setConfirmOpen(false)}
+                onClick={() => setConfirm({ ...confirm, open: false })}
                 disabled={busy !== null}
               >
                 取消
@@ -749,10 +821,16 @@ export default function Disassemble() {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={() => void acceptAll()}
+                onClick={() => void (confirm.mode === 'reject' ? rejectAll() : acceptAll())}
                 disabled={busy !== null}
               >
-                {busy === 'all' ? '写入中…' : '确认全部接受'}
+                {busy === 'all'
+                  ? confirm.mode === 'reject'
+                    ? '拒绝中…'
+                    : '写入中…'
+                  : confirm.mode === 'reject'
+                    ? '确认全部拒绝'
+                    : '确认全部接受'}
               </button>
             </div>
           </div>

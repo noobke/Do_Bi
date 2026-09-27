@@ -5,7 +5,7 @@ import { Icon } from '../components/Icon'
 import { TopBar } from '../components/Layout'
 import { Loading } from '../components/Loading'
 import { classNames, toast } from '../lib/ui'
-import { getWorld, resolveWorldConflict, setWorldKind } from '../api/client'
+import { getKnowledgeGraph, getWorld, resolveWorldConflict, setWorldKind } from '../api/client'
 import { useProject } from '../state/project'
 
 /**
@@ -35,6 +35,99 @@ interface WorldData {
   stats: { total: number; hard: number; soft: number; conflict: number; unused: number }
   updatedAt: string
   markdown: string
+}
+
+/** 知识库关系图谱的节点（只取本页关心的字段） */
+interface KgNode {
+  key: string
+  kind: string
+  title: string
+  subtitle?: string
+}
+
+/** 知识库关系图谱的边：`from` 指向 `to` */
+interface KgEdge {
+  from: string
+  to: string
+  type: string
+}
+
+/** `getKnowledgeGraph` 的返回（Scope=all 时含设定与剧情线节点） */
+interface KgGraph {
+  nodes: KgNode[]
+  edges: KgEdge[]
+}
+
+/** 对齐区里一条「设定」的关系行 */
+interface AlignRow {
+  id: string
+  rule: string
+  category: string
+  kind: Kind
+  plots: { key: string; name: string; isMain: boolean; shared: number[] }[]
+}
+
+/**
+ * 从知识库图谱派生「设定 × 情节线对齐」。
+ *
+ * 真实来源：`getKnowledgeGraph(projectId, 'all')` 的关系是派生自真相文件的——
+ *   - `rule` 实体有「引用章节」边（规则引用到的章）；
+ *   - `subplot` 实体有「活跃章节」边（剧情线推进的章）。
+ * 一条设定在某条剧情线里被用到，当且仅当两者都落在同一章：即规则引用的章
+ * 与剧情线活跃的章有交集。这里只消费图谱里真实存在的节点与边，不新增任何
+ * 臆造的设定、剧情线或章节。
+ */
+function deriveAlign(graph: KgGraph, rules: WorldRule[]): AlignRow[] {
+  // 规则 引用章 对照、剧情线 活跃章 对照：都用「实体 key → 章 key 集合」表示
+  const ruleToChapters = new Map<string, Set<string>>()
+  const plotToChapters = new Map<string, Set<string>>()
+  for (const e of graph.edges) {
+    if (e.type === 'rule_chapter') {
+      let set = ruleToChapters.get(e.from)
+      if (!set) { set = new Set(); ruleToChapters.set(e.from, set) }
+      set.add(e.to)
+    } else if (e.type === 'subplot_chapter') {
+      let set = plotToChapters.get(e.from)
+      if (!set) { set = new Set(); plotToChapters.set(e.from, set) }
+      set.add(e.to)
+    }
+  }
+
+  // 剧情线节点：key → 完整节点（名称用节点标题，主线/支线看副标题）
+  const plotNodes = new Map(graph.nodes.filter((n) => n.kind === 'subplot').map((n) => [n.key, n]))
+
+  const rows: AlignRow[] = []
+  for (const r of rules) {
+    const ruleKey = `rule:${r.id}`
+    const ruleChapters = ruleToChapters.get(ruleKey)
+    if (!ruleChapters || ruleChapters.size === 0) continue
+
+    // 依次看每一条剧情线是否与这条设定落在同一章
+    const plots: AlignRow['plots'] = []
+    for (const [plotKey, node] of plotNodes) {
+      const plotChapters = plotToChapters.get(plotKey)
+      if (!plotChapters || plotChapters.size === 0) continue
+      const shared: number[] = []
+      for (const c of ruleChapters) {
+        if (plotChapters.has(c)) {
+          const n = Number(c.replace('chapter:', ''))
+          if (!Number.isNaN(n) && !shared.includes(n)) shared.push(n)
+        }
+      }
+      if (!shared.length) continue
+      shared.sort((a, b) => a - b)
+      plots.push({
+        key: plotKey,
+        name: node.title,
+        isMain: (node.subtitle ?? '').includes('主线'),
+        shared,
+      })
+    }
+    if (!plots.length) continue
+
+    rows.push({ id: r.id, rule: r.rule, category: r.category, kind: r.kind, plots })
+  }
+  return rows
 }
 
 const KIND_LABEL: Record<Kind, string> = { hard: '硬约束', soft: '软设定' }
@@ -67,6 +160,10 @@ export default function World() {
   const [category, setCategory] = useState('全部')
   const [busy, setBusy] = useState('')
 
+  // 「设定 × 情节线对齐」的来源图谱：拉取失败不影响整页，单独标记以便走空态
+  const [graph, setGraph] = useState<KgGraph | null>(null)
+  const [graphFailed, setGraphFailed] = useState(false)
+
   const load = useCallback(async () => {
     if (!projectId) return
     setStatus('loading')
@@ -88,6 +185,24 @@ export default function World() {
     }
     void load()
   }, [projectId, load])
+
+  // 独立拉取对齐来源：不走整页三态，失败时走「数据暂未采集」空态
+  useEffect(() => {
+    setGraph(null)
+    setGraphFailed(false)
+    if (!projectId) return
+    let alive = true
+    getKnowledgeGraph(projectId, 'all')
+      .then((g) => {
+        if (alive) setGraph(g as KgGraph)
+      })
+      .catch(() => {
+        if (alive) setGraphFailed(true)
+      })
+    return () => {
+      alive = false
+    }
+  }, [projectId])
 
   const toggleKind = useCallback(
     async (rule: WorldRule) => {
@@ -123,6 +238,11 @@ export default function World() {
   )
 
   const conflicts = useMemo(() => (world?.rules ?? []).filter((r) => r.status === 'conflict'), [world])
+  // 设定 × 情节线对齐：图谱拉到且世界观就绪时才派生，无交集时为空数组（走空态）
+  const alignRows = useMemo(
+    () => (graph && world ? deriveAlign(graph, world.rules) : []),
+    [graph, world],
+  )
   const visibleRules = useMemo(() => {
     const rules = world?.rules ?? []
     return category === '全部' ? rules : rules.filter((r) => r.category === category)
@@ -366,6 +486,56 @@ export default function World() {
               <div className="empty">
                 <Icon name="globe" size={24} />
                 <span className="fs-12">该分类下暂无设定</span>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="card">
+          <div className="card-head">
+            <h2>设定 × 情节线对齐</h2>
+            <span className="tag tag-quiet">交叉视图</span>
+          </div>
+          <div className="card-body">
+            {graphFailed ? (
+              <div className="empty">
+                <Icon name="globe" size={24} />
+                <span className="fs-16 serif">数据暂未采集</span>
+                <span className="fs-13 muted">暂时读不到设定与剧情线的交叉关系，刷新后再试。</span>
+              </div>
+            ) : !graph ? (
+              <div className="fs-13 muted">正在整理设定用在了哪些剧情线…</div>
+            ) : alignRows.length === 0 ? (
+              <div className="empty">
+                <Icon name="globe" size={24} />
+                <span className="fs-16 serif">还没有能对齐的设定与情节线</span>
+                <span className="fs-13 muted">
+                  某条设定落进它被引用到的章节、且这些章节恰好属于某条主线或支线时，就会在这里列出来。
+                </span>
+              </div>
+            ) : (
+              <div className="list">
+                {alignRows.map((row) => (
+                  <div key={row.id} className="list-row">
+                    <div className="row-main">
+                      <div className="row-title">{row.rule}</div>
+                      <div className="row-sub">
+                        {`${row.category} · ${KIND_LABEL[row.kind]} · 联动 ${row.plots.length} 条剧情线`}
+                      </div>
+                    </div>
+                    <div className="wrap-row">
+                      {row.plots.map((p) => (
+                        <span
+                          key={p.key}
+                          className="chip"
+                          title={p.shared.length ? `用于第 ${p.shared.join('、')} 章` : undefined}
+                        >
+                          {`${p.isMain ? '主线' : '支线'} · ${p.name}`}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>

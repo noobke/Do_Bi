@@ -11,11 +11,12 @@ import { useProject } from '../state/project'
 /**
  * 伏笔看板 —— 追踪伏笔与回收率。
  *
- * 数据源：`GET /hooks`（伏笔 + 统计 + 当前章）。写操作（新增 / 回收 / 弃用）成功后
- * 用返回的 `hooks` / `stats` **就地更新**，不整页重取。
- * 注意：写接口返回的 `hooks` 不带 `overdue`（只有 GET 会补），这里按后端同一规则
+ * 数据源：`GET /hooks`（伏笔 + 统计 + 当前章，每条伏笔自带 `overdue` 超期标记）。
+ * 写操作（新增 / 回收 / 弃用）成功后用返回的 `hooks` / `stats` **就地更新**，不整页重取。
+ * 注意：写接口返回的 `hooks` 不带超期标记（只有 GET 会补），这里按后端同一规则
  * （仍待回收且已超过建议回收章）在前端重算，保证告警不丢。
- * 类名取自 `styles/contract.css`（批次一 / 二 / 九），动态位置用内联 style。
+ * 超期告警属于「警告」，按契约 §③ 用朱砂（--crimson / tag-overdue），不用 `--error` 错误专色。
+ * 类名取自 `styles/contract.css`（批次一 / 二 / 九 / 附录 D），动态位置用内联 style。
  */
 
 type HookStatus = 'planted' | 'resolved' | 'abandoned'
@@ -271,12 +272,11 @@ export default function Hooks() {
 
   function hookCard(h: Hook): ReactNode {
     const st = STATUS_TAG[h.status]
-    const tag = h.overdue ? ['tag-danger', '超期'] : st
+    const tag = h.overdue ? ['tag-overdue', '超期'] as [string, string] : st
     return (
       <div
         key={h.id}
         className={classNames('hook-card', h.status === 'resolved' && 'is-resolved', h.overdue && 'is-overdue')}
-        style={h.overdue ? { borderTopColor: 'var(--error)', background: 'var(--error-soft)' } : undefined}
       >
         {h.importance === 'major' ? (
           <div style={{ marginBottom: 8 }}>
@@ -286,7 +286,12 @@ export default function Hooks() {
         <div className="hook-text">{h.content}</div>
         <div className="hook-meta">
           <span className="mono">{`${h.id} · 埋于第 ${h.plantedChapter} 章`}</span>
-          <span className={classNames('tag', tag[0])} title={h.overdue ? 'overdue' : h.status}>{tag[1]}</span>
+          <span
+            className={classNames('tag', tag[0])}
+            title={h.overdue ? '已超期，超过建议回收章仍未收回' : `状态：${tag[1]}`}
+          >
+            {tag[1]}
+          </span>
         </div>
       </div>
     )
@@ -384,7 +389,7 @@ export default function Hooks() {
             <div className="stat">
               <div className="stat-label">超期</div>
               <div className="stat-value">
-                <span className="dot" style={{ background: 'var(--error)', verticalAlign: 'middle', marginRight: 6 }} />
+                <span className="dot" style={{ background: 'var(--crimson)', verticalAlign: 'middle', marginRight: 6 }} />
                 {s?.overdue ?? 0}
               </div>
               <div className="fs-12 muted" style={{ marginTop: 6 }}>建议回收章已逾期</div>
@@ -445,7 +450,7 @@ export default function Hooks() {
                               left: `${left}%`,
                               width: `${width}%`,
                               ...(h.overdue
-                                ? { background: 'var(--error-soft)', borderLeftColor: 'var(--error)', borderRightColor: 'var(--error)' }
+                                ? { background: 'var(--crimson-soft)', borderLeftColor: 'var(--crimson)', borderRightColor: 'var(--crimson)' }
                                 : null),
                             }}
                           />
@@ -460,7 +465,7 @@ export default function Hooks() {
                                 ? `计划第 ${h.suggestedResolveBy} 章（已逾期）`
                                 : `第 ${end} 章（当前）`}
                           </span>
-                          {h.overdue ? <span className="tag tag-danger" style={{ marginLeft: 8 }}>超期</span> : null}
+                          {h.overdue ? <span className="tag tag-overdue" style={{ marginLeft: 8 }}>超期</span> : null}
                         </div>
                       </div>
                     </div>
@@ -471,7 +476,7 @@ export default function Hooks() {
                 <strong>
                   {`${hooks.length} 条伏笔横跨第 1–${span} 章，其中 ${hooks.filter((h) => h.overdue).length} 条已超期`}
                 </strong>
-                {` · 浅色区间为「埋设 → 回收」的跨度，竖线标出埋设章；超期条目用错误色标出，需尽快给出呼应`}
+                {` · 浅色区间为「埋设 → 回收」的跨度，竖线标出埋设章；超期条目以朱砂告警色标出，需尽快给出呼应`}
               </div>
             </div>
           </section>
@@ -486,7 +491,7 @@ export default function Hooks() {
                 {visible.length ? (
                   visible.map((h) => {
                     const imp = IMPORTANCE_TAG[h.importance]
-                    const st = h.overdue ? (['tag-danger', '超期'] as [string, string]) : STATUS_TAG[h.status]
+                    const st = h.overdue ? (['tag-overdue', '超期'] as [string, string]) : STATUS_TAG[h.status]
                     return (
                       <div key={h.id} className="list-row">
                         <span className="mono fs-12 muted">{h.id}</span>

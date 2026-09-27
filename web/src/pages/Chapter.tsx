@@ -29,6 +29,8 @@ interface ChapterInfo {
   words: number
   pov: string
   updated: string
+  /** 本章梗概（归档派生的短文）；可能为空字符串或不存在 */
+  summary?: string
   paragraphs: string[]
 }
 
@@ -135,7 +137,7 @@ interface Fishbone {
 
 interface Detail {
   chapter: ChapterInfo
-  node: { title?: string; beats?: string[]; intensity?: number } | null
+  node: { title?: string; beats?: string[]; intensity?: number; summary?: string } | null
   acts: ActInfo[]
   act: ActInfo | null
   beats: BeatInfo[]
@@ -462,6 +464,10 @@ export default function Chapter() {
   const todoCount = Math.max(0, pipe.total - pipe.done - running)
   const activeStepName = pipe.active != null ? steps[pipe.active - 1]?.label ?? '' : ''
 
+  /** 本章梗概：优先取章节对象，缺省回落章纲节点；两者都没有或为空就视为无梗概（走空态） */
+  const chapterSummary =
+    (ch.summary || '').trim() || (detail.node?.summary || '').trim() || ''
+
   const stepByName = (name: string) => steps.find((s) => s.label === name) ?? null
   const isStepDone = (name: string) => {
     const s = stepByName(name)
@@ -699,37 +705,12 @@ export default function Chapter() {
     )
   }
 
-  /* ---------- 视图 3 · 时间线（双轨对照） ---------- */
+  /* ---------- 视图 3 · 时间线（单轨故事时间线 + 双轨锚点对照） ---------- */
 
   function renderTimeline(): ReactNode {
     const { events, anchors, located, total, kindLabels } = d.timeline
     const ne = events.length
     const na = anchors.length
-
-    if (!ne) {
-      return (
-        <section className="card">
-          <div className="card-head">
-            <h2>本章事件 ↔ 全书时间锚点</h2>
-            <span className="tag tag-quiet">0 个事件</span>
-          </div>
-          <div className="card-body">
-            <div className="empty">
-              <Icon name="refresh-cw" size={24} />
-              <span className="fs-13">本章还没有故事内时间事件</span>
-              <span className="fs-12 muted">时间线在章纲或正文生成后自动提取</span>
-            </div>
-            <div className="chart-note is-ok" style={{ marginTop: 12 }}>
-              <strong>本章无时间事件</strong>
-              {` · 全书现有 ${na} 个时间锚点，本章暂无可对照的事件`}
-            </div>
-          </div>
-        </section>
-      )
-    }
-
-    const upperX = (i: number) => (ne <= 1 ? 500 : 140 + i * (680 / Math.max(1, ne - 1)))
-    const lowerX = (j: number) => 130 + j * (720 / Math.max(1, na - 1))
 
     const dotCls = (kind: string) => {
       if (kind === 'backstory' || kind === 'flashback') return ' is-backstory'
@@ -738,6 +719,127 @@ export default function Chapter() {
       return ''
     }
     const kindOf = (kind: string) => kindLabels[kind] ?? kind
+
+    /* ---------- 单轨 · 故事内时间线 ---------- */
+    // 事件尽量对齐到全书锚点：有锚点的事件按锚点在全书时间轴上的先后排布，
+    // 没有锚点的事件往后排；横轴用「故事内先后」而非叙述顺序。
+    const anchorIndexById = new Map(anchors.map((a, j) => [a.id, j]))
+    const unlocatedEvs = events.filter((e) => !e.anchorAt)
+    const locatedEvs = events
+      .filter((e) => e.anchorAt)
+      .sort((a, b) => (anchorIndexById.get(a.anchorId!) ?? Infinity) - (anchorIndexById.get(b.anchorId!) ?? Infinity))
+
+    // 单轨上事件均匀铺开；对齐锚点的在前，未对齐的补在后面
+    const singleOrder = [...locatedEvs, ...unlocatedEvs]
+    const singleX = (i: number) => 60 + (i + 0.5) * (780 / Math.max(1, singleOrder.length))
+    const singleEls: ReactNode[] = [<path key="st-line" className="tl-line" d="M 60,36 H 840" />]
+    singleOrder.forEach((ev, i) => {
+      const x = singleX(i)
+      const amber = ev.kind === 'flashback' || ev.kind === 'backstory'
+      singleEls.push(<path key={`st-tick-${i}`} className="tl-tick" d={`M ${x},28 V 44`} />)
+      singleEls.push(
+        <circle
+          key={`st-dot-${i}`}
+          className={classNames('tl-dot', amber && 'is-backstory', ev.kind === 'future' && 'is-future')}
+          cx={x}
+          cy={36}
+          r={6}
+        >
+          <title>{`${ev.at} · ${ev.label} · ${kindOf(ev.kind)}${ev.anchorAt ? ` · 对应锚点 ${ev.anchorAt}` : ''}`}</title>
+        </circle>,
+      )
+      // 事件较多时标签上下交错，避免文字拥挤
+      const ly = singleOrder.length >= 4 && i % 2 === 1 ? 22 : 20
+      singleEls.push(
+        <text key={`st-lb-${i}`} className="tl-label" textAnchor="middle" x={x} y={ly}>
+          {ev.label}
+        </text>,
+      )
+      singleEls.push(
+        <text key={`st-at-${i}`} className="tl-at" textAnchor="middle" x={x} y={54}>
+          {ev.at}
+        </text>,
+      )
+      singleEls.push(
+        <text key={`st-ty-${i}`} className="tl-label-sub" textAnchor="middle" x={x} y={68}>
+          {kindOf(ev.kind)}
+        </text>,
+      )
+    })
+    const flashCount = events.filter((e) => e.kind === 'flashback').length
+    const singleNote =
+      ne === 1
+        ? `本章 1 个事件：${events[0].at}「${events[0].label}」`
+        : `本章 ${ne} 个事件横跨「${events[0].at} → ${events[ne - 1].at}」`
+
+    const singleCard: ReactNode = (
+      <section className="card">
+        <div className="card-head">
+          <h2>故事内时间线</h2>
+          <span className="tag tag-quiet">{`${ne} 个事件`}</span>
+        </div>
+        <div className="card-body" style={{ padding: 0 }}>
+          <div className="tl-wrap">
+            <svg viewBox="0 0 900 90" role="img" aria-label="故事内时间线">
+              {singleEls}
+            </svg>
+          </div>
+          <div className="legend" style={{ borderTop: 'none' }}>
+            <div className="legend-item">
+              <span className="legend-swatch is-node" style={{ background: 'var(--accent)', borderColor: 'var(--accent)' }} />
+              <span>顺叙</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-swatch is-node" style={{ background: 'var(--amber)', borderColor: 'var(--amber)' }} />
+              <span>闪回</span>
+            </div>
+            <div className="legend-item">
+              <span className="legend-swatch is-node" style={{ background: 'var(--ink-4)', borderColor: 'var(--ink-4)' }} />
+              <span>预叙</span>
+            </div>
+          </div>
+        </div>
+        <div className="card-body">
+          <div className="chart-note">
+            <strong>{singleNote}</strong>
+            {` · 单轨按故事内先后排布，尽量对齐到全书锚点的时序${
+              locatedEvs.length
+                ? `：${locatedEvs.length} 个事件已对齐到锚点、${unlocatedEvs.length} 个暂未对齐`
+                : ''
+            }；琥珀为闪回、深灰为预叙`}
+          </div>
+        </div>
+      </section>
+    )
+
+    if (!ne) {
+      return (
+        <div className="stack-24">
+          {singleCard}
+          <section className="card">
+            <div className="card-head">
+              <h2>本章事件 ↔ 全书时间锚点</h2>
+              <span className="tag tag-quiet">0 个事件</span>
+            </div>
+            <div className="card-body">
+              <div className="empty">
+                <Icon name="refresh-cw" size={24} />
+                <span className="fs-13">本章还没有故事内时间事件</span>
+                <span className="fs-12 muted">时间线在章纲或正文生成后自动提取</span>
+              </div>
+              <div className="chart-note is-ok" style={{ marginTop: 12 }}>
+                <strong>本章无时间事件</strong>
+                {` · 全书现有 ${na} 个时间锚点，本章暂无可对照的事件`}
+              </div>
+            </div>
+          </section>
+        </div>
+      )
+    }
+
+    /* ---------- 双轨 · 本章事件 ↔ 全书时间锚点 ---------- */
+    const upperX = (i: number) => (ne <= 1 ? 500 : 140 + i * (680 / Math.max(1, ne - 1)))
+    const lowerX = (j: number) => 130 + j * (720 / Math.max(1, na - 1))
 
     const linkEls: ReactNode[] = []
     const upperEls: ReactNode[] = []
@@ -761,7 +863,9 @@ export default function Chapter() {
       }
       upperEls.push(
         <circle key={`ud-${i}`} className={classNames('tl2-dot', dotCls(ev.kind))} cx={xi} cy={80} r={6}>
-          <title>{`${ev.at} · ${ev.label} · ${kindOf(ev.kind)}`}</title>
+          <title>{`${ev.at} · ${ev.label} · ${kindOf(ev.kind)}${
+            ev.anchorAt ? ` · 对应锚点 ${ev.anchorAt}` : ''
+          }`}</title>
         </circle>,
       )
       upperEls.push(
@@ -801,53 +905,55 @@ export default function Chapter() {
     const back = anchors.filter((a) => a.kind === 'backstory' || a.kind === 'flashback').length
     const ahead = anchors.filter((a) => a.kind === 'future').length
     const planned = anchors.filter((a) => a.kind === 'planned').length
-    const flash = events.filter((e) => e.kind === 'flashback').length
 
     return (
-      <section className="card">
-        <div className="card-head">
-          <h2>本章事件 ↔ 全书时间锚点</h2>
-          <span className="tag tag-quiet">{`${located} / ${total} 个事件已定位`}</span>
-        </div>
-        <div className="card-body" style={{ padding: 0 }}>
-          <div className="tl2-wrap">
-            <svg viewBox="0 0 900 300" role="img" aria-label="本章事件与全书时间锚点对照">
-              <path className="tl2-rail" d="M 120,80 H 860" />
-              <path className="tl2-rail" d="M 120,220 H 860" />
-              <text className="tl2-rail-label" textAnchor="end" x={108} y={84}>本章事件</text>
-              <text className="tl2-rail-label" textAnchor="end" x={108} y={224}>全书时间锚点</text>
-              {linkEls}
-              {upperEls}
-              {lowerEls}
-              {nowEls}
-            </svg>
+      <div className="stack-24">
+        {singleCard}
+        <section className="card">
+          <div className="card-head">
+            <h2>本章事件 ↔ 全书时间锚点</h2>
+            <span className="tag tag-quiet">{`${located} / ${total} 个事件已定位`}</span>
           </div>
-          <div className="legend" style={{ borderTop: 'none' }}>
-            <div className="legend-item">
-              <span className="legend-swatch is-node" style={{ background: 'var(--accent)', borderColor: 'var(--accent)' }} />
-              <span>顺叙</span>
+          <div className="card-body" style={{ padding: 0 }}>
+            <div className="tl2-wrap">
+              <svg viewBox="0 0 900 300" role="img" aria-label="本章事件与全书时间锚点对照">
+                <path className="tl2-rail" d="M 120,80 H 860" />
+                <path className="tl2-rail" d="M 120,220 H 860" />
+                <text className="tl2-rail-label" textAnchor="end" x={108} y={84}>本章事件</text>
+                <text className="tl2-rail-label" textAnchor="end" x={108} y={224}>全书时间锚点</text>
+                {linkEls}
+                {upperEls}
+                {lowerEls}
+                {nowEls}
+              </svg>
             </div>
-            <div className="legend-item">
-              <span className="legend-swatch is-node" style={{ background: 'var(--amber)', borderColor: 'var(--amber)' }} />
-              <span>前史 / 闪回</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-swatch is-node" style={{ background: 'var(--ink-4)', borderColor: 'var(--ink-4)' }} />
-              <span>预叙</span>
-            </div>
-            <div className="legend-item">
-              <span className="legend-swatch is-node" style={{ background: 'var(--paper-3)', borderColor: 'var(--line-strong)', borderStyle: 'dashed' }} />
-              <span>尚未写入</span>
+            <div className="legend" style={{ borderTop: 'none' }}>
+              <div className="legend-item">
+                <span className="legend-swatch is-node" style={{ background: 'var(--accent)', borderColor: 'var(--accent)' }} />
+                <span>顺叙</span>
+              </div>
+              <div className="legend-item">
+                <span className="legend-swatch is-node" style={{ background: 'var(--amber)', borderColor: 'var(--amber)' }} />
+                <span>前史 / 闪回</span>
+              </div>
+              <div className="legend-item">
+                <span className="legend-swatch is-node" style={{ background: 'var(--ink-4)', borderColor: 'var(--ink-4)' }} />
+                <span>预叙</span>
+              </div>
+              <div className="legend-item">
+                <span className="legend-swatch is-node" style={{ background: 'var(--paper-3)', borderColor: 'var(--line-strong)', borderStyle: 'dashed' }} />
+                <span>尚未写入</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="card-body">
-          <div className="chart-note">
-            <strong>{`本章 ${total} 个事件中 ${located} 个可对应到全书时间锚点（全书共 ${na} 个锚点）`}</strong>
-            {` · 虚线把本章事件连到它在全书时间轴上的位置：其中 ${flash} 个为闪回、${back} 个锚点为背景 / 闪回、${ahead} 个预叙、${planned} 个尚未写入`}
+          <div className="card-body">
+            <div className="chart-note">
+              <strong>{`本章 ${total} 个事件中 ${located} 个可对应到全书时间锚点（全书共 ${na} 个锚点）`}</strong>
+              {` · 虚线把本章事件连到它在全书时间轴上的位置：其中 ${flashCount} 个为闪回、${back} 个锚点为背景 / 闪回、${ahead} 个预叙、${planned} 个尚未写入`}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     )
   }
 
@@ -1152,6 +1258,27 @@ export default function Chapter() {
           </div>
         </div>
       </div>
+
+      {/*—— 本章梗概：把归档生成的本章短文亮出来；没有时给出友好空态，不伪造内容 ——*/}
+      <section className="card" style={{ marginBottom: 24 }}>
+        <div className="card-head">
+          <h2>本章梗概</h2>
+          <span className="tag tag-quiet">{chapterSummary ? '已归档' : '暂无'}</span>
+        </div>
+        <div className="card-body">
+          {chapterSummary ? (
+            <div className="fs-14" style={{ lineHeight: 1.8, maxWidth: 820 }}>
+              {chapterSummary}
+            </div>
+          ) : (
+            <div className="empty">
+              <Icon name="library" size={24} />
+              <span className="fs-13">还没有梗概，先规划或生成本章</span>
+              <span className="fs-12 muted">本章梗概在归档环节自动沉淀，可作为前情回顾复用</span>
+            </div>
+          )}
+        </div>
+      </section>
 
       <div className="viewbar">
         <div className="viewbar-tabs" role="tablist" aria-label="章节视图">

@@ -6,7 +6,12 @@ import { Loading } from '../components/Loading'
 import { TopBar } from '../components/Layout'
 import { classNames, toast } from '../lib/ui'
 import { useProject } from '../state/project'
-import { decideFinding, getAuditReport, runAudit } from '../api/client'
+import {
+  decideFinding,
+  getAuditReport,
+  getChapterCheckpoints,
+  runAudit,
+} from '../api/client'
 
 /**
  * 审计报告 —— 对接 `GET /api/projects/{id}/audit`。
@@ -98,6 +103,69 @@ const FILTERS: { value: Filter; label: string }[] = [
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : '操作失败，请重试。')
 
+/* ------------------------------------------------------------------ *
+ * 反 AIGC · 去 AI 味 —— 数据来自章节的「处理进度」接口
+ * （取其中名为「去 AI 味」的那一步状态，其余数字一律不编造）
+ * ------------------------------------------------------------------ */
+
+type DeaiStatus = 'ok' | 'skipped' | 'running' | 'failed' | 'todo'
+
+interface DeaiStep {
+  key: string
+  label: string
+  status: DeaiStatus
+}
+
+/** 每一步 → 作者可读的短状态词（可见文案） */
+const STEP_WORD: Record<DeaiStatus, string> = {
+  ok: '已完成',
+  skipped: '已跳过',
+  running: '进行中',
+  failed: '未通过',
+  todo: '未开始',
+}
+
+/** 每一步 → 复用现有 `pipe` 流程图的状态修饰类 */
+const STEP_CLASS: Record<DeaiStatus, string> = {
+  ok: 'is-done',
+  skipped: 'is-done',
+  running: 'is-active',
+  failed: 'is-active',
+  todo: 'is-todo',
+}
+
+/** 「去 AI 味」一步 → 卡片角标 */
+const DEAI_TAG: Record<DeaiStatus, { tag: string; text: string }> = {
+  ok: { tag: 'tag-ok', text: '本稿已去味' },
+  skipped: { tag: 'tag-quiet', text: '去味已跳过' },
+  running: { tag: 'tag-info', text: '去味进行中' },
+  failed: { tag: 'tag-danger', text: '去味待复跑' },
+  todo: { tag: 'tag-warn', text: '暂无去味记录' },
+}
+
+/** 流水线条：把「去 AI 味」钉在从「章纲」走向「定稿」的链条里 */
+function PipelineStrip({ steps, focusKey }: { steps: DeaiStep[]; focusKey?: string }) {
+  return (
+    <div className="pipe">
+      {steps.map((s, i) => (
+        <div className="pipe-step" key={s.key}>
+          <div
+            className={classNames(
+              'pipe-node',
+              STEP_CLASS[s.status] ?? 'is-todo',
+              s.key === focusKey && 'is-focus',
+            )}
+          >
+            <span className="pipe-name">{s.label}</span>
+            <span className="pipe-meta">{STEP_WORD[s.status] ?? '未开始'}</span>
+          </div>
+          {i < steps.length - 1 ? <div className="pipe-arrow" /> : null}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 /** 改动预览：删除行 / 新增行 */
 function DiffView({ block }: { block: DiffBlock }) {
   return (
@@ -156,6 +224,7 @@ export default function Audit() {
   const [filter, setFilter] = useState<Filter>('all')
   const [openDiffs, setOpenDiffs] = useState<Record<string, boolean>>({})
   const [busy, setBusy] = useState<string | null>(null)
+  const [pipeline, setPipeline] = useState<DeaiStep[]>([])
 
   const load = useCallback(
     async (ch: number | null) => {
@@ -182,12 +251,58 @@ export default function Audit() {
     void load(chapter)
   }, [projectId, chapter, load])
 
+  // 反 AIGC：拉当前审计章节的「处理进度」，只看里面对应「去 AI 味」那一步。
+  // 拿不到时只留空条，绝不编造状态/数字。
+  const auditChapter = chapter ?? report?.chapter ?? null
+  useEffect(() => {
+    if (!projectId || auditChapter == null) {
+      setPipeline([])
+      return
+    }
+    let alive = true
+    getChapterCheckpoints(projectId, auditChapter)
+      .then((res) => {
+        if (alive) {
+          const steps = (res as { progress?: { steps?: DeaiStep[] } } | null)?.progress?.steps
+          setPipeline(steps ?? [])
+        }
+      })
+      .catch(() => {
+        if (alive) setPipeline([])
+      })
+    return () => {
+      alive = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, auditChapter])
+
   const chapterNow = chapter ?? report?.chapter ?? null
   const stats = report?.stats ?? {}
   const l1Rows = report?.l1Checked ?? []
   const findings = report?.items ?? []
   const diffs = report?.diffs ?? []
   const review = report?.review ?? []
+  // 「去 AI 味」一步：从流程条里挑出对应那一步，没有就读不到 → 空态
+  const deaiStep = pipeline.find((s) => s.key === 'deai')
+  const deaiStatus: DeaiStatus = (deaiStep?.status ?? 'todo') as DeaiStatus
+  const deaiMeta = DEAI_TAG[deaiStatus] ?? DEAI_TAG.todo
+
+  /** 正文结论文案：只写跑到的真实状态，拿不到就如实说「还没有记录」 */
+  const deaiConclusion = deaiStep ? (
+    deaiStatus === 'ok' ? (
+      <>第 {auditChapter} 章已完成「去 AI 味」，成稿已在这里定点改写、去掉机器味。</>
+    ) : deaiStatus === 'skipped' ? (
+      <>第 {auditChapter} 章把「去 AI 味」这一句跳过了（本稿工艺允许跳过该步）。</>
+    ) : deaiStatus === 'running' ? (
+      <>第 {auditChapter} 章「去 AI 味」正在改写中，落定后这里会更新。</>
+    ) : deaiStatus === 'failed' ? (
+      <>第 {auditChapter} 章「去 AI 味」上次未通过，定稿前建议重跑一次。</>
+    ) : (
+      <>当前尚无已执行的「去 AI 味」记录——它位于从「章纲」走向「定稿」的流水线中、定稿之前的一步。</>
+    )
+  ) : (
+    <>「去 AI 味」是从「章纲」走到「定稿」流水线中、定稿前的一步；当前章节的处理进度尚未读到，暂无记录可展示。</>
+  )
 
   const sampleMap = useMemo(() => {
     const m = new Map<string, string[]>()
@@ -520,6 +635,30 @@ export default function Audit() {
                   )}
                   <div className="fs-12 muted" style={{ marginTop: 12 }}>
                     接受＝按建议改；忽略＝保留原文并记账；撤回＝取消这次决策
+                  </div>
+                </div>
+              </section>
+
+              {/* 反 AIGC · 去 AI 味 */}
+              <section className="card">
+                <div className="card-head">
+                  <h2 title="deai 流水线步骤 · 文风/AI 味定点改写">反 AIGC · 去 AI 味</h2>
+                  <span className={classNames('tag', deaiMeta.tag)}>{deaiMeta.text}</span>
+                </div>
+                <div className="card-body">
+                  <div className="stack">
+                    <div className="fs-12 muted">
+                      把成稿里的模板腔、套路句做定点改写、去掉机器味。它是本章从「章纲」走到
+                      「定稿」流水线中的一步（下方流程条里已高亮）。
+                    </div>
+                    {pipeline.length > 0 ? (
+                      <PipelineStrip steps={pipeline} focusKey="deai" />
+                    ) : (
+                      <div className="chart-note is-warn">
+                        <strong>流程位置：</strong>章纲 → … → 去 AI 味 → … → 定稿
+                      </div>
+                    )}
+                    <div className="chart-note">{deaiConclusion}</div>
                   </div>
                 </div>
               </section>

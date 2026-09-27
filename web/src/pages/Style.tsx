@@ -148,6 +148,49 @@ export default function Style() {
   }, [profile, presets])
   const povRaw = profile?.narrative.povSwitch ?? ''
   const povText = povRaw ? (POV_LABEL[povRaw] ?? povRaw) : '未判定'
+  /** 是否有可导出的文风档案：profile 与来源名都存在才算有内容 */
+  const hasExportable = !!(profile && profile.source)
+
+  /**
+   * 导出当前文风：把档案里真实存在的数据字段整理成一份作者可读的存档文件，
+   * 用浏览器下载（Blob + 隐藏链接），不走后端接口。
+   */
+  const exportProfile = useCallback(() => {
+    if (!profile || !profile.source) {
+      toast('还没有可导出的文风档案', 'warn')
+      return
+    }
+    // 只取真实存在的数据字段，不伪造任何字段；name 取当前文风名作为日后导入的标识
+    const doc = {
+      type: '文风档案',
+      name: profile.source,
+      source: profile.source,
+      analyzedAt: profile.analyzedAt,
+      tokens: profile.tokens,
+      sentence: profile.sentence,
+      narrative: profile.narrative,
+      ratio: profile.ratio,
+      preferredPatterns: profile.preferredPatterns,
+      bannedExpressions: profile.bannedExpressions,
+      lexicon: profile.lexicon,
+      samplePlain: profile.samplePlain,
+      sampleStyled: profile.sampleStyled,
+    }
+    const filename =
+      `${profile.source.replace(/[\\/:*?"<>|]/g, '_')}文风档案.json`
+    const blob = new Blob([JSON.stringify(doc, null, 2)], {
+      type: 'application/json;charset=utf-8',
+    })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+    toast(`已导出文风档案「${profile.source}」，可保存备用`, 'ok')
+  }, [profile])
 
   const gotoSelector = useCallback(() => {
     selectorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -243,6 +286,19 @@ export default function Style() {
       </button>
       <button type="button" className="btn btn-primary btn-sm" onClick={gotoSelector}>
         选择文风
+      </button>
+      <button
+        type="button"
+        className="btn btn-ghost btn-sm"
+        onClick={() => void exportProfile()}
+        disabled={!hasExportable}
+        title={
+          hasExportable
+            ? '将当前文风整理成一份可留存的档案，含分析来源、句式、视角、比例、偏好手法与禁用表达'
+            : '还没有可导出的文风档案'
+        }
+      >
+        导出文风档案
       </button>
     </>
   )

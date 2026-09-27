@@ -1353,3 +1353,43 @@ svg { display:block; }
   .kb-split > .kb-main { order:1; }
   .kb-split > .kb-nav  { order:2; }
 }
+
+/* ==========================================================================
+   Appendix · 反 AIGC（去 AI 味）数据卡（所有者：审计页）
+   --------------------------------------------------------------------------
+   在审计页给作者补一张「反 AIGC · 去 AI 味」卡。数据来自章节处理进度里对应
+   「去 AI 味」那一步的状态；卡里复用既有流程条（.pipe），这里只补「当前被
+   讨论的那一步」的高亮环，让它和其余步骤一眼可区分。注意：本卡不写死任何
+   数字，也没有 AIGC 残留 / 文风漂移打分可展示，故不出现此类数值。
+   ========================================================================== */
+.pipe-node.is-focus {
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+.pipe-node.is-focus .pipe-name { color:var(--accent-ink); }
+
+/* ==========================================================================
+ * Appendix D — 伏笔看板 · 超期告警
+ * 所有权：web/src/pages/Hooks.tsx
+ * 颜色遵循 §③：超期属于「警告」，用朱砂（--crimson，伏笔标记语义），
+ * 不用 --error（错误专色）。卡片底色/顶线复用既有 .hook-card.is-overdue
+ * （原生已定为朱砂系），此处仅新增超期标记徽章，并让卡片文字一并用朱砂强调。
+ * ========================================================================== */
+.hook-card.is-overdue .hook-text,
+.hook-card.is-overdue .hook-meta { color:var(--crimson); }
+.tag-overdue { background:var(--crimson-soft); color:var(--crimson); border:1px solid color-mix(in srgb, var(--crimson) 25%, transparent); font-weight:600; }
+
+/* ==========================================================================
+   Appendix（仅为设置页 Settings.tsx 服务；所有权归 Settings.tsx）
+   设置页「添加服务商」模态里的诚实说明框：用虚线轻底区别于普通正文，
+   突出「后端暂不支持在线新增，需先本地配置」这一事实，避免让作者误以为能直接新增。
+   ========================================================================== */
+.honest-note {
+  font-size: var(--fs-12);
+  line-height: 1.7;
+  color: var(--ink-2);
+  background: var(--paper-3);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: var(--sp-12);
+}

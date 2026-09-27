@@ -1292,3 +1292,109 @@ svg { display:block; }
 .tl2-wrap > svg, .struct-wrap > svg, .fish-wrap > svg { min-width:900px; }
 .vtr-wrap > svg { min-width:760px; }
 .graph-wrap > svg { min-width:720px; }
+
+
+/* ===== Appendix backfilled from web/src/styles/contract.css =====
+matched contract.css sec 60 + Appendix blocks; prototype pages may reference
+the same class list. Keep both files in sync (prototype-craft contract).
+===================================================================== */
+/* ---------- 60. 知识库（类型着色 / 焦点态 / 邻边关系名） ----------
+   关系网要能「一眼分清谁是谁、谁和谁有关」，所以：节点带一枚类型色点、
+   选中条目时它的邻边直接写出关系名、其余节点与连线降淡——不必对着图例猜。 */
+
+/* 节点左侧类型色点（与图例圆点同色）。用 circle 而非 rect：
+   §26 的 `.gnode rect` / `.gnode.is-selected rect` 会连带改色改描边，圆点可避开这层联带。 */
+.gnode .gkind { fill:var(--ink-4); }
+.gnode[data-kind="character"] .gkind { fill:var(--accent); }
+.gnode[data-kind="hook"]      .gkind { fill:var(--crimson); }
+.gnode[data-kind="rule"]      .gkind { fill:var(--moss); }
+.gnode[data-kind="subplot"]   .gkind { fill:var(--amber); }
+.gnode[data-kind="chapter"]   .gkind { fill:var(--ink-3); }
+
+/* 焦点态：选中条目后，与它无关的节点与连线降淡，邻域自己浮出来 */
+.gnode.is-dim { opacity:.22; }
+.gnode.is-dim:hover { opacity:.6; }
+.gedge.is-dim { opacity:.16; }
+
+/* 邻边上的关系名（如「师徒」「埋设」）：白描边打底，压在连线之上也能读清 */
+.gedge-label {
+  font-family:var(--font-body); font-size:10px; fill:var(--ink-2);
+  text-anchor:middle; dominant-baseline:middle; pointer-events:none;
+  paint-order:stroke; stroke:var(--paper); stroke-width:3px; stroke-linejoin:round;
+}
+
+/* 图例里的类型圆点（与节点色点同色） */
+.legend-swatch.is-kind { width:10px; height:10px; border:none; border-radius:var(--r-full); }
+.legend-swatch.is-kind.is-character { background:var(--accent); }
+.legend-swatch.is-kind.is-hook      { background:var(--crimson); }
+.legend-swatch.is-kind.is-rule      { background:var(--moss); }
+.legend-swatch.is-kind.is-subplot   { background:var(--amber); }
+.legend-swatch.is-kind.is-chapter   { background:var(--ink-3); }
+
+/* 左栏清单限高滚动：条目多时不要把关系网顶出屏幕 */
+.list-scroll { max-height:56vh; overflow-y:auto; scrollbar-width:thin; }
+
+/* 知识库的条目行比全站默认松一档：默认行高 56px 里要同时挤下「标题」和「类型 + 关系数」
+   两行，读起来是一团。这里把行高固定到 72px（内容 41px 上下各留约 16px），
+   标题与标签之间再拉开 6px —— 扫读一列条目时不再需要逐行辨认边界。 */
+.kb-list .list-row { min-height:72px; padding:var(--sp-12) var(--sp-8); }
+.kb-list .row-sub { margin-top:6px; }
+
+/* 知识库双栏：窄栏（找条目）在左，宽栏（看关系）在右。
+   DOM 顺序是「找条目」在前——因为窄屏要反过来（先看图再翻清单），
+   而窄屏的先后由 order 决定，不由 DOM 顺序决定。
+   窄栏取 360 而不是全站常见的 340：这一栏要放下 6 个筛选 chip（实测 302px），
+   340 只剩 4px 富余、看着顶边，360 能给到 16px。 */
+.kb-split {
+  display:grid; gap:var(--sp-24); align-items:start;
+  grid-template-columns:360px minmax(0,1fr);
+}
+.kb-split > .kb-nav  { order:1; }
+.kb-split > .kb-main { order:2; }
+/* 精确的临界宽度是 1412（= 244 侧栏 + 64 页边距 + 360 窄栏 + 24 间距 + 720 图）。
+   留出余量取 1440：再窄两栏就放不下 720 宽的图了（图宁可横向滚动也不缩字，见 §59）。 */
+@media (max-width:1439px) {
+  .kb-split { grid-template-columns:minmax(0,1fr); }
+  .kb-split > .kb-main { order:1; }
+  .kb-split > .kb-nav  { order:2; }
+}
+
+/* ==========================================================================
+   Appendix · 反 AIGC（去 AI 味）数据卡（所有者：审计页）
+   --------------------------------------------------------------------------
+   在审计页给作者补一张「反 AIGC · 去 AI 味」卡。数据来自章节处理进度里对应
+   「去 AI 味」那一步的状态；卡里复用既有流程条（.pipe），这里只补「当前被
+   讨论的那一步」的高亮环，让它和其余步骤一眼可区分。注意：本卡不写死任何
+   数字，也没有 AIGC 残留 / 文风漂移打分可展示，故不出现此类数值。
+   ========================================================================== */
+.pipe-node.is-focus {
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+}
+.pipe-node.is-focus .pipe-name { color:var(--accent-ink); }
+
+/* ==========================================================================
+ * Appendix D — 伏笔看板 · 超期告警
+ * 所有权：web/src/pages/Hooks.tsx
+ * 颜色遵循 §③：超期属于「警告」，用朱砂（--crimson，伏笔标记语义），
+ * 不用 --error（错误专色）。卡片底色/顶线复用既有 .hook-card.is-overdue
+ * （原生已定为朱砂系），此处仅新增超期标记徽章，并让卡片文字一并用朱砂强调。
+ * ========================================================================== */
+.hook-card.is-overdue .hook-text,
+.hook-card.is-overdue .hook-meta { color:var(--crimson); }
+.tag-overdue { background:var(--crimson-soft); color:var(--crimson); border:1px solid color-mix(in srgb, var(--crimson) 25%, transparent); font-weight:600; }
+
+/* ==========================================================================
+   Appendix（仅为设置页 Settings.tsx 服务；所有权归 Settings.tsx）
+   设置页「添加服务商」模态里的诚实说明框：用虚线轻底区别于普通正文，
+   突出「后端暂不支持在线新增，需先本地配置」这一事实，避免让作者误以为能直接新增。
+   ========================================================================== */
+.honest-note {
+  font-size: var(--fs-12);
+  line-height: 1.7;
+  color: var(--ink-2);
+  background: var(--paper-3);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: var(--sp-12);
+}

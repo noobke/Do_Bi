@@ -74,6 +74,14 @@ function spineClass(i: number): string {
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : '操作失败，请重试。')
 
+/**
+ * 后端 `listProjects` 返回的更新时刻形如 `YYYY-MM-DD HH:mm`。
+ * 只面向作者展示「月-日 时:分」，不带年份，更清爽。
+ */
+function fmtClock(s: string): string {
+  return s.length >= 16 ? s.slice(5, 16) : s
+}
+
 export default function Projects() {
   const navigate = useNavigate()
   const { setCurrent: setCurrentProject } = useProject()
@@ -189,6 +197,13 @@ export default function Projects() {
   const hookRate = hooksTotal ? Math.round((hooksDone / hooksTotal) * 100) : 0
   const totalCost = projects.reduce((s, p) => s + p.budgetUsed, 0)
   const currentProject = projects.find((p) => p.id === currentId) ?? null
+
+  // 「最近更新」：以各项目真实的最后更新时刻排序取前 5 条，作为「最近生成记录」来源。
+  // 后端首页接口只返回项目级更新时间（`updatedAt`），不伪造具体生成事件与时刻。
+  const recent = [...projects]
+    .filter((p) => p.updatedAt)
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .slice(0, 5)
 
   const sub =
     status === 'ready' ? `${projects.length} 个作品 · 累计 ${fmtInt(totalWords)} 字` : undefined
@@ -323,6 +338,47 @@ export default function Projects() {
               </div>
             </div>
           ) : null}
+
+          <section className="card">
+            <div className="card-head">
+              <h2>最近生成记录</h2>
+              <span className="tag tag-quiet">按最后更新排序</span>
+            </div>
+            <div className="card-body" style={{ padding: 0 }}>
+              {recent.length === 0 ? (
+                <div className="empty">
+                  <Icon name="pen-line" size={24} />
+                  <div className="fs-14 serif">还没有生成记录</div>
+                  <div className="fs-13">写点什么再回来看，这里会记下最近的创作进度。</div>
+                </div>
+              ) : (
+                <div className="list">
+                  {recent.map((p) => (
+                    <div key={p.id} className="list-row">
+                      <span
+                        className="mono fs-12 muted"
+                        style={{ width: 88, flex: 'none' }}
+                        title="最后更新时刻"
+                      >
+                        {fmtClock(p.updatedAt)}
+                      </span>
+                      <span className="row-main">
+                        <span className="row-title">{p.title}</span>
+                        <span className="row-sub">
+                          {p.genre} · 第 {p.chaptersDone}/{p.chaptersTotal} 章 · {fmtInt(p.words)} 字
+                        </span>
+                      </span>
+                      {p.chaptersDone > 0 ? (
+                        <span className="tag tag-quiet">进行中</span>
+                      ) : (
+                        <span className="tag tag-quiet">未开始</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
 
           <section className="card">
             <div className="card-head">

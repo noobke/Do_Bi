@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from 'react'
+import { Fragment, type ReactNode, useEffect } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { Icon, type IconName } from './Icon'
 import { classNames } from '../lib/ui'
@@ -144,6 +144,22 @@ export function Crumb({ items }: { items: CrumbItem[] }) {
 }
 
 export function Layout() {
+  const { pathname } = useLocation()
+
+  /* 入场动效（对应原型 assets/app.js 的 `[data-reveal]` 错落浮现）：
+     每次切页，给主内容区的顶层块依次加 `.reveal` + 递增延迟，页面像原型一样逐卡浮现。
+     逻辑只是加类，不碰元素几何；`prefers-reduced-motion` 由 contract.css §24 负责回落。 */
+  useEffect(() => {
+    const main = document.getElementById('main')?.querySelector('.wrap')
+    if (!main) return
+    // 只取当前页的顶层内容块（页面根的直接子级），避免重复/嵌套动画
+    const nodes = Array.from(main.querySelectorAll(':scope > *'))
+    nodes.forEach((n, i) => {
+      n.classList.remove('reveal-1', 'reveal-2', 'reveal-3', 'reveal-4', 'reveal-5', 'reveal-6')
+      n.classList.add('reveal', `reveal-${(i % 6) + 1}`)
+    })
+  }, [pathname])
+
   return (
     <>
       <Sidebar />
