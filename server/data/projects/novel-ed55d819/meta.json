@@ -1,0 +1,34 @@
+{
+  "id": "novel-ed55d819",
+  "title": "天亮之前",
+  "genre": "奇幻/悬疑（待定）",
+  "logline": "未定；未定",
+  "premise": "世界存在梦境维度。梦中只有部分清醒者能自由行动。清醒度与力量成反比：越清醒，行动越自由但力量效果弱、易被踢出（醒来）、也更易被梦中怪物伤害追杀；越不清醒，力量越受限但一旦发挥效果极强。",
+  "mode": "semi-auto",
+  "steps": {
+    "plan": "confirm",
+    "context": "auto",
+    "draft": "auto",
+    "audit": "confirm",
+    "review": "auto",
+    "deai": "auto",
+    "revise": "auto",
+    "commit": "confirm"
+  },
+  "stop_conditions": [
+    "audit.blocker_exists",
+    "budget.exceeded",
+    "steer.affects_committed"
+  ],
+  "chapters_total": 0,
+  "words": 0,
+  "words_per_chapter": 3000,
+  "budget_total": 80.0,
+  "budget_used": 0.0077,
+  "cost_unit": "¥",
+  "audit_dims": [],
+  "audit_dims_extended": false,
+  "style_locked": false,
+  "created_at": "2026-09-27T15:32:36+00:00",
+  "updated_at": "2026-09-27T15:33:28+00:00"
+}
