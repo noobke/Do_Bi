@@ -3,7 +3,7 @@
  *
  * 约定：
  * - 开发时由 Vite `server.proxy` 把 `/api` 转发到 `http://127.0.0.1:8000`，前端不处理 CORS；
- *   生产构建为相对路径（`base: './'`），与后端同源部署即可。
+ *   生产构建用绝对根路径（`base: '/'`）并请求相对路径 `/api`，由 nginx/Caddy 同源反代到后端。
  * - 请求体统一 `JSON.stringify`，`Accept: application/json`。
  * - 非 2xx 抛 `ApiError`，错误体形如 `{ code, message, detail? }`。
  *   `message` 是后端面向作者的中文文案，**可直接展示给用户**。
