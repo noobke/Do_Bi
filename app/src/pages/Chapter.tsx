@@ -5,6 +5,7 @@ import { Icon } from '../components/Icon'
 import { Crumb, TopBar } from '../components/Layout'
 import { Loading } from '../components/Loading'
 import { classNames, fmtInt, fmtMoney, toast } from '../lib/ui'
+import { chapterHeading, downloadTextFile, safeFilename } from '../lib/export'
 import { getChapterDetail, getStructure, runAudit } from '../api/client'
 import { useProject } from '../state/project'
 
@@ -193,6 +194,35 @@ const CH_STATUS: Record<string, [string, string]> = {
   audit: ['tag-warn', '待审计'],
   revise: ['tag-warn', '修订中'],
   done: ['tag-ok', '已定稿'],
+}
+
+/**
+ * 写剪贴板：优先 `navigator.clipboard`，不可用时（非安全上下文 / 旧 WebView，
+ * 自建 HTTP 部署就会遇到）退回隐藏 textarea + execCommand。返回是否成功。
+ */
+async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+      return true
+    }
+  } catch {
+    /* 拿不到权限时走下面的兜底 */
+  }
+  try {
+    const box = document.createElement('textarea')
+    box.value = text
+    box.setAttribute('readonly', '')
+    box.style.position = 'fixed'
+    box.style.top = '-1000px'
+    document.body.appendChild(box)
+    box.select()
+    const ok = document.execCommand('copy')
+    box.remove()
+    return ok
+  } catch {
+    return false
+  }
 }
 
 const SEVERITY: Record<string, [string, string]> = {
@@ -467,6 +497,44 @@ export default function Chapter() {
   /** 本章梗概：优先取章节对象，缺省回落章纲节点；两者都没有或为空就视为无梗概（走空态） */
   const chapterSummary =
     (ch.summary || '').trim() || (detail.node?.summary || '').trim() || ''
+
+  /* ---------- 单章导出 / 复制 ---------- */
+
+  /** 本章正文（段落之间空行）；没有正文时两个动作都不可用 */
+  const paragraphs = ch.paragraphs ?? []
+  const chapterText = paragraphs.join('\n\n')
+  const hasChapterText = paragraphs.length > 0
+
+  /**
+   * 复制本章正文：浏览器不允许写剪贴板时只提示，不影响页面。
+   * 注意：这里刻意用普通函数而非 useCallback —— 本组件在数据未就绪时会提前 return，
+   * 若在此处调用 Hook 会改变 Hook 顺序（React 会直接报错）。
+   */
+  const copyChapterText = async () => {
+    if (!chapterText) {
+      toast('本章还没有正文', 'warn')
+      return
+    }
+    if (await copyToClipboard(chapterText)) {
+      toast(`已复制第 ${chapterNo} 章正文`, 'ok')
+    } else {
+      toast('复制失败，浏览器不允许写剪贴板，请手动选中正文复制', 'warn')
+    }
+  }
+
+  /** 导出本章 Markdown：章节标题 + 正文，便于单章存档或投给编辑（同上，不用 Hook） */
+  const exportChapter = () => {
+    if (!hasChapterText) {
+      toast('本章还没有正文', 'warn')
+      return
+    }
+    downloadTextFile(
+      `${safeFilename(ch.title || `第${chapterNo}章`)}.md`,
+      `# ${chapterHeading(ch.chapter, ch.title)}\n\n${chapterText}\n`,
+      'text/markdown;charset=utf-8',
+    )
+    toast(`已导出第 ${chapterNo} 章`, 'ok')
+  }
 
   const stepByName = (name: string) => steps.find((s) => s.label === name) ?? null
   const isStepDone = (name: string) => {
@@ -1198,6 +1266,24 @@ export default function Chapter() {
         }
         actions={
           <>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              disabled={!hasChapterText}
+              title={hasChapterText ? '把本章正文复制到剪贴板' : '本章还没有正文'}
+              onClick={() => void copyChapterText()}
+            >
+              复制正文
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              disabled={!hasChapterText}
+              title={hasChapterText ? '把本章正文导出为 Markdown' : '本章还没有正文'}
+              onClick={exportChapter}
+            >
+              导出本章
+            </button>
             <button
               type="button"
               className="btn btn-ghost btn-sm"

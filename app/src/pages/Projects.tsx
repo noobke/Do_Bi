@@ -5,8 +5,33 @@ import { Icon } from '../components/Icon'
 import { Loading } from '../components/Loading'
 import { TopBar } from '../components/Layout'
 import { classNames, fmtInt, fmtMoney, toast } from '../lib/ui'
+import {
+  COMMITTED_STATUSES,
+  buildBookMarkdown,
+  buildBookTxt,
+  buildTruthMarkdown,
+  downloadTextFile,
+  nowStamp,
+  safeFilename,
+  type ChapterRow,
+  type ExportChapter,
+  type TruthBundle,
+} from '../lib/export'
 import { useProject } from '../state/project'
-import { createProject, getOverview, health, listProjects, request } from '../api/client'
+import {
+  createProject,
+  getChapter,
+  getOverview,
+  getStructure,
+  getStyle,
+  getWorld,
+  health,
+  listChapters,
+  listCharacters,
+  listHooks,
+  listProjects,
+  request,
+} from '../api/client'
 
 /**
  * 我的作品（首页）—— 项目总览 / 继续创作 / 新建 / 拆书入口。
@@ -100,6 +125,12 @@ export default function Projects() {
   const [fMode, setFMode] = useState('semi-auto')
   const [creating, setCreating] = useState(false)
 
+  /* 作品导出：先取章节清单算出两种范围各有多少章，再按选择取正文 */
+  const [exportTarget, setExportTarget] = useState<ProjectSummary | null>(null)
+  const [exportScope, setExportScope] = useState<'committed' | 'all'>('committed')
+  const [exportRows, setExportRows] = useState<ChapterRow[] | null>(null)
+  const [exportBusy, setExportBusy] = useState<'txt' | 'md' | 'truth' | null>(null)
+
   const load = useCallback(async () => {
     setStatus('loading')
     try {
@@ -189,6 +220,120 @@ export default function Projects() {
       setCreating(false)
     }
   }, [fTitle, fGenre, fPremise, fMode, load, setCurrentProject])
+
+  /* ------------------------------------------------------------------ *
+   * 作品导出
+   * ------------------------------------------------------------------ */
+
+  /** 打开导出弹窗：先取一次章节清单，好把两种范围各有多少章摆在弹窗里 */
+  const openExport = useCallback(async (p: ProjectSummary) => {
+    setExportTarget(p)
+    setExportScope('committed')
+    setExportRows(null)
+    try {
+      const res = (await listChapters(p.id)) as { chapters?: ChapterRow[] }
+      setExportRows(res.chapters ?? [])
+    } catch (e) {
+      setExportRows([])
+      toast(errMsg(e), 'error')
+    }
+  }, [])
+
+  /** 已成稿（done / revise）且有正文的章节 */
+  const committedRows = (exportRows ?? []).filter(
+    (c) => COMMITTED_STATUSES.includes(c.status) && c.words > 0,
+  )
+  /** 全部有正文的章节（草稿也算） */
+  const writtenRows = (exportRows ?? []).filter((c) => c.words > 0)
+  const pickedRows = exportScope === 'committed' ? committedRows : writtenRows
+
+  /**
+   * 执行导出：按弹窗里选定的范围逐章取正文，再拼成 TXT / Markdown / 真相文件。
+   * 真相文件额外取设定类接口（世界观 / 角色 / 伏笔 / 结构 / 文风），一次并发取齐。
+   */
+  const runExport = useCallback(
+    async (kind: 'txt' | 'md' | 'truth') => {
+      const target = exportTarget
+      if (!target) return
+      const rows = exportScope === 'committed' ? committedRows : writtenRows
+      if (!rows.length) {
+        toast(
+          exportScope === 'committed' ? '还没有已成稿的章节，先定稿再导出' : '这本书还没有正文',
+          'warn',
+        )
+        return
+      }
+      setExportBusy(kind)
+      try {
+        const exportedAt = nowStamp()
+        const chapters: ExportChapter[] = []
+        for (const row of rows) {
+          const data = (await getChapter(target.id, row.n)) as {
+            chapter?: { title?: string; words?: number; paragraphs?: string[] }
+          }
+          chapters.push({
+            n: row.n,
+            title: data.chapter?.title || row.title,
+            words: data.chapter?.words ?? row.words,
+            text: (data.chapter?.paragraphs ?? []).join('\n\n'),
+          })
+        }
+        const book = {
+          title: target.title,
+          genre: target.genre,
+          logline: target.logline,
+          exportedAt,
+          chapters,
+        }
+        const base = safeFilename(target.title)
+
+        if (kind === 'txt') {
+          downloadTextFile(`${base}.txt`, buildBookTxt(book))
+        } else if (kind === 'md') {
+          downloadTextFile(`${base}.md`, buildBookMarkdown(book), 'text/markdown;charset=utf-8')
+        } else {
+          const [structure, world, chars, hooks, style] = await Promise.all([
+            getStructure(target.id),
+            getWorld(target.id),
+            listCharacters(target.id),
+            listHooks(target.id),
+            getStyle(target.id),
+          ])
+          const s = structure as {
+            volumes?: TruthBundle['volumes']
+            nodes?: TruthBundle['nodes']
+            plotlines?: TruthBundle['plotlines']
+          }
+          const w = world as { rules?: TruthBundle['rules'] }
+          const c = chars as { characters?: TruthBundle['characters'] }
+          const h = hooks as { hooks?: TruthBundle['hooks'] }
+          const st = style as { profile?: TruthBundle['style'] }
+          downloadTextFile(
+            `${base}真相文件.md`,
+            buildTruthMarkdown({
+              book,
+              chapters: rows,
+              volumes: s.volumes ?? [],
+              nodes: s.nodes ?? [],
+              rules: w.rules ?? [],
+              characters: c.characters ?? [],
+              hooks: h.hooks ?? [],
+              plotlines: s.plotlines ?? [],
+              style: st.profile ?? null,
+            }),
+            'text/markdown;charset=utf-8',
+          )
+        }
+        toast(`已导出《${target.title}》· ${rows.length} 章`, 'ok')
+        setExportTarget(null)
+      } catch (e) {
+        toast(errMsg(e), 'error')
+      } finally {
+        setExportBusy(null)
+      }
+    },
+    [exportTarget, exportScope, committedRows, writtenRows],
+  )
 
   const totalWords = projects.reduce((s, p) => s + p.words, 0)
   const ongoing = projects.filter((p) => p.chaptersDone > 0).length
@@ -311,13 +456,22 @@ export default function Projects() {
               </div>
               <div className="proj-foot">
                 <span className="fs-12 muted">最后更新 {currentProject.updatedAt}</span>
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  onClick={() => void open(currentProject, true)}
-                >
-                  继续
-                </button>
+                <div className="row">
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => void openExport(currentProject)}
+                  >
+                    导出
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={() => void open(currentProject, true)}
+                  >
+                    继续
+                  </button>
+                </div>
               </div>
             </div>
           ) : projects.length === 0 ? (
@@ -424,13 +578,22 @@ export default function Projects() {
                       </div>
                       <div className="proj-foot">
                         <span className="fs-12 muted">{p.updatedAt}</span>
-                        <button
-                          type="button"
-                          className={classNames('btn', 'btn-sm', started ? 'btn-ghost' : 'btn-primary')}
-                          onClick={() => void open(p)}
-                        >
-                          {started ? '打开' : '开始立项'}
-                        </button>
+                        <div className="row">
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-sm"
+                            onClick={() => void openExport(p)}
+                          >
+                            导出
+                          </button>
+                          <button
+                            type="button"
+                            className={classNames('btn', 'btn-sm', started ? 'btn-ghost' : 'btn-primary')}
+                            onClick={() => void open(p)}
+                          >
+                            {started ? '打开' : '开始立项'}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )
@@ -543,6 +706,84 @@ export default function Projects() {
                   创建并开始立项
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {exportTarget ? (
+        <div className="modal">
+          <div className="modal-veil" onClick={() => setExportTarget(null)} />
+          <div className="modal-card">
+            <div className="card-head">
+              <h2>导出《{exportTarget.title}》</h2>
+              <button
+                type="button"
+                className="btn btn-quiet btn-sm"
+                onClick={() => setExportTarget(null)}
+              >
+                关闭
+              </button>
+            </div>
+            <div className="card-body stack">
+              <div className="field">
+                <span className="field-label">导出范围</span>
+                <div className="seg">
+                  <button
+                    type="button"
+                    className={exportScope === 'committed' ? 'active' : undefined}
+                    onClick={() => setExportScope('committed')}
+                  >
+                    仅已成稿（{committedRows.length} 章）
+                  </button>
+                  <button
+                    type="button"
+                    className={exportScope === 'all' ? 'active' : undefined}
+                    onClick={() => setExportScope('all')}
+                  >
+                    全部有正文（{writtenRows.length} 章）
+                  </button>
+                </div>
+                <span className="field-hint">
+                  {exportRows === null
+                    ? '正在读取章节清单…'
+                    : exportScope === 'committed'
+                      ? '已成稿 = 已定稿或修订中的章节，草稿不会混进来。'
+                      : '只要写了正文就导出，包含草稿与待审计章节。'}
+                </span>
+              </div>
+
+              <div className="stack-8">
+                <button
+                  type="button"
+                  className="btn btn-primary btn-block"
+                  disabled={exportBusy !== null || pickedRows.length === 0}
+                  onClick={() => void runExport('txt')}
+                >
+                  {exportBusy === 'txt' ? '正在导出…' : '导出全书 TXT'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-block"
+                  disabled={exportBusy !== null || pickedRows.length === 0}
+                  onClick={() => void runExport('md')}
+                >
+                  {exportBusy === 'md' ? '正在导出…' : '导出全书 Markdown'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-block"
+                  disabled={exportBusy !== null || pickedRows.length === 0}
+                  onClick={() => void runExport('truth')}
+                >
+                  {exportBusy === 'truth' ? '正在导出…' : '导出真相文件（Markdown）'}
+                </button>
+              </div>
+
+              <p className="fs-12 muted">
+                导出的是本机已保存的正文，按「第 N 章 标题」顺序拼接；真相文件另含世界观、角色、
+                伏笔、章纲、支线、文风与章节台账，供存档与改稿。
+              </p>
             </div>
           </div>
         </div>
