@@ -297,4 +297,4 @@ pytest -q
 
 ## 9. 许可
 
-MIT（与仓库根目录 `LICENSE` 一致）。
+GPL-3.0-or-later（与仓库根目录 `LICENSE` 一致）。
