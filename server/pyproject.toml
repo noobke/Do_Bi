@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "Do_Bi 小说创作台 · 后端（一致性内核 + 双模式全自动流水线）"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "GPL-3.0-or-later" }
+license = { text = "MIT" }
 dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
