@@ -779,7 +779,7 @@ P1 的目标形态：一个 `run` 指令从灵感跑到完成，期间无需人�
 
 | 事项 | 说明 |
 |---|---|
-| **许可证合规** | 参考项目许可证各异（MuMuAINovel GPL-3.0、vela GPL-3.0、ainovel-cli Apache-2.0、InkOS 标注不一致、AI-Novel-Writing-Assistant 未明确）。**本次规划不对此作约束**，由项目负责人后续统一处理。本仓库已改为 MIT |
+| **许可证合规** | 参考项目许可证各异（MuMuAINovel GPL-3.0、vela GPL-3.0、ainovel-cli Apache-2.0、InkOS 标注不一致、AI-Novel-Writing-Assistant 未明确）。**本次规划不对此作约束**，由项目负责人后续统一处理。本仓库当前为 GPL-3.0 |
 | 第三方依赖许可审计 | 同上，后续统一处理 |
 | 素材版权与内容原创性 | 未在本次规划范围内定义流程 |
 
