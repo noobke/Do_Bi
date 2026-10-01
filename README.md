@@ -84,4 +84,4 @@ cd web && npm install && npm run dev
 
 ## 许可
 
-GPL-3.0-or-later，见 [LICENSE](LICENSE)。
+MIT，见 [LICENSE](LICENSE)。
